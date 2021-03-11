@@ -1,3 +1,5 @@
 /config.yml
 /.idea/
 /poetry.lock
+/hotel_booking_server/__pycache__/
+/tests/__pycache__/
