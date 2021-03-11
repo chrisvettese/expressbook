@@ -43,3 +43,12 @@ hotels = [[['4251 Sheppard Ave, Toronto, Ontario, M1S 1T4, Canada', 200, 3, 'to@
            ['1920 King George Hwy, Surrey, British Columbia, V3W 4E3, Canada', 77, 4, 'sr@bestwestern.com', '1 (760) 355-4122'],
            ['3105 Reserve St, Eganville, Ontario, K0J 1T0, Canada', 30, 4, 'ev@bestwestern.com', '1 (659) 303-2926'],
            ['1 Rideau St, Ottawa, Ontario, K1N 8S7, Canada', 45, 3, 'ot@bestwestern.com', '1 (321) 916-3951']]]
+
+names = open('hotel_booking_server/names.txt').read().split('\n')
+
+streets = open('hotel_booking_server/streets.txt').read().split('\n')
+
+job_titles = ['Front Desk Supervisor', 'Guest Relations Manager', 'Hotel Receptionist', 'Reservations Agent', 'Guest Services Associate']
+
+room_titles = ['Single', 'Double', 'Triple', 'Queen', 'King', 'Studio', 'Executive Suite', 'Penthouse Suite']
+room_capacities = [2, 3, 3, 3, 4, 4, 5, 6]

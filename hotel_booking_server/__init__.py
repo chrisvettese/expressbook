@@ -6,14 +6,14 @@ import psycopg2
 import atexit
 
 import yaml
-from flask import Flask
+from flask import Flask, send_from_directory, make_response, render_template, Blueprint
 from hotel_booking_server import setup_db
 
 
 def main():
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='../hotel-ui/build', static_url_path='/')
 
-    with open("./config.yml", "r") as file:
+    with open("config.yml", "r") as file:
         config = yaml.load(file, Loader=yaml.SafeLoader)
 
     print('Connecting to db')
@@ -25,17 +25,20 @@ def main():
             user=config['user'],
             password=config['password'])
 
-        # remove before releasing production build - resets entire db
-        setup_db.setup(conn)
+        print('Connected to db')
+        if config['reset-db']:
+            setup_db.setup(conn)
     except psycopg2.DatabaseError as e:
         print('Error connecting to db')
         raise e
 
-    print('Connected to db')
-
     @app.route('/')
     def index():
-        return 'Hello, World!'
+        return 'Hello world'
+
+    @app.route('/ui/<path:path>')
+    def customer(path):
+        return app.send_static_file('index.html')
 
     def exit_handler():
         print('Shutting down')
