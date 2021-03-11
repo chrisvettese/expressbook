@@ -1,0 +1,5 @@
+host: example.host
+port: 1234
+database: db_name
+user: my_username
+password: my_password
