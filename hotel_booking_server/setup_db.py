@@ -1,3 +1,6 @@
+from hotel_booking_server import hotel_data
+
+
 def table_creation(conn):
     with conn:
         with conn.cursor() as curs:
@@ -5,8 +8,8 @@ def table_creation(conn):
             curs.execute('CREATE SCHEMA hotel')
             curs.execute('CREATE TABLE hotel.hotel_brand('
                          'brand_ID SERIAL PRIMARY KEY,'
-                         'main_office_address VARCHAR(255) NOT NULL,'
                          'name VARCHAR(255) NOT NULL,'
+                         'main_office_address VARCHAR(255) NOT NULL,'
                          'email_address VARCHAR(255) NOT NULL,'
                          'phone_number VARCHAR(20) NOT NULL,'
                          'number_of_hotels INTEGER NOT NULL)')
@@ -76,5 +79,25 @@ def table_creation(conn):
             conn.commit()
 
 
+def populate(conn):
+    with conn:
+        with conn.cursor() as curs:
+            for i in range(len(hotel_data.hotel_brands)):
+                brand = hotel_data.hotel_brands[i]
+                curs.execute('INSERT INTO hotel.hotel_brand(name, main_office_address, email_address, phone_number, '
+                             'number_of_hotels) '
+                             "VALUES ('{}', '{}', '{}', '{}', '{}')"
+                             .format(brand[0], brand[1], brand[2], brand[3], brand[4]))
+
+                for j in range(len(hotel_data.hotels[i])):
+                    hotel = hotel_data.hotels[i][j]
+                    curs.execute('INSERT INTO hotel.hotel(brand_ID, physical_address, number_of_rooms, star_category,'
+                                 'email_address, phone_number) '
+                                 "VALUES ('{}', '{}', '{}', '{}', '{}', '{}')"
+                                 .format(i + 1, hotel[0], hotel[1], hotel[2], hotel[3], hotel[4]))
+                conn.commit()
+
+
 def setup(conn):
     table_creation(conn)
+    populate(conn)

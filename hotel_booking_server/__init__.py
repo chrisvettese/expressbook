@@ -25,6 +25,7 @@ def main():
             user=config['user'],
             password=config['password'])
 
+        # remove before releasing production build - resets entire db
         setup_db.setup(conn)
     except psycopg2.DatabaseError as e:
         print('Error connecting to db')
