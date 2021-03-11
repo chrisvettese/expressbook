@@ -19,7 +19,7 @@ def table_creation(conn):
                          'star_category SMALLINT NOT NULL,'
                          'email_address VARCHAR(255) NOT NULL,'
                          'phone_number VARCHAR(20) NOT NULL,'
-                         'FOREIGN KEY(brand_ID) REFERENCES hotel.hotel_brand(brand_ID))')
+                         'FOREIGN KEY(brand_ID) REFERENCES hotel.hotel_brand(brand_ID) ON DELETE CASCADE)')
 
             curs.execute('CREATE TABLE hotel.employee('
                          'employee_SIN SMALLINT PRIMARY KEY,'
@@ -28,7 +28,7 @@ def table_creation(conn):
                          'employee_address VARCHAR(255) NOT NULL,'
                          'salary NUMERIC NOT NULL,'
                          'job_title VARCHAR(255) NOT NULL,'
-                         'FOREIGN KEY(hotel_ID) REFERENCES hotel.hotel(hotel_ID))')
+                         'FOREIGN KEY(hotel_ID) REFERENCES hotel.hotel(hotel_ID) ON DELETE CASCADE)')
 
             curs.execute('CREATE TABLE hotel.customer('
                          'customer_SIN SMALLINT PRIMARY KEY,'
@@ -45,7 +45,7 @@ def table_creation(conn):
                          'is_extendable BOOLEAN,'
                          'total_number_rooms SMALLINT NOT NULL,'
                          'rooms_available SMALLINT NOT NULL,'
-                         'FOREIGN KEY(hotel_ID) REFERENCES hotel.hotel(hotel_ID))')
+                         'FOREIGN KEY(hotel_ID) REFERENCES hotel.hotel(hotel_ID) ON DELETE CASCADE)')
 
             curs.execute('CREATE TABLE hotel.booking_status('
                          'status_ID SMALLINT PRIMARY KEY,'
@@ -69,7 +69,7 @@ def table_creation(conn):
                          'days_booked SMALLINT NOT NULL,'
                          'status_ID SMALLINT NOT NULL,'
                          'FOREIGN KEY(type_ID) REFERENCES hotel.hotel_room_type(type_ID),'
-                         'FOREIGN KEY(hotel_ID) REFERENCES hotel.hotel(hotel_ID),'
+                         'FOREIGN KEY(hotel_ID) REFERENCES hotel.hotel(hotel_ID) ON DELETE CASCADE,'
                          'FOREIGN KEY(employee_SIN) REFERENCES hotel.employee(employee_SIN),'
                          'FOREIGN KEY(customer_SIN) REFERENCES hotel.customer(customer_SIN),'
                          'FOREIGN KEY(status_ID) REFERENCES hotel.booking_status(status_ID))')
