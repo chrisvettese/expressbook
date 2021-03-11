@@ -1,5 +1,7 @@
 __version__ = '1.0'
 
+import os
+
 import psycopg2
 import atexit
 
@@ -40,6 +42,8 @@ def main():
 
     atexit.register(exit_handler)
 
+    # remove before releasing production build
+    os.environ['FLASK_ENV'] = 'development'
     app.run(host='localhost', port=1234, debug=True, use_reloader=False)
 
 
