@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "hotel-booking-server"
+version = "1.0"
+description = ""
+authors = ["Chris Vettese, Vanya Prokic"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+Flask = "^1.1.2"
+psycopg2 = "^2.8.6"
+PyYAML = "^5.4.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[tool.poetry.scripts]
+main = "hotel_booking_server:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
