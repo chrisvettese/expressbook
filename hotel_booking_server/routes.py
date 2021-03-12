@@ -7,7 +7,8 @@ from psycopg2.extras import DictCursor
 def add_routes(app, conn):
     @app.route('/customers/<cid>')
     def get_customer(cid):
-        query = 'SELECT * FROM hotel.customer c WHERE c.customer_sin = \'{}\''.format(id)
+        query = 'SELECT * FROM hotel.customer c WHERE c.customer_sin = \'{}\''.format(cid)
+        print(query)
         # sin = request.args.get('sin')
         response = get_results(query, conn, single=True)
         return Response(response, status=200, mimetype='application/json')
@@ -19,6 +20,6 @@ def get_results(query, conn, single):
             curs.execute(query)
             results = [dict((curs.description[i][0], value)
                             for i, value in enumerate(row)) for row in curs.fetchall()]
-            if single:
+            if single and len(results) != 0:
                 results = results[0]
             return json.dumps(results)
