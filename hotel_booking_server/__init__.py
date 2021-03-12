@@ -7,7 +7,7 @@ import atexit
 
 import yaml
 from flask import Flask, send_from_directory, make_response, render_template, Blueprint
-from hotel_booking_server import setup_db
+from hotel_booking_server import setup_db, routes
 
 
 def main():
@@ -32,13 +32,11 @@ def main():
         print('Error connecting to db')
         raise e
 
-    @app.route('/')
-    def index():
-        return 'Hello world'
-
     @app.route('/ui/<path:path>')
     def customer(path):
         return app.send_static_file('index.html')
+
+    routes.add_routes(app, conn)
 
     def exit_handler():
         print('Shutting down')
