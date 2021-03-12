@@ -33,8 +33,22 @@ def add_routes(app, conn):
             raise ResourceConflictError(message='Customer already exists')
         return Response(status=201, mimetype='application/json')
 
+    @app.route('/brands')
+    @cross_origin()
+    def get_brands():
+        query = 'SELECT * FROM hotel.hotel_brand'
+        response = get_results(query, conn)
+        return Response(response, status=200, mimetype='application/json')
 
-def get_results(query, conn, single):
+    @app.route('/brands/<bid>/hotels')
+    @cross_origin()
+    def get_hotels_by_brand(bid):
+        query = 'SELECT * FROM hotel.hotel h WHERE h.brand_id = {}'.format(bid)
+        response = get_results(query, conn)
+        return Response(response, status=200, mimetype='application/json')
+
+
+def get_results(query, conn, single=False):
     print(query)
     with conn:
         with conn.cursor() as curs:
