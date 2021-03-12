@@ -5,8 +5,8 @@ from psycopg2.extras import DictCursor
 
 
 def add_routes(app, conn):
-    @app.route('/customers/<id>')
-    def get_customer(id):
+    @app.route('/customers/<cid>')
+    def get_customer(cid):
         query = 'SELECT * FROM hotel.customer c WHERE c.customer_sin = \'{}\''.format(id)
         # sin = request.args.get('sin')
         response = get_results(query, conn, single=True)
