@@ -6,12 +6,17 @@ import psycopg2
 import atexit
 
 import yaml
-from flask import Flask, send_from_directory, make_response, render_template, Blueprint
+from flask import Flask, jsonify
+from flask_cors import CORS
+
 from hotel_booking_server import setup_db, routes
+from hotel_booking_server.ResourceNotFoundError import ResourceNotFoundError
 
 
 def main():
     app = Flask(__name__, static_folder='../hotel-ui/build', static_url_path='/')
+    cors = CORS(app)
+    app.config['CORS_HEADERS'] = 'Content-Type'
 
     with open("config.yml", "r") as file:
         config = yaml.load(file, Loader=yaml.SafeLoader)
@@ -35,6 +40,12 @@ def main():
     @app.route('/ui/<path:path>')
     def customer(path):
         return app.send_static_file('index.html')
+
+    @app.errorhandler(ResourceNotFoundError)
+    def handle_invalid_usage(error):
+        response = error.json()
+        response.status_code = error.status_code
+        return response
 
     routes.add_routes(app, conn)
 
