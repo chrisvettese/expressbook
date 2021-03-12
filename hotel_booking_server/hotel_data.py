@@ -52,3 +52,4 @@ job_titles = ['Front Desk Supervisor', 'Guest Relations Manager', 'Hotel Recepti
 
 room_titles = ['Single', 'Double', 'Triple', 'Queen', 'King', 'Studio', 'Executive Suite', 'Penthouse Suite']
 room_capacities = [2, 3, 3, 3, 4, 4, 5, 6]
+room_amenities = ['Kitchen', 'Free Breakfast', 'Air Conditioning', 'Free Wi-Fi', 'Fitness Centre', 'Free Parking', 'Balcony', 'Mini Fridge']
