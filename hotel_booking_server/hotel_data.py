@@ -48,8 +48,8 @@ names = open('hotel_booking_server/names.txt').read().split('\n')
 
 streets = open('hotel_booking_server/streets.txt').read().split('\n')
 
-job_titles = ['Front Desk Supervisor', 'Guest Relations Manager', 'Hotel Receptionist', 'Reservations Agent', 'Guest Services Associate']
+job_titles = ['Front Desk Supervisor', 'Guest Relations Organizer', 'Hotel Receptionist', 'Reservations Agent', 'Guest Services Associate']
 
-room_titles = ['Single', 'Double', 'Triple', 'Queen', 'King', 'Studio', 'Executive Suite', 'Penthouse Suite']
-room_capacities = [2, 3, 3, 3, 4, 4, 5, 6]
+room_titles = ['Single', 'Double', 'Triple', 'Queen', 'King', 'Studio', 'Executive Suite', 'Penthouse Suite', 'One Bedroom Loft', 'Two Bedroom Loft']
+room_capacities = [2, 3, 3, 3, 4, 4, 5, 6, 7, 8]
 room_amenities = ['Kitchen', 'Free Breakfast', 'Air Conditioning', 'Free Wi-Fi', 'Fitness Centre', 'Free Parking', 'Balcony', 'Mini Fridge']
