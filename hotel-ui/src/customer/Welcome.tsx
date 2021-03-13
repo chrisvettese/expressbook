@@ -45,7 +45,7 @@ export default function Welcome() {
             <Typography className={classes.centre}>{addressMessage}</Typography>
             <div className={classes.buttonCentre}>
                 <Button variant="contained" className={classes.buttonSpacing}>Find A Hotel</Button>
-                <Button variant="contained" className={classes.buttonSpacing}>My Bookings</Button>
+                <Button variant="contained" className={classes.buttonSpacing}>My Reservations</Button>
             </div>
         </>
     )

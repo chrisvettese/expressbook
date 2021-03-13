@@ -79,14 +79,12 @@ def table_creation(conn):
                     status_ID SMALLINT PRIMARY KEY,
                     value VARCHAR(20) NOT NULL)
                 ''')
-
             curs.execute('''
                 INSERT INTO hotel.booking_status(status_ID, value) VALUES (1, 'Booked');
                 INSERT INTO hotel.booking_status(status_ID, value) VALUES (2, 'Renting');
                 INSERT INTO hotel.booking_status(status_ID, value) VALUES (3, 'Archived');
                 INSERT INTO hotel.booking_status(status_ID, value) VALUES (4, 'Cancelled');
                 ''')
-
             curs.execute('''
                 CREATE TABLE hotel.room_booking(
                     booking_ID SERIAL PRIMARY KEY,
@@ -99,7 +97,6 @@ def table_creation(conn):
                     check_out_day DATE NOT NULL,
                     status_ID SMALLINT NOT NULL REFERENCES hotel.booking_status(status_ID) DEFAULT 1)
                 ''')
-
             # trigger function to if a hotel has no manager, they must be the next employee hired
             curs.execute('''
                 CREATE FUNCTION hotel.require_hotel_manager() RETURNS TRIGGER AS
@@ -107,8 +104,8 @@ def table_creation(conn):
                     BEGIN 
                     IF (CAST((SELECT COUNT(*) FROM hotel.employee e 
                             WHERE e.hotel_ID = NEW.hotel_ID AND e.job_title = 'Manager') AS INTEGER) = 0) THEN 
-                        RAISE EXCEPTION \'Hotel must have employee with job title "Manager" 
-                        before other employees can be hired.\'; 
+                        RAISE EXCEPTION 'Hotel must have employee with job title "Manager" 
+                        before other employees can be hired.'; 
                     END IF; 
                     RETURN NEW; 
                     END; 
@@ -118,7 +115,6 @@ def table_creation(conn):
                     WHEN (NEW.job_title != 'Manager') 
                     EXECUTE PROCEDURE hotel.require_hotel_manager()
                 ''')
-
             # trigger function to update number_of_hotels for a brand when a new hotel is created
             curs.execute('''
                 CREATE FUNCTION hotel.update_num_hotels() RETURNS TRIGGER AS
@@ -133,7 +129,6 @@ def table_creation(conn):
                     AFTER INSERT ON hotel.hotel FOR EACH ROW 
                     EXECUTE PROCEDURE hotel.update_num_hotels()
                 ''')
-
             # trigger function to adjust room capacity based on how many rooms are currently being rented
             curs.execute('''
                 CREATE FUNCTION hotel.update_rooms_available() RETURNS TRIGGER AS
@@ -154,7 +149,6 @@ def table_creation(conn):
                     BEFORE INSERT OR UPDATE ON hotel.room_booking FOR EACH ROW 
                     EXECUTE PROCEDURE hotel.update_rooms_available()
                 ''')
-
             # function to determine how many rooms of a specific type are occupied over a given range
             # for example if the total_number_rooms is 100, and max_occupancy is 100, then the room is booked up
             curs.execute('''
@@ -171,6 +165,22 @@ def table_creation(conn):
                 END LOOP;
                 END;
                 $$ LANGUAGE plpgsql;
+                ''')
+            # trigger function to prevent rooms from being overbooked
+            curs.execute('''
+                CREATE FUNCTION hotel.prevent_overbook() RETURNS TRIGGER AS
+                    $$ 
+                    BEGIN 
+                    IF MAX(hotel.max_occupancy(NEW.check_in_day, NEW.check_out_day, NEW.type_ID)) >=
+                            (SELECT t.total_number_rooms FROM hotel.hotel_room_type t WHERE t.type_ID = NEW.typeID) THEN
+                        RAISE EXCEPTION 'This room is already booked up over these dates.';
+                    END IF;
+                    RETURN NEW;
+                    END; 
+                    $$ LANGUAGE plpgsql;
+                    CREATE TRIGGER prevent_overbook 
+                    AFTER INSERT ON hotel.room_booking FOR EACH ROW 
+                    EXECUTE PROCEDURE hotel.prevent_overbook()
                 ''')
 
             conn.commit()
@@ -213,7 +223,7 @@ def populate(conn):
 
 
 def generate_room_bookings(curs, customer_sin):
-    for i in range(0, random.randrange(3, 9)):
+    for i in range(0, random.randrange(20, 40)):
         rand_hotel_brand = random.randrange(0, len(hotel_data.hotel_brands))
         rand_hotel = random.randrange(0, len(hotel_data.hotels[rand_hotel_brand]))
         temp_hotel_data = temp_hotels_data[rand_hotel_brand][rand_hotel]
