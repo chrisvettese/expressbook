@@ -21,7 +21,7 @@ def add_routes(app, conn):
     @app.route('/customers', methods=["POST"])
     @cross_origin()
     def create_customer():
-        data = request.get_json()
+        data = request.json
         customer_sin = data['customer_sin']
         customer_name = data['customer_name']
         customer_address = data['customer_address']

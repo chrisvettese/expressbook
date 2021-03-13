@@ -40,7 +40,7 @@ export default function Customer() {
         fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + SIN)
             .then(response => {
                 if (response.status === 404) {
-                    history.push('/ui/customer/name')
+                    history.push('/ui/customer/name', {customer_sin: SIN})
                 } else {
                     response.json().then(response => {
                         history.push('/ui/customer/welcome', {response})
