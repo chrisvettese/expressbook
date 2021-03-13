@@ -57,9 +57,16 @@ export default function Name() {
                 })
             }).then(response => {
                 if (response.status === 201) {
-                    history.push('/ui/customer/welcome')
+                    history.push('/ui/customer/welcome', {
+                        customer_sin: location.state.customer_sin,
+                        customer_name: name,
+                        customer_address: address
+                    })
                 }
-            })
+            }).catch((error) => {
+                console.error('Error:', error);
+                setUseButton(true);
+            });
         }
     }
 
