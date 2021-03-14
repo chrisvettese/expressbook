@@ -106,7 +106,7 @@ export default function Hotel() {
         <div className={classes.root}>
             <TitleBar/>
             <Typography className={classes.centreTitle}>{location.state.brandName} Hotels</Typography>
-            <GridList cols={1} cellHeight={200} className={classes.grid}>
+            <GridList cols={1} cellHeight={175} className={classes.grid}>
                 {
                     location.state.response.map((hotel: {
                         physical_address: string;
