@@ -190,7 +190,19 @@ def table_creation(conn):
                 AFTER INSERT ON hotel.room_booking FOR EACH ROW 
                 EXECUTE PROCEDURE hotel.prevent_overbook()
                 ''')
-
+            # function to correct room status for a customer if it has not been updated
+            curs.execute('''
+                CREATE OR REPLACE FUNCTION hotel.correct_status(cust_sin VARCHAR(11))
+                RETURNS VOID AS
+                    $$
+                    BEGIN
+                    UPDATE hotel.room_booking SET status_ID = 3 WHERE customer_sin = cust_sin
+                    AND status_id = 2 AND CURRENT_DATE > check_out_day;
+                    UPDATE hotel.room_booking SET status_ID = 4 WHERE customer_sin = cust_sin
+                    AND status_id = 1 AND CURRENT_DATE > check_out_day;
+                    END;
+                    $$ LANGUAGE plpgsql;
+                ''')
             conn.commit()
 
 
