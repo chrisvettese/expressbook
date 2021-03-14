@@ -15,7 +15,7 @@ def add_routes(app, conn):
         query = 'SELECT * FROM hotel.customer c WHERE c.customer_sin = \'{}\''.format(cid)
         response = get_results(query, conn, single=True)
         if len(response) == 0:
-            raise ResourceNotFoundError(message='Customer SIN not found')
+            raise ResourceNotFoundError(message='Customer SIN={} not found'.format(cid))
         return Response(response, status=200, mimetype='application/json')
 
     @app.route('/customers', methods=["POST"])
@@ -29,7 +29,7 @@ def add_routes(app, conn):
                 "VALUES ('{}', '{}', '{}')".format(customer_sin, customer_name, customer_address)
         try:
             execute(query, conn)
-        except psycopg2.errors.UniqueViolation:
+        except psycopg2.DatabaseError:
             raise ResourceConflictError(message='Customer already exists')
         return Response(status=201, mimetype='application/json')
 
@@ -45,6 +45,17 @@ def add_routes(app, conn):
     def get_hotels_by_brand(bid):
         query = 'SELECT * FROM hotel.hotel h WHERE h.brand_id = {}'.format(bid)
         response = get_results(query, conn)
+        if response == '[]':
+            raise ResourceNotFoundError(message='Brand ID={} not found'.format(bid))
+        return Response(response, status=200, mimetype='application/json')
+
+    @app.route('/hotels/<hid>/rooms')
+    @cross_origin()
+    def get_rooms_by_hotel(hid):
+        query = 'SELECT * FROM hotel.hotel_room_type h WHERE h.hotel_id = {}'.format(hid)
+        response = get_results(query, conn)
+        if response == '[]':
+            raise ResourceNotFoundError(message='Hotel ID={} not found'.format(hid))
         return Response(response, status=200, mimetype='application/json')
 
 
