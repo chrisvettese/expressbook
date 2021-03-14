@@ -2,10 +2,12 @@ import random
 import string
 from datetime import datetime, timedelta
 
+import psycopg2
+
 from hotel_booking_server import hotel_data
 
 sins = set()
-# Given brand_index and hotel_index, return array of [employee[], type_ID[], rooms_available[], hotel_id]
+# Given brand_index and hotel_index, return array of [employee[], type_ID[], hotel_id]
 temp_hotels_data = [[], [], [], [], [], []]
 current_type_id = 1
 
@@ -110,10 +112,10 @@ def table_creation(conn):
                     RETURN NEW; 
                     END; 
                     $$ LANGUAGE plpgsql;
-                    CREATE TRIGGER require_hotel_manager 
-                    BEFORE INSERT ON hotel.employee FOR EACH ROW 
-                    WHEN (NEW.job_title != 'Manager') 
-                    EXECUTE PROCEDURE hotel.require_hotel_manager()
+                CREATE TRIGGER require_hotel_manager 
+                BEFORE INSERT ON hotel.employee FOR EACH ROW 
+                WHEN (NEW.job_title != 'Manager') 
+                EXECUTE PROCEDURE hotel.require_hotel_manager()
                 ''')
             # trigger function to update number_of_hotels for a brand when a new hotel is created
             curs.execute('''
@@ -125,9 +127,9 @@ def table_creation(conn):
                     RETURN NEW;
                     END; 
                     $$ LANGUAGE plpgsql;
-                    CREATE TRIGGER update_num_hotels 
-                    AFTER INSERT ON hotel.hotel FOR EACH ROW 
-                    EXECUTE PROCEDURE hotel.update_num_hotels()
+                CREATE TRIGGER update_num_hotels 
+                AFTER INSERT ON hotel.hotel FOR EACH ROW 
+                EXECUTE PROCEDURE hotel.update_num_hotels()
                 ''')
             # trigger function to adjust room capacity based on how many rooms are currently being rented
             curs.execute('''
@@ -145,42 +147,48 @@ def table_creation(conn):
                     RETURN NEW; 
                     END; 
                     $$ LANGUAGE plpgsql;
-                    CREATE TRIGGER update_rooms_available 
-                    BEFORE INSERT OR UPDATE ON hotel.room_booking FOR EACH ROW 
-                    EXECUTE PROCEDURE hotel.update_rooms_available()
+                CREATE TRIGGER update_rooms_available 
+                BEFORE INSERT OR UPDATE ON hotel.room_booking FOR EACH ROW 
+                EXECUTE PROCEDURE hotel.update_rooms_available()
                 ''')
             # function to determine how many rooms of a specific type are occupied over a given range
             # for example if the total_number_rooms is 100, and max_occupancy is 100, then the room is booked up
             curs.execute('''
-                CREATE OR REPLACE FUNCTION hotel.max_occupancy(new_check_in DATE, new_check_out DATE, type_ID INTEGER)
-                RETURNS TABLE(occupancy BIGINT) AS
-                $$
-                DECLARE day record;
-                BEGIN
-                FOR day IN (SELECT d.day::DATE FROM generate_series(new_check_in, new_check_out - 1, INTERVAL '1 day')
-                        AS d(day)) LOOP
-                    RETURN QUERY EXECUTE 'SELECT COUNT(*) FROM hotel.room_booking WHERE type_ID = '||type_ID||' 
-                    AND (status_id = 1 OR status_id = 2)
-                    AND check_in_day <= DATE\'\'\'||day.day||\'\'\' AND DATE \'\'\'||day.day||\'\'\' < check_out_day;';
-                END LOOP;
-                END;
-                $$ LANGUAGE plpgsql;
+                CREATE OR REPLACE FUNCTION hotel.max_occupancy(new_check_in DATE, new_check_out DATE, new_type_ID INTEGER)
+                RETURNS INTEGER AS
+                    $$
+                    DECLARE day DATE;
+                    DECLARE current_max INTEGER DEFAULT 0;
+                    DECLARE current INTEGER;
+                    BEGIN
+                    FOR day IN (SELECT d.day::DATE FROM generate_series(new_check_in, new_check_out - 1, 
+                            INTERVAL '1 day') AS d(day)) LOOP
+                        current = (SELECT COUNT(*) FROM hotel.room_booking r WHERE r.type_ID = new_type_ID
+                        AND (r.status_id = 1 OR r.status_id = 2)
+                        AND r.check_in_day <= day AND day < r.check_out_day);
+                        IF current > current_max THEN
+                            current_max = current;
+                        END IF;
+                    END LOOP;
+                    RETURN current_max;
+                    END;
+                    $$ LANGUAGE plpgsql;
                 ''')
             # trigger function to prevent rooms from being overbooked
             curs.execute('''
                 CREATE FUNCTION hotel.prevent_overbook() RETURNS TRIGGER AS
                     $$ 
                     BEGIN 
-                    IF MAX(hotel.max_occupancy(NEW.check_in_day, NEW.check_out_day, NEW.type_ID)) >=
-                            (SELECT t.total_number_rooms FROM hotel.hotel_room_type t WHERE t.type_ID = NEW.typeID) THEN
+                    IF hotel.max_occupancy(NEW.check_in_day, NEW.check_out_day, NEW.type_ID) >=
+                            (SELECT t.total_number_rooms FROM hotel.hotel_room_type t WHERE t.type_ID = NEW.type_ID) THEN
                         RAISE EXCEPTION 'This room is already booked up over these dates.';
                     END IF;
                     RETURN NEW;
                     END; 
                     $$ LANGUAGE plpgsql;
-                    CREATE TRIGGER prevent_overbook 
-                    AFTER INSERT ON hotel.room_booking FOR EACH ROW 
-                    EXECUTE PROCEDURE hotel.prevent_overbook()
+                CREATE TRIGGER prevent_overbook 
+                AFTER INSERT ON hotel.room_booking FOR EACH ROW 
+                EXECUTE PROCEDURE hotel.prevent_overbook()
                 ''')
 
             conn.commit()
@@ -217,24 +225,19 @@ def populate(conn):
                     "VALUES ('{}', '{}', '{}')"
                         .format(customer_sin, random.choice(hotel_data.names), generate_address(hotel[0])))
 
-                generate_room_bookings(curs, customer_sin)
+                generate_room_bookings(conn, curs, customer_sin)
 
             conn.commit()
 
 
-def generate_room_bookings(curs, customer_sin):
+def generate_room_bookings(conn, curs, customer_sin):
+    conn.commit()
     for i in range(0, random.randrange(20, 40)):
         rand_hotel_brand = random.randrange(0, len(hotel_data.hotel_brands))
         rand_hotel = random.randrange(0, len(hotel_data.hotels[rand_hotel_brand]))
         temp_hotel_data = temp_hotels_data[rand_hotel_brand][rand_hotel]
         type_index = random.randrange(0, len(temp_hotel_data[1]))
         type_id = temp_hotel_data[1][type_index]
-        # check to ensure room won't be overbooked
-        type_index = temp_hotel_data[1].index(type_id)
-        if temp_hotel_data[2][type_index] == 0:
-            continue
-
-        temp_hotel_data[2][type_index] -= 1
 
         registration_date = datetime.today() - timedelta(days=random.randrange(1, 70))
         check_in = registration_date + timedelta(days=random.randrange(1, 140))
@@ -246,27 +249,33 @@ def generate_room_bookings(curs, customer_sin):
         if not use_employee_sin:
             use_employee_sin = random.randint(1, 2) == 1
 
-        if use_employee_sin:
-            rand_e_sin = random.choice(temp_hotel_data[0])
-            curs.execute('INSERT INTO hotel.room_booking(type_ID, hotel_ID, employee_sin, customer_sin,'
-                         'date_of_registration, check_in_day, check_out_day, status_ID) '
-                         "VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')"
-                         .format(type_id, temp_hotel_data[3], rand_e_sin, customer_sin, registration_date, check_in,
-                                 check_out, status_id))
-        else:
-            curs.execute('INSERT INTO hotel.room_booking(type_ID, hotel_ID, customer_sin, '
-                         'date_of_registration, check_in_day, check_out_day, status_ID) '
-                         "VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}')"
-                         .format(type_id, temp_hotel_data[3], customer_sin, registration_date, check_in,
-                                 check_out, status_id))
+        try:
+            if use_employee_sin:
+                rand_e_sin = random.choice(temp_hotel_data[0])
+                curs.execute('INSERT INTO hotel.room_booking(type_ID, hotel_ID, employee_sin, customer_sin,'
+                             'date_of_registration, check_in_day, check_out_day, status_ID) '
+                             "VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}')"
+                             .format(type_id, temp_hotel_data[2], rand_e_sin, customer_sin, registration_date, check_in,
+                                     check_out, status_id))
+            else:
+                curs.execute('INSERT INTO hotel.room_booking(type_ID, hotel_ID, customer_sin, '
+                             'date_of_registration, check_in_day, check_out_day, status_ID) '
+                             "VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}')"
+                             .format(type_id, temp_hotel_data[2], customer_sin, registration_date, check_in,
+                                     check_out, status_id))
+
+        except psycopg2.DatabaseError:
+            print("Skipping overbooked room")
+            conn.rollback()
+            continue
+
+        conn.commit()
 
 
 def populate_hotel(brand_index, hotel_index, curs, hotel_id):
     hotel = hotel_data.hotels[brand_index][hotel_index]
-
     employee_sins = []
     type_ids = []
-    rooms_available = []
 
     # general manager must be inserted first to satisfy trigger constraint
     curs.execute('INSERT INTO hotel.employee(employee_SIN, hotel_ID, employee_name, employee_address, salary,'
@@ -294,8 +303,6 @@ def populate_hotel(brand_index, hotel_index, curs, hotel_id):
         if num_rooms - num_room_type < 0:
             num_room_type = num_rooms
 
-        rooms_available.append(num_room_type)
-
         num_rooms -= num_room_type
         room_index = random.randrange(0, len(hotel_data.room_titles))
         price = "{:.2f}".format((hotel[2] - 1) * 100 + (room_index + 1) * 100 + random.randint(0, 15000) / 100)
@@ -309,7 +316,7 @@ def populate_hotel(brand_index, hotel_index, curs, hotel_id):
                              hotel_data.room_capacities[room_index], view, bool(random.getrandbits(1)),
                              num_room_type, num_room_type))
 
-    data = [employee_sins, type_ids, rooms_available, hotel_id]
+    data = [employee_sins, type_ids, hotel_id]
     temp_hotels_data[brand_index][hotel_index] = data
 
 
