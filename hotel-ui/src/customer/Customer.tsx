@@ -43,7 +43,7 @@ export default function Customer() {
                     history.push('/ui/customer/name', {customer_sin: SIN})
                 } else {
                     response.json().then(response => {
-                        history.push('/ui/customer/welcome', {response})
+                        history.push('/ui/customer/welcome', response)
                     })
                 }
             })
