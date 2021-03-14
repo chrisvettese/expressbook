@@ -25,6 +25,13 @@ def add_routes(app, conn):
     @cross_origin()
     def create_customer():
         data = request.json
+        if 'customer_sin' not in data:
+            raise BadRequestError(message="Missing required body field 'customer_sin'")
+        if 'customer_name' not in data:
+            raise BadRequestError(message="Missing required body field 'customer_name'")
+        if 'customer_address' not in data:
+            raise BadRequestError(message="Missing required body field 'customer_address'")
+
         customer_sin = data['customer_sin']
         customer_name = data['customer_name']
         customer_address = data['customer_address']
@@ -63,7 +70,7 @@ def add_routes(app, conn):
         current_status = result['status_id']
         date = result['check_in_day']
 
-        if not (current_status == 1 and status == 'Cancelled') or not (current_status == 1 and status == 'Cancelled')\
+        if not (current_status == 1 and status == 'Cancelled') or not (current_status == 1 and status == 'Cancelled') \
                 or not (current_status == 1 and status == 'Renting' and date == datetime.today().strftime('%Y-%m-%d')):
             raise BadRequestError(
                 message='Invalid status transition. Booked rooms can be cancelled, and rented rooms can be archived.'
@@ -94,7 +101,7 @@ def add_routes(app, conn):
     @app.route('/hotels/<hid>/rooms')
     @cross_origin()
     def get_rooms_by_hotel(hid):
-        query = '''SELECT h.type_id, h.title, h.price, h.amenities, h.room_capacity, v.type, h.is_extendable,
+        query = '''SELECT h.type_id, h.title, h.price, h.amenities, h.room_capacity, v.view_type, h.is_extendable,
         h.total_number_rooms, h.rooms_available FROM hotel.hotel_room_type h JOIN hotel.view_type v 
         ON v.view_ID = h.view_ID WHERE h.hotel_id = {}'''.format(hid)
         response = get_results(query, conn)
@@ -102,8 +109,57 @@ def add_routes(app, conn):
             raise ResourceNotFoundError(message='Hotel ID={} not found'.format(hid))
         return Response(response, status=200, mimetype='application/json')
 
+    @app.route('/hotels/<hid>/rooms/availability')
+    @cross_origin()
+    def get_room_availability_by_hotel(hid):
+        people = request.args.get('people')
+        check_in_day = request.args.get('check-in')
+        check_out_day = request.args.get('check-out')
 
-def get_results(query, conn, single=False, dictionary=False):
+        if people is None:
+            raise BadRequestError(message="Missing required header field 'people'")
+        if check_in_day is None:
+            raise BadRequestError(message="Missing required header field 'check-in'")
+        if check_out_day is None:
+            raise BadRequestError(message="Missing required header field 'check-out'")
+
+        try:
+            people = int(people)
+            if people < 1:
+                raise BadRequestError(message="'people' must be a positive integer")
+        except ValueError:
+            raise BadRequestError(message="'people' must be a positive integer")
+
+        try:
+            datetime.strptime(check_in_day, '%Y-%m-%d')
+        except ValueError:
+            raise BadRequestError(message="Invalid date format for check-in")
+
+        try:
+            datetime.strptime(check_out_day, '%Y-%m-%d')
+        except ValueError:
+            raise BadRequestError(message="Invalid date format for check-in")
+
+        if check_out_day <= check_in_day:
+            raise BadRequestError(message='check-out must be later than check-in')
+
+        query = '''SELECT t.type_id, t.room_capacity FROM hotel.hotel_room_type t
+                   WHERE t.hotel_ID = {} AND t.room_capacity >= {}'''.format(hid, people)
+
+        response = get_results(query, conn, jsonify=False)
+        if len(response) == 0:
+            raise ResourceNotFoundError(message='Hotel ID={} not found'.format(hid))
+
+        for room in response:
+            query = '''SELECT hotel.max_occupancy(DATE '{}', DATE '{}', {})'''.format(check_in_day, check_out_day,
+                                                                                      room.get('type_id'))
+            occupancy = get_results(query, conn, jsonify=False)
+            room['occupancy'] = occupancy[0].get('max_occupancy')
+
+        return Response(json.dumps(response, default=str), status=200, mimetype='application/json')
+
+
+def get_results(query, conn, single=False, jsonify=True):
     print(query)
     with conn:
         with conn.cursor() as curs:
@@ -115,7 +171,10 @@ def get_results(query, conn, single=False, dictionary=False):
                     results = results[0]
                 else:
                     return results
-            return json.dumps(results, default=str)
+            if jsonify:
+                return json.dumps(results, default=str)
+            else:
+                return results
 
 
 def execute(query, conn):

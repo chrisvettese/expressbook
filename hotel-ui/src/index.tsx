@@ -12,6 +12,7 @@ import Name from "./customer/Name";
 import Welcome from "./customer/Welcome";
 import HotelBrand from "./customer/HotelBrand";
 import Hotel from "./customer/Hotel";
+import Reservations from "./customer/Reservations";
 
 require('dotenv').config()
 
@@ -40,6 +41,8 @@ ReactDOM.render(
                 <Route exact path="/ui/customer/welcome" component={Welcome}/>
                 <Route exact path="/ui/customer/brands" component={HotelBrand}/>
                 <Route exact path="/ui/customer/hotels" component={Hotel}/>
+                <Route exact path="/ui/customer/reservations" component={Reservations}/>
+                <Route exact path="/ui/customer/rooms" component={Rooms}/>
             </Switch>
         </Router>
     </>,

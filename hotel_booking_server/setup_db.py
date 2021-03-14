@@ -151,10 +151,11 @@ def table_creation(conn):
                 BEFORE INSERT OR UPDATE ON hotel.room_booking FOR EACH ROW 
                 EXECUTE PROCEDURE hotel.update_rooms_available()
                 ''')
-            # function to determine how many rooms of a specific type are occupied over a given range
+            # function to determine how many rooms of a specific type are occupied over a given date range
             # for example if the total_number_rooms is 100, and max_occupancy is 100, then the room is booked up
             curs.execute('''
-                CREATE OR REPLACE FUNCTION hotel.max_occupancy(new_check_in DATE, new_check_out DATE, new_type_ID INTEGER)
+                CREATE OR REPLACE FUNCTION 
+                    hotel.max_occupancy(new_check_in DATE, new_check_out DATE, new_type_ID INTEGER)
                 RETURNS INTEGER AS
                     $$
                     DECLARE day DATE;
