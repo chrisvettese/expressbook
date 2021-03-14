@@ -1,5 +1,6 @@
 import ast
 import json
+from datetime import datetime
 
 import psycopg2
 from flask import Response, request
@@ -51,15 +52,19 @@ def add_routes(app, conn):
     @cross_origin()
     def update_reservation(cid, rid):
         status = request.json['status']
-        query = '''SELECT status_ID FROM hotel.room_booking
+        query = '''SELECT status_ID, check_in_day FROM hotel.room_booking
             WHERE customer_sin = '{}' AND booking_ID = '{}\''''.format(cid, rid)
         result = get_results(query, conn, single=True)
         if len(result) == 0:
             raise ResourceNotFoundError(message='Reservation does not exist or does not belong to this customer'
                                         .format(cid))
 
-        current_status = ast.literal_eval(result)['status_id']
-        if not (current_status == 1 and status == 'Cancelled') or not (current_status == 1 and status == 'Cancelled'):
+        result = ast.literal_eval(result)
+        current_status = result['status_id']
+        date = result['check_in_day']
+
+        if not (current_status == 1 and status == 'Cancelled') or not (current_status == 1 and status == 'Cancelled')\
+                or not (current_status == 1 and status == 'Renting' and date == datetime.today().strftime('%Y-%m-%d')):
             raise BadRequestError(
                 message='Invalid status transition. Booked rooms can be cancelled, and rented rooms can be archived.'
                     .format(cid))
