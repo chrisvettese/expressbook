@@ -55,6 +55,62 @@ def add_routes(app, conn):
         response = get_results(query, conn)
         return Response(response, status=200, mimetype='application/json')
 
+    @app.route('/customers/<cid>/reservations', methods=["POST"])
+    @cross_origin()
+    def create_reservation(cid):
+        data = request.json
+        if 'check_in' not in data:
+            raise BadRequestError(message="Missing required body field 'check_in'")
+        if 'check_out' not in data:
+            raise BadRequestError(message="Missing required body field 'check_out'")
+        if 'type_id' not in data:
+            raise BadRequestError(message="Missing required body field 'type_id'")
+
+        check_in = data['check_in']
+        check_out = data['check_out']
+        type_id = data['type_id']
+
+        try:
+            check_in_date = datetime.strptime(check_in, '%Y-%m-%d')
+            if check_in_date < datetime.today():
+                raise BadRequestError(message="Check in date cannot be in the past")
+        except ValueError:
+            raise BadRequestError(message="Invalid date format for check_in. Must be YYYY-MM-DD")
+
+        try:
+            check_out_date = datetime.strptime(check_out, '%Y-%m-%d')
+            if check_out_date <= check_in_date:
+                raise BadRequestError(message="Check out date must be later than check in date")
+        except ValueError:
+            raise BadRequestError(message="Invalid date format for check_out. Must be YYYY-MM-DD")
+
+        try:
+            check_out_date = datetime.strptime(check_out, '%Y-%m-%d')
+            if check_out_date <= check_in_date:
+                raise BadRequestError(message="Check out date must be later than check in date")
+        except ValueError:
+            raise BadRequestError(message="Invalid date format for check_out. Must be YYYY-MM-DD")
+
+        query = 'SELECT hotel_ID FROM hotel.hotel_room_type WHERE type_ID = {}'.format(type_id)
+        result = get_results(query, conn, jsonify=False)
+        if len(result) == 0:
+            raise BadRequestError(message="Hotel not found with type id=" + str(type_id))
+
+        query = 'INSERT INTO hotel.room_booking(type_ID, hotel_ID, customer_SIN, check_in_day, check_out_day) ' \
+                "VALUES ({}, {}, '{}', DATE '{}', DATE '{}')".format(type_id, result[0].get('hotel_id'), cid,
+                                                                     check_in_date, check_out_date)
+        try:
+            execute(query, conn)
+        except psycopg2.DatabaseError as e:
+            e = str(e)
+            if 'Key (customer_sin)=' in e:
+                raise BadRequestError(message='Customer id not found: ' + cid)
+            if 'This room is already booked up' in e:
+                raise ResourceConflictError(message='Room is already booked up')
+            raise BadRequestError
+
+        return Response(status=201, mimetype='application/json')
+
     @app.route('/customers/<cid>/reservations/<rid>', methods=["PATCH"])
     @cross_origin()
     def update_reservation(cid, rid):
@@ -133,17 +189,17 @@ def add_routes(app, conn):
         try:
             datetime.strptime(check_in_day, '%Y-%m-%d')
         except ValueError:
-            raise BadRequestError(message="Invalid date format for check-in")
+            raise BadRequestError(message="Invalid date format for check-in. Must be YYYY-MM-DD")
 
         try:
             datetime.strptime(check_out_day, '%Y-%m-%d')
         except ValueError:
-            raise BadRequestError(message="Invalid date format for check-in")
+            raise BadRequestError(message="Invalid date format for check-in. Must be YYYY-MM-DD")
 
         if check_out_day <= check_in_day:
             raise BadRequestError(message='check-out must be later than check-in')
 
-        query = '''SELECT t.type_id, t.room_capacity FROM hotel.hotel_room_type t
+        query = '''SELECT t.type_id FROM hotel.hotel_room_type t
                    WHERE t.hotel_ID = {} AND t.room_capacity >= {}'''.format(hid, people)
 
         response = get_results(query, conn, jsonify=False)

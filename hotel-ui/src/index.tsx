@@ -13,6 +13,7 @@ import Welcome from "./customer/Welcome";
 import HotelBrand from "./customer/HotelBrand";
 import Hotel from "./customer/Hotel";
 import Reservations from "./customer/Reservations";
+import Rooms from "./customer/Rooms";
 
 require('dotenv').config()
 
