@@ -11,6 +11,7 @@ import {AppBar, makeStyles, Typography} from "@material-ui/core";
 import Name from "./customer/Name";
 import Welcome from "./customer/Welcome";
 import HotelBrand from "./customer/HotelBrand";
+import Hotel from "./customer/Hotel";
 
 require('dotenv').config()
 
@@ -38,6 +39,7 @@ ReactDOM.render(
                 <Route exact path="/ui/customer/name" component={Name}/>
                 <Route exact path="/ui/customer/welcome" component={Welcome}/>
                 <Route exact path="/ui/customer/brands" component={HotelBrand}/>
+                <Route exact path="/ui/customer/hotels" component={Hotel}/>
             </Switch>
         </Router>
     </>,

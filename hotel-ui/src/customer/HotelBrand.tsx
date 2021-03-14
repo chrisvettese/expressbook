@@ -40,7 +40,8 @@ const useStyles = makeStyles(theme => ({
     },
     hotelTitle: {
         fontWeight: 'bold',
-        fontSize: '1.5em'
+        fontSize: '1.5em',
+        width: '100%'
     },
     grid: {
         boxShadow: '0 0 3pt 1pt gray',
@@ -60,7 +61,7 @@ const useStyles = makeStyles(theme => ({
 
 export default function HotelBrand() {
     const classes = useStyles();
-    const location = useLocation<{ state: { customer_sin: string, customer_name: string, customer_address: string }, response: any }>();
+    const location = useLocation<{ customer_sin: string, response: any }>();
     const history = useHistory();
 
     const buttonStateValues: boolean[] = []
@@ -83,9 +84,9 @@ export default function HotelBrand() {
             }
             response = await response.json()
             history.push('/ui/customer/hotels', {
-                state: location.state.state,
+                customer_sin: location.state.customer_sin,
                 response: response,
-                brandName: location.state.response[index].brand_name
+                brandName: location.state.response[index].name
             });
         } catch (error) {
             console.error('Error:', error);

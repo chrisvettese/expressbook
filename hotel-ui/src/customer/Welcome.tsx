@@ -49,7 +49,7 @@ export default function Welcome() {
                 return;
             }
             response = await response.json()
-            history.push('/ui/customer/brands', {state: location.state, response: response});
+            history.push('/ui/customer/brands', {customer_sin: location.state.customer_sin, response: response});
         } catch (error) {
             console.error('Error:', error);
             setDisableHotelButton(false);

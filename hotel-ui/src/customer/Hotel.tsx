@@ -11,6 +11,7 @@ import {
 import React, {useState} from "react";
 import {TitleBar} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
+import {Rating} from "@material-ui/lab";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -27,7 +28,8 @@ const useStyles = makeStyles(theme => ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: '1em'
+        marginBottom: '1em',
+        width: '100%'
     },
     brandPaper: {
         marginTop: '2em',
@@ -53,14 +55,18 @@ const useStyles = makeStyles(theme => ({
         marginLeft: '1em',
         marginRight: '5em'
     },
-    brandGrid: {
+    hotelGrid: {
         width: '80%'
     }
 }));
 
-export default function HotelBrand() {
+export default function Hotel() {
     const classes = useStyles();
-    const location = useLocation<{ state: { customer_sin: string, customer_name: string, customer_address: string }, response: any }>();
+    const location = useLocation<{
+        customer_sin: string,
+        response: any,
+        brandName: string
+    }>();
     const history = useHistory();
 
     const buttonStateValues: boolean[] = []
@@ -74,7 +80,7 @@ export default function HotelBrand() {
         newStates[index] = true;
         setButtonStates(newStates);
         try {
-            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/brands/" + location.state.response[index].brand_id + "/hotels");
+            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + location.state.response[index].hotel_id + "/rooms");
             if (response.status !== 200) {
                 let newStates = [...buttonStates]
                 newStates[index] = false;
@@ -82,10 +88,11 @@ export default function HotelBrand() {
                 return;
             }
             response = await response.json()
-            history.push('/ui/customer/hotels', {
-                state: location.state.state,
+            history.push('/ui/customer/rooms', {
+                customer_sin: location.state.customer_sin,
                 response: response,
-                brandName: location.state.response[index].brand_name
+                brandName: location.state.response[index].brand_name,
+                address: location.state.response[index].physical_address
             });
         } catch (error) {
             console.error('Error:', error);
@@ -98,32 +105,36 @@ export default function HotelBrand() {
     return (
         <div className={classes.root}>
             <TitleBar/>
-            <Typography className={classes.centreTitle}>Select a hotel brand to view hotels:</Typography>
+            <Typography className={classes.centreTitle}>{location.state.brandName} Hotels</Typography>
             <GridList cols={1} cellHeight={200} className={classes.grid}>
                 {
-                    location.state.response.map((brand: {
-                        brand_id: number;
-                        name: string;
-                        main_office_address: string;
+                    location.state.response.map((hotel: {
+                        physical_address: string;
                         email_address: string;
                         phone_number: string;
-                        number_of_hotels: number;
+                        number_of_rooms: number;
+                        hotel_id: number;
+                        star_category: number;
                     }, index: number) => {
                         return (
-                            <GridListTile key={brand.brand_id} cols={1}>
-                                <Paper elevation={3} key={brand.brand_id} className={classes.brandPaper}>
+                            <GridListTile key={hotel.hotel_id} cols={1}>
+                                <Paper elevation={3} key={hotel.hotel_id} className={classes.brandPaper}>
                                     <Grid container spacing={2} alignItems="center">
-                                        <Grid className={classes.brandGrid}>
-                                            <Typography className={classes.hotelTitle}>{brand.name}</Typography>
-                                            <Typography>Headquarters Address: {brand.main_office_address}</Typography>
-                                            <Typography>Email: {brand.email_address}</Typography>
-                                            <Typography>Phone: {brand.phone_number}</Typography>
-                                            <Typography>Number of hotels: {brand.number_of_hotels}</Typography>
+                                        <Grid className={classes.hotelGrid}>
+                                            <Typography
+                                                className={classes.hotelTitle}>{hotel.physical_address}</Typography>
+                                            <Typography>Email: {hotel.email_address}</Typography>
+                                            <Typography>Phone: {hotel.phone_number}</Typography>
+                                            <Typography>Number of rooms: {hotel.number_of_rooms}</Typography>
                                         </Grid>
                                         <Divider orientation="vertical" flexItem className={classes.divider}/>
                                         <Grid>
-                                            <Button variant='contained' onClick={() => getHotels(index)}
-                                                    disabled={buttonStates[index]}>Select</Button>
+                                            <div>
+                                                <Rating value={hotel.star_category} readOnly/>
+                                                <br/><br/>
+                                                <Button variant='contained' onClick={() => getHotels(index)}
+                                                        disabled={buttonStates[index]}>View Details</Button>
+                                            </div>
                                         </Grid>
                                     </Grid>
                                 </Paper>
