@@ -10,6 +10,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 
 from hotel_booking_server import setup_db, routes
+from hotel_booking_server.BadRequestError import BadRequestError
 from hotel_booking_server.ResourceConflictError import ResourceConflictError
 from hotel_booking_server.ResourceNotFoundError import ResourceNotFoundError
 
@@ -44,6 +45,7 @@ def main():
 
     @app.errorhandler(ResourceNotFoundError)
     @app.errorhandler(ResourceConflictError)
+    @app.errorhandler(BadRequestError)
     def handle_not_found(error):
         response = error.json()
         response.status_code = error.status_code

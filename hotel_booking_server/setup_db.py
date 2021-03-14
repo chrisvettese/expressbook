@@ -55,13 +55,13 @@ def table_creation(conn):
             curs.execute('''
                 CREATE TABLE hotel.view_type(
                     view_ID SMALLINT PRIMARY KEY,
-                    type VARCHAR(20) NOT NULL)
+                    view_type VARCHAR(20) NOT NULL)
                 ''')
             curs.execute('''
-                INSERT INTO hotel.view_type(view_ID, type) VALUES (1, 'Mountain');
-                INSERT INTO hotel.view_type(view_ID, type) VALUES (2, 'Lake');
-                INSERT INTO hotel.view_type(view_ID, type) VALUES (3, 'City');
-                INSERT INTO hotel.view_type(view_ID, type) VALUES (4, 'None');
+                INSERT INTO hotel.view_type(view_ID, view_type) VALUES (1, 'Mountain');
+                INSERT INTO hotel.view_type(view_ID, view_type) VALUES (2, 'Lake');
+                INSERT INTO hotel.view_type(view_ID, view_type) VALUES (3, 'City');
+                INSERT INTO hotel.view_type(view_ID, view_type) VALUES (4, 'None');
                 ''')
             curs.execute('''
                 CREATE TABLE hotel.hotel_room_type(

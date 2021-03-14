@@ -1,9 +1,11 @@
+import ast
 import json
 
 import psycopg2
 from flask import Response, request
 from flask_cors import cross_origin
 
+from hotel_booking_server.BadRequestError import BadRequestError
 from hotel_booking_server.ResourceConflictError import ResourceConflictError
 from hotel_booking_server.ResourceNotFoundError import ResourceNotFoundError
 
@@ -45,6 +47,29 @@ def add_routes(app, conn):
         response = get_results(query, conn)
         return Response(response, status=200, mimetype='application/json')
 
+    @app.route('/customers/<cid>/reservations/<rid>', methods=["PATCH"])
+    @cross_origin()
+    def update_reservation(cid, rid):
+        status = request.json['status']
+        query = '''SELECT status_ID FROM hotel.room_booking
+            WHERE customer_sin = '{}' AND booking_ID = '{}\''''.format(cid, rid)
+        result = get_results(query, conn, single=True)
+        if len(result) == 0:
+            raise ResourceNotFoundError(message='Reservation does not exist or does not belong to this customer'
+                                        .format(cid))
+
+        current_status = ast.literal_eval(result)['status_id']
+        if not (current_status == 1 and status == 'Cancelled') or not (current_status == 1 and status == 'Cancelled'):
+            raise BadRequestError(
+                message='Invalid status transition. Booked rooms can be cancelled, and rented rooms can be archived.'
+                    .format(cid))
+
+        query = '''UPDATE hotel.room_booking SET status_ID = 
+                   (SELECT s.status_ID FROM hotel.booking_status s WHERE s.value = '{}')
+                   WHERE booking_ID = {};'''.format(status, rid)
+        execute(query, conn)
+        return Response(status=204, mimetype='application/json')
+
     @app.route('/brands')
     @cross_origin()
     def get_brands():
@@ -64,14 +89,16 @@ def add_routes(app, conn):
     @app.route('/hotels/<hid>/rooms')
     @cross_origin()
     def get_rooms_by_hotel(hid):
-        query = 'SELECT * FROM hotel.hotel_room_type h WHERE h.hotel_id = {}'.format(hid)
+        query = '''SELECT h.type_id, h.title, h.price, h.amenities, h.room_capacity, v.type, h.is_extendable,
+        h.total_number_rooms, h.rooms_available FROM hotel.hotel_room_type h JOIN hotel.view_type v 
+        ON v.view_ID = h.view_ID WHERE h.hotel_id = {}'''.format(hid)
         response = get_results(query, conn)
         if response == '[]':
             raise ResourceNotFoundError(message='Hotel ID={} not found'.format(hid))
         return Response(response, status=200, mimetype='application/json')
 
 
-def get_results(query, conn, single=False):
+def get_results(query, conn, single=False, dictionary=False):
     print(query)
     with conn:
         with conn.cursor() as curs:
