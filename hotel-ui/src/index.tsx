@@ -3,21 +3,16 @@ import * as ReactDOM from "react-dom";
 import {
     BrowserRouter as Router,
     Switch,
-    Route, RouteComponentProps
+    Route
 } from "react-router-dom";
 import Employee from "./Employee";
 import Customer from "./customer/Customer";
 import {AppBar, makeStyles, Typography} from "@material-ui/core";
 import Name from "./customer/Name";
 import Welcome from "./customer/Welcome";
+import HotelBrand from "./customer/HotelBrand";
 
 require('dotenv').config()
-
-interface MatchParams {
-    name: string;
-}
-export interface MatchProps extends RouteComponentProps<MatchParams> {
-}
 
 const useTitleStyles = makeStyles(() => ({
     title: {
@@ -42,6 +37,7 @@ ReactDOM.render(
                 <Route exact path="/ui/customer" component={Customer}/>
                 <Route exact path="/ui/customer/name" component={Name}/>
                 <Route exact path="/ui/customer/welcome" component={Welcome}/>
+                <Route exact path="/ui/customer/brands" component={HotelBrand}/>
             </Switch>
         </Router>
     </>,

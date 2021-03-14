@@ -1,4 +1,4 @@
-import {Button, Card, Grid, makeStyles, Typography} from "@material-ui/core";
+import {Button, makeStyles, Typography} from "@material-ui/core";
 import React, {useState} from "react";
 import {TitleBar} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
@@ -34,9 +34,32 @@ export default function Welcome() {
     const classes = useStyles();
     const location = useLocation<{ customer_sin: string, customer_name: string, customer_address: string }>();
     const history = useHistory();
+    const [disableHotelButton, setDisableHotelButton] = useState(false);
+    const [disableReservationButton, setDisableReservationButton] = useState(false);
 
-    const welcomeMessage = "Welcome, " + location.state.customer_name
-    const addressMessage = "Your address: " + location.state.customer_address
+    const welcomeMessage = "Welcome, " + location.state.customer_name;
+    const addressMessage = "Your address: " + location.state.customer_address;
+
+    async function goToBrandPage() {
+        setDisableHotelButton(true);
+        try {
+            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/brands");
+            if (response.status !== 200) {
+                setDisableHotelButton(false);
+                return;
+            }
+            response = await response.json()
+            history.push('/ui/customer/brands', {state: location.state, response: response});
+        } catch (error) {
+            console.error('Error:', error);
+            setDisableHotelButton(false);
+        }
+    }
+
+    async function goToReservationsPage() {
+        setDisableReservationButton(true);
+        history.push('/ui/customer/reservations', {customer_sin: location.state.customer_sin});
+    }
 
     return (
         <>
@@ -44,8 +67,10 @@ export default function Welcome() {
             <Typography className={classes.centreTitle}>{welcomeMessage}</Typography>
             <Typography className={classes.centre}>{addressMessage}</Typography>
             <div className={classes.buttonCentre}>
-                <Button variant="contained" className={classes.buttonSpacing}>Find A Hotel</Button>
-                <Button variant="contained" className={classes.buttonSpacing}>My Reservations</Button>
+                <Button variant="contained" className={classes.buttonSpacing} onClick={() => goToBrandPage()}
+                        disabled={disableHotelButton}>Find A Hotel</Button>
+                <Button variant="contained" onClick={() => goToReservationsPage()} disabled={disableReservationButton}>My
+                    Reservations</Button>
             </div>
         </>
     )

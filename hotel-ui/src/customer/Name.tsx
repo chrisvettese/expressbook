@@ -2,11 +2,6 @@ import {Button, makeStyles, TextField, Typography} from "@material-ui/core";
 import React, {useState} from "react";
 import {TitleBar} from "../index";
 import {useHistory, useLocation} from 'react-router-dom';
-import {Location} from 'history';
-
-type LocationState = {
-    from: Location;
-};
 
 const useStyles = makeStyles(() => ({
     centre: {
@@ -31,9 +26,9 @@ export default function Name() {
     const [address, setAddress] = useState("");
     const [nameError, setNameError] = useState(false)
     const [addressError, setAddressError] = useState(false)
-    const [useButton, setUseButton] = useState(true)
+    const [disableUseButton, setDisableUseButton] = useState(false)
 
-    function submitInfo() {
+    async function submitInfo() {
         if (name.length === 0 && address.length === 0) {
             setNameError(true);
             setAddressError(true)
@@ -44,18 +39,19 @@ export default function Name() {
             setNameError(true);
             setAddressError(false)
         } else {
-            setUseButton(false);
-            fetch(process.env.REACT_APP_SERVER_URL + "/customers", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    customer_sin: location.state.customer_sin,
-                    customer_name: name,
-                    customer_address: address
+            setDisableUseButton(true);
+            try {
+                let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        customer_sin: location.state.customer_sin,
+                        customer_name: name,
+                        customer_address: address
+                    })
                 })
-            }).then(response => {
                 if (response.status === 201) {
                     history.push('/ui/customer/welcome', {
                         customer_sin: location.state.customer_sin,
@@ -63,10 +59,10 @@ export default function Name() {
                         customer_address: address
                     })
                 }
-            }).catch((error) => {
+            } catch(error) {
                 console.error('Error:', error);
-                setUseButton(true);
-            });
+                setDisableUseButton(false);
+            }
         }
     }
 
@@ -87,7 +83,7 @@ export default function Name() {
                            onChange={event => setAddress(event.currentTarget.value)}/>
             </div>
             <div className={classes.buttonCentre}>
-                <Button variant="contained" onClick={() => submitInfo()} disabled={!useButton}>Sign In</Button>
+                <Button variant="contained" onClick={() => submitInfo()} disabled={disableUseButton}>Sign In</Button>
             </div>
         </>
     )

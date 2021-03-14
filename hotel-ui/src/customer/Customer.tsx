@@ -24,6 +24,7 @@ export default function Customer() {
     const history = useHistory();
 
     const [SIN, setSIN] = useState("");
+    const [disableSignIn, setDisableSignIn] = useState(false);
     const sin_re: RegExp = /^[0-9]{3}-[0-9]{3}-[0-9]{3}$/;
 
     function validateSIN(): boolean {
@@ -37,6 +38,7 @@ export default function Customer() {
     }
 
     function checkCustomer() {
+        setDisableSignIn(true);
         fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + SIN)
             .then(response => {
                 if (response.status === 404) {
@@ -46,7 +48,11 @@ export default function Customer() {
                         history.push('/ui/customer/welcome', response)
                     })
                 }
-            })
+            }).catch(error => {
+                console.log('Error:', error);
+                setDisableSignIn(false);
+            }
+        )
     }
 
     return (
@@ -62,8 +68,8 @@ export default function Customer() {
                            id="outlined-basic" label="Social Insurance Number" variant="outlined" value={SIN}/>
             </div>
             <div className={classes.buttonCentre}>
-                <Button variant="contained" onClick={() => checkCustomer()} disabled={!sin_re.test(SIN)}>Sign
-                    In</Button>
+                <Button variant="contained" onClick={() => checkCustomer()}
+                        disabled={!sin_re.test(SIN) || disableSignIn}>Sign In</Button>
             </div>
         </>
     )
