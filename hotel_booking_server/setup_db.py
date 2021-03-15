@@ -58,10 +58,10 @@ def table_creation(conn):
                     view_type VARCHAR(20) NOT NULL)
                 ''')
             curs.execute('''
-                INSERT INTO hotel.view_type(view_ID, view_type) VALUES (1, 'Mountain');
-                INSERT INTO hotel.view_type(view_ID, view_type) VALUES (2, 'Lake');
-                INSERT INTO hotel.view_type(view_ID, view_type) VALUES (3, 'City');
-                INSERT INTO hotel.view_type(view_ID, view_type) VALUES (4, 'None');
+                INSERT INTO hotel.view_type(view_ID, view) VALUES (1, 'Mountain');
+                INSERT INTO hotel.view_type(view_ID, view) VALUES (2, 'Lake');
+                INSERT INTO hotel.view_type(view_ID, view) VALUES (3, 'City');
+                INSERT INTO hotel.view_type(view_ID, view) VALUES (4, 'None');
                 ''')
             curs.execute('''
                 CREATE TABLE hotel.hotel_room_type(
@@ -201,6 +201,8 @@ def table_creation(conn):
                     AND status_id = 2 AND CURRENT_DATE > check_out_day;
                     UPDATE hotel.room_booking SET status_ID = 4 WHERE customer_sin = cust_sin
                     AND status_id = 1 AND CURRENT_DATE > check_out_day;
+                    UPDATE hotel.room_booking SET status_ID = 1 WHERE customer_sin = cust_sin
+                    AND status_id = 2 AND CURRENT_DATE < check_in_day;
                     END;
                     $$ LANGUAGE plpgsql;
                 ''')

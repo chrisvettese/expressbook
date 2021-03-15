@@ -47,10 +47,13 @@ def add_routes(app, conn):
     @cross_origin()
     def get_reservations_by_customer(cid):
         execute('SELECT hotel.correct_status(\'{}\')'.format(cid), conn)
-        query = '''SELECT b.booking_id, b.date_of_registration, b.check_in_day, b.check_out_day, s.value, t.title
+        query = '''SELECT b.booking_id, b.date_of_registration, b.check_in_day, b.check_out_day, s.value AS status,
+                   t.title, t.is_extendable, t.amenities, v.view, h.physical_address, t.price
                    FROM hotel.room_booking b
                    JOIN hotel.booking_status s ON s.status_ID = b.status_ID
                    JOIN hotel.hotel_room_type t ON t.type_ID = b.type_ID
+                   JOIN hotel.view_type v ON v.view_ID = t.view_ID
+                   JOIN hotel.hotel h ON h.hotel_ID = b.hotel_ID
                    WHERE b.customer_sin = '{}';'''.format(cid)
         response = get_results(query, conn)
         return Response(response, status=200, mimetype='application/json')
@@ -126,8 +129,8 @@ def add_routes(app, conn):
         current_status = result['status_id']
         date = result['check_in_day']
 
-        if not (current_status == 1 and status == 'Cancelled') or not (current_status == 1 and status == 'Cancelled') \
-                or not (current_status == 1 and status == 'Renting' and date == datetime.today().strftime('%Y-%m-%d')):
+        if not (current_status == 1 and status == 'Cancelled') and not (current_status == 2 and status == 'Archived') \
+                and not (current_status == 1 and status == 'Renting' and date == datetime.today().strftime('%Y-%m-%d')):
             raise BadRequestError(
                 message='Invalid status transition. Booked rooms can be cancelled, and rented rooms can be archived.'
                     .format(cid))
@@ -157,7 +160,7 @@ def add_routes(app, conn):
     @app.route('/hotels/<hid>/rooms')
     @cross_origin()
     def get_rooms_by_hotel(hid):
-        query = '''SELECT h.type_id, h.title, h.price, h.amenities, h.room_capacity, v.view_type, h.is_extendable,
+        query = '''SELECT h.type_id, h.title, h.price, h.amenities, h.room_capacity, v.view, h.is_extendable,
         h.total_number_rooms, h.rooms_available FROM hotel.hotel_room_type h JOIN hotel.view_type v 
         ON v.view_ID = h.view_ID WHERE h.hotel_id = {}'''.format(hid)
         response = get_results(query, conn)

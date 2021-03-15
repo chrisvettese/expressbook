@@ -58,7 +58,22 @@ export default function Welcome() {
 
     async function goToReservationsPage() {
         setDisableReservationButton(true);
-        history.push('/ui/customer/reservations', {customer_sin: location.state.customer_sin});
+        try {
+            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + location.state.customer_sin + "/reservations");
+            if (response.status !== 200) {
+                setDisableReservationButton(false);
+                return;
+            }
+            response = await response.json();
+            history.push('/ui/customer/reservations', {
+                customer_name: location.state.customer_name,
+                customer_sin: location.state.customer_sin,
+                response: response
+            });
+        } catch (error) {
+            console.error('Error:', error);
+            setDisableReservationButton(false);
+        }
     }
 
     return (
