@@ -53,10 +53,17 @@ const useStyles = makeStyles(theme => ({
     },
     divider: {
         marginLeft: '1em',
-        marginRight: '5em'
+        marginRight: '1em'
     },
     hotelGrid: {
         width: '80%'
+    },
+    priceDiv: {
+        display: 'flex',
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center'
+
     }
 }));
 
@@ -91,7 +98,7 @@ export default function Hotel() {
             history.push('/ui/customer/rooms', {
                 customer_sin: location.state.customer_sin,
                 response: response,
-                brandName: location.state.response[index].brand_name,
+                brandName: location.state.brandName,
                 address: location.state.response[index].physical_address
             });
         } catch (error) {
@@ -128,13 +135,13 @@ export default function Hotel() {
                                             <Typography>Number of rooms: {hotel.number_of_rooms}</Typography>
                                         </Grid>
                                         <Divider orientation="vertical" flexItem className={classes.divider}/>
-                                        <Grid>
-                                            <div>
+                                        <Grid item xs={2}>
+                                            <Grid className={classes.priceDiv}>
                                                 <Rating value={hotel.star_category} readOnly/>
                                                 <br/><br/>
                                                 <Button variant='contained' onClick={() => getHotels(index)}
                                                         disabled={buttonStates[index]}>View Details</Button>
-                                            </div>
+                                            </Grid>
                                         </Grid>
                                     </Grid>
                                 </Paper>

@@ -52,13 +52,12 @@ const useStyles = makeStyles(theme => ({
     },
     divider: {
         marginLeft: '1em',
-        marginRight: '9%'
+        marginRight: '1em'
     },
     hotelGrid: {
         width: '70%'
     },
     priceDiv: {
-        width: '100%',
         display: 'flex',
         alignItems: 'center',
         flexDirection: 'column',
@@ -263,23 +262,22 @@ export default function Reservations() {
                                             className={classes.hotelTitle}>Room: {reservation.title} | {reservation.check_in_day} to {reservation.check_out_day}
                                         </Typography>
                                         <Typography>{reservation.physical_address}</Typography>
-                                        <Typography>BOOKING ID: {reservation.booking_id}</Typography>
                                         <Typography>Booking status: {reservation.status}</Typography>
                                         <Typography>Amenities: {reservation.amenities.join(', ')}</Typography>
                                         <Typography>View: {reservation.view}</Typography>
                                         <Typography>
-                                            Is extendable: {reservation.is_extendable ? "Yes" : "No"}
+                                            Extendable: {reservation.is_extendable ? "Yes" : "No"}
                                         </Typography>
                                     </Grid>
                                     <Divider orientation="vertical" flexItem className={classes.divider}/>
-                                    <Grid>
-                                        <div className={classes.priceDiv}>
+                                    <Grid item xs={3}>
+                                        <Grid className={classes.priceDiv}>
                                             <Typography>Booked on {reservation.date_of_registration}</Typography>
                                             <Typography className={classes.hotelTitle}>Total price:</Typography>
                                             <Typography className={classes.hotelTitle}>${totalPrice}</Typography>
                                             <br/>
                                             <ReservationEditButton bookingID={bookingID}/>
-                                        </div>
+                                        </Grid>
                                     </Grid>
                                 </Grid>
                             </Paper>

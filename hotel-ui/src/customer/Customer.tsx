@@ -6,7 +6,7 @@ import {useHistory} from 'react-router-dom';
 
 const useStyles = makeStyles(() => ({
     sinCentre: {
-        paddingTop: '5em',
+        paddingTop: '3em',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -16,6 +16,15 @@ const useStyles = makeStyles(() => ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    centreTitle: {
+        paddingTop: '2em',
+        fontWeight: 'bold',
+        fontSize: '2em',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%'
     }
 }));
 
@@ -58,6 +67,7 @@ export default function Customer() {
     return (
         <>
             <TitleBar/>
+            <Typography className={classes.centreTitle}>Sign In</Typography>
             <div className={classes.sinCentre}>
                 <Typography>To begin searching destinations, enter your social insurance number:</Typography>
             </div>

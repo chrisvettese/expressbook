@@ -52,10 +52,16 @@ const useStyles = makeStyles(theme => ({
     },
     divider: {
         marginLeft: '1em',
-        marginRight: '5em'
+        marginRight: '1em'
     },
     brandGrid: {
         width: '80%'
+    },
+    priceDiv: {
+        display: 'flex',
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center'
     }
 }));
 
@@ -122,9 +128,11 @@ export default function HotelBrand() {
                                             <Typography>Number of hotels: {brand.number_of_hotels}</Typography>
                                         </Grid>
                                         <Divider orientation="vertical" flexItem className={classes.divider}/>
-                                        <Grid>
-                                            <Button variant='contained' onClick={() => getHotels(index)}
-                                                    disabled={buttonStates[index]}>Select</Button>
+                                        <Grid item xs={2}>
+                                            <Grid className={classes.priceDiv}>
+                                                <Button variant='contained' onClick={() => getHotels(index)}
+                                                        disabled={buttonStates[index]}>Select</Button>
+                                            </Grid>
                                         </Grid>
                                     </Grid>
                                 </Paper>
