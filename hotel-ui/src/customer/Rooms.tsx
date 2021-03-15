@@ -68,8 +68,14 @@ const useStyles = makeStyles(theme => ({
         boxShadow: '0 0 3pt 1pt gray',
         height: '38em',
         width: '85%',
-        marginTop: '10em',
-        marginLeft: '10em',
+        marginTop: '10em'
+    },
+    outsideGrid: {
+        display: 'flex',
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        marginBottom: '2em'
     },
     divider: {
         marginLeft: '1em',
@@ -217,38 +223,40 @@ export default function Rooms() {
                 </Grid>
             </GridList>
             <Typography className={classes.smallerTitle}>{location.state.response.length} Rooms Found</Typography>
-            <GridList cols={1} cellHeight={190} className={classes.grid}>
-                {
-                    location.state.response.map((room: Room, index: number) => {
-                        return (
-                            <GridListTile key={room.type_id} cols={1}>
-                                <Paper elevation={3} key={room.type_id} className={classes.brandPaper}>
-                                    <Grid container spacing={2} alignItems="center">
-                                        <Grid className={classes.hotelGrid}>
-                                            <Typography
-                                                className={classes.hotelTitle}>{room.title}</Typography>
-                                            <Typography>Amenities: {room.amenities.length === 0 ? "None" : room.amenities}</Typography>
-                                            <Typography>Max capacity: {room.room_capacity} adults</Typography>
-                                            <Typography>View: {room.view}</Typography>
-                                            <Typography>Extendable: {room.is_extendable ? "Yes" : "No"}</Typography>
-                                        </Grid>
-                                        <Divider orientation="vertical" flexItem className={classes.divider}/>
-                                        <Grid item xs={3} alignItems="center">
-                                            <Grid className={classes.priceDiv}>
+            <div className={classes.outsideGrid}>
+                <GridList cols={1} cellHeight={190} className={classes.grid}>
+                    {
+                        location.state.response.map((room: Room, index: number) => {
+                            return (
+                                <GridListTile key={room.type_id} cols={1}>
+                                    <Paper elevation={3} key={room.type_id} className={classes.brandPaper}>
+                                        <Grid container spacing={2} alignItems="center">
+                                            <Grid className={classes.hotelGrid}>
                                                 <Typography
-                                                    className={classes.hotelTitle}>${room.price}/night</Typography>
-                                                <br/><br/>
-                                                <Button variant='contained' onClick={() => bookRoom(index)}
-                                                        disabled={buttonStates[index]}>Book Room</Button>
+                                                    className={classes.hotelTitle}>{room.title}</Typography>
+                                                <Typography>Amenities: {room.amenities.length === 0 ? "None" : room.amenities}</Typography>
+                                                <Typography>Max capacity: {room.room_capacity} adults</Typography>
+                                                <Typography>View: {room.view}</Typography>
+                                                <Typography>Extendable: {room.is_extendable ? "Yes" : "No"}</Typography>
+                                            </Grid>
+                                            <Divider orientation="vertical" flexItem className={classes.divider}/>
+                                            <Grid item xs={3} alignItems="center">
+                                                <Grid className={classes.priceDiv}>
+                                                    <Typography
+                                                        className={classes.hotelTitle}>${room.price}/night</Typography>
+                                                    <br/><br/>
+                                                    <Button variant='contained' onClick={() => bookRoom(index)}
+                                                            disabled={buttonStates[index]}>Book Room</Button>
+                                                </Grid>
                                             </Grid>
                                         </Grid>
-                                    </Grid>
-                                </Paper>
-                            </GridListTile>
-                        );
-                    })
-                }
-            </GridList>
+                                    </Paper>
+                                </GridListTile>
+                            );
+                        })
+                    }
+                </GridList>
+            </div>
         </div>
     )
 }
