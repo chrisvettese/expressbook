@@ -5,7 +5,7 @@ import {
     Switch,
     Route
 } from "react-router-dom";
-import Employee from "./Employee";
+import Employee from "./employee/Employee";
 import Customer from "./customer/Customer";
 import {AppBar, makeStyles, Typography} from "@material-ui/core";
 import Name from "./customer/Name";
@@ -25,10 +25,17 @@ const useTitleStyles = makeStyles(() => ({
     }
 }));
 
-export function TitleBar() {
+export function TitleBarCustomer() {
     const classes = useTitleStyles();
     return <AppBar position="static">
         <Typography className={classes.title}>ExpressBook Customer Portal</Typography>
+    </AppBar>
+}
+
+export function TitleBarEmployee() {
+    const classes = useTitleStyles();
+    return <AppBar position="static">
+        <Typography className={classes.title}>ExpressBook Employee Portal</Typography>
     </AppBar>
 }
 

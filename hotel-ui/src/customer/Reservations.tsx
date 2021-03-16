@@ -9,7 +9,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBar} from "../index";
+import {TitleBarCustomer} from "../index";
 import {useLocation} from "react-router-dom";
 import {Alert} from "@material-ui/lab";
 
@@ -290,7 +290,7 @@ export default function Reservations() {
 
     return (
         <div className={classes.root}>
-            <TitleBar/>
+            <TitleBarCustomer/>
             <Typography className={classes.centreTitle}>My Reservations - {location.state.customerName}</Typography>
             <RadioGroup className={classes.radioGroup} value={radioState} onChange={e => setReservationRadioState(e)}
                         row>

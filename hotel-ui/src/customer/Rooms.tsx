@@ -10,7 +10,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBar} from "../index";
+import {TitleBarCustomer} from "../index";
 import {useLocation} from "react-router-dom";
 import {
     MuiPickersUtilsProvider,
@@ -111,7 +111,7 @@ const useStyles = makeStyles(theme => ({
         fontWeight: 'bold'
     },
     dialogTitle: {
-        textDecoration: "underline",
+        fontSize: "1.8em",
         display: 'flex',
         alignItems: 'center',
         flexDirection: 'column',
@@ -325,7 +325,9 @@ export default function Rooms() {
 
     function ConfirmationDialog() {
         return <Dialog onClose={() => setDialogOpen(false)} aria-labelledby="simple-dialog-title" open={dialogOpen}>
-            <DialogTitle id="dialog-title" className={classes.dialogTitle}>Confirm Room Booking</DialogTitle>
+            <DialogTitle id="dialog-title" className={classes.dialogTitle}>
+                <Typography className={classes.dialogTitle}>Confirm Room Booking</Typography>
+            </DialogTitle>
             <div className={classes.dialogAddress}>
                 <Typography align="center">{location.state.address}</Typography>
             </div>
@@ -359,7 +361,7 @@ export default function Rooms() {
 
     return (
         <div className={classes.root}>
-            <TitleBar/>
+            <TitleBarCustomer/>
             <Typography className={classes.centreTitle}>{location.state.brandName}</Typography>
             <Typography className={classes.centreTitleNoSpace}>{location.state.address}</Typography>
             <GridList className={classes.gridParent}>

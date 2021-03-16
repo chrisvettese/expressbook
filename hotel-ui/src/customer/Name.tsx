@@ -1,6 +1,6 @@
 import {Button, makeStyles, TextField, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBar} from "../index";
+import {TitleBarCustomer} from "../index";
 import {useHistory, useLocation} from 'react-router-dom';
 
 const useStyles = makeStyles(() => ({
@@ -68,7 +68,7 @@ export default function Name() {
 
     return (
         <>
-            <TitleBar/>
+            <TitleBarCustomer/>
             <div className={classes.centre}>
                 <Typography>Welcome to ExpressBook. Please provide some information about yourself:</Typography>
             </div>

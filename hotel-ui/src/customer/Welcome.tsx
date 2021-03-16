@@ -1,6 +1,6 @@
 import {Button, makeStyles, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBar} from "../index";
+import {TitleBarCustomer} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
 
 const useStyles = makeStyles(() => ({
@@ -84,7 +84,7 @@ export default function Welcome() {
 
     return (
         <>
-            <TitleBar/>
+            <TitleBarCustomer/>
             <Typography className={classes.centreTitle}>{welcomeMessage}</Typography>
             <Typography className={classes.centre}>{addressMessage}</Typography>
             <div className={classes.buttonCentre}>

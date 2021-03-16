@@ -9,7 +9,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBar} from "../index";
+import {TitleBarCustomer} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
 
 const useStyles = makeStyles(theme => ({
@@ -106,7 +106,7 @@ export default function HotelBrand() {
 
     return (
         <div className={classes.root}>
-            <TitleBar/>
+            <TitleBarCustomer/>
             <Typography className={classes.centreTitle}>Select a hotel brand to view hotels:</Typography>
             <GridList cols={1} cellHeight={200} className={classes.grid}>
                 {

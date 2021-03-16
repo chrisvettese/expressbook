@@ -28,12 +28,13 @@ const useStyles = makeStyles(() => ({
     }
 }));
 
-export default function Customer() {
+export default function Employee() {
     const classes = useStyles();
     const history = useHistory();
 
     const [SIN, setSIN] = useState("");
     const [disableSignIn, setDisableSignIn] = useState(false);
+    const [error, setError] = useState("");
     const sin_re: RegExp = /^[0-9]{3}-[0-9]{3}-[0-9]{3}$/;
 
     function validateSIN(): boolean {
@@ -42,17 +43,15 @@ export default function Customer() {
 
     function keyPressed(e: React.KeyboardEvent<HTMLDivElement>) {
         if (e.key === 'Enter' && sin_re.test(SIN)) {
-            checkCustomer();
+            checkEmployee();
         }
     }
 
-    function checkCustomer() {
+    function checkEmployee() {
         setDisableSignIn(true);
-        fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + SIN)
+        fetch(process.env.REACT_APP_SERVER_URL + "/employees/" + SIN)
             .then(response => {
-                if (response.status === 404) {
-                    history.push('/ui/customer/name', {customerSIN: SIN})
-                } else {
+                if (response.status === 200) {
                     response.json().then(response => {
                         history.push('/ui/customer/welcome', {
                             customerSIN: response.customer_sin,
@@ -60,6 +59,9 @@ export default function Customer() {
                             customerAddress: response.customer_address
                         })
                     })
+                } else {
+                    setError("Unable to sign in. Please contact the hotel manager or database admin if you think this is a problem.")
+                    setDisableSignIn(false);
                 }
             }).catch(error => {
                 console.log('Error:', error);
@@ -73,7 +75,7 @@ export default function Customer() {
             <TitleBarCustomer/>
             <Typography className={classes.centreTitle}>Sign In</Typography>
             <div className={classes.sinCentre}>
-                <Typography>To begin searching destinations, enter your social insurance number:</Typography>
+                <Typography>Please sign in to access the hotel management system:</Typography>
             </div>
             <div className={classes.sinCentre}>
                 <TextField error={validateSIN()} helperText={validateSIN() ? "SIN must have format XXX-XXX-XXX" : ""}
@@ -82,9 +84,10 @@ export default function Customer() {
                            id="outlined-basic" label="Social Insurance Number" variant="outlined" value={SIN}/>
             </div>
             <div className={classes.buttonCentre}>
-                <Button variant="contained" onClick={() => checkCustomer()}
+                <Button variant="contained" onClick={() => checkEmployee()}
                         disabled={!sin_re.test(SIN) || disableSignIn}>Sign In</Button>
             </div>
+            <Typography style={{color: "red"}}>{error}</Typography>
         </>
     )
 }
