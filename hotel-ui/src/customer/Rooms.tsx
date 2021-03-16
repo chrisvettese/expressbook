@@ -1,11 +1,12 @@
 import {
-    Button,
+    Button, Dialog, DialogActions, DialogTitle,
     Divider,
     Grid,
     GridList,
     GridListTile,
     makeStyles,
-    Paper, TextField,
+    Paper, TextField, Tooltip,
+    TooltipProps,
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
@@ -52,13 +53,13 @@ const useStyles = makeStyles(theme => ({
         marginBottom: '0.5em'
     },
     brandPaper: {
-        marginTop: '2em',
         marginLeft: '6em',
         marginRight: '6em',
         padding: '1em',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        marginTop: '1em'
     },
     hotelTitle: {
         fontWeight: 'bold',
@@ -66,7 +67,7 @@ const useStyles = makeStyles(theme => ({
     },
     grid: {
         boxShadow: '0 0 3pt 1pt gray',
-        height: '38em',
+        height: '50em',
         width: '85%',
         marginTop: '10em'
     },
@@ -96,8 +97,47 @@ const useStyles = makeStyles(theme => ({
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%'
+    },
+    gridParent: {
+        display: 'flex',
+        justifyContent: 'center',
+        width: '100%'
+    },
+    dialogDiv: {
+        marginLeft: "0.5em",
+        marginRight: "0.5em"
+    },
+    dialogHeader: {
+        fontWeight: 'bold'
+    },
+    dialogTitle: {
+        textDecoration: "underline",
+        display: 'flex',
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center'
+    },
+    dialogAddress: {
+        marginLeft: "0.5em",
+        marginRight: "0.5em",
+        fontStyle: "italic"
     }
 }));
+
+const useStylesBootstrap = makeStyles((theme) => ({
+    arrow: {
+        color: theme.palette.common.black,
+    },
+    tooltip: {
+        backgroundColor: theme.palette.common.black,
+    },
+}));
+
+function BootstrapTooltip(props: JSX.IntrinsicAttributes & TooltipProps) {
+    const classes = useStylesBootstrap();
+
+    return <Tooltip arrow classes={classes} {...props} />;
+}
 
 interface Room {
     type_id: number;
@@ -109,15 +149,25 @@ interface Room {
     is_extendable: boolean;
     total_number_rooms: number;
     rooms_available: number;
+    enabled: undefined | boolean;
+    tooltip: string;
+}
+
+interface AvailableRoom {
+    type_id: number;
+    occupancy: number;
 }
 
 export default function Rooms() {
     const classes = useStyles();
     const location = useLocation<{
         address: string;
-        customer_sin: string,
+        customerSIN: string,
+        customerName: string,
+        customerAddress: string,
         response: Room[],
-        brandName: string
+        brandName: string,
+        hotelID: string
     }>();
 
     const buttonStateValues: boolean[] = []
@@ -125,43 +175,186 @@ export default function Rooms() {
         buttonStateValues.push(true)
     }
 
-    const [buttonStates, setButtonStates] = useState(buttonStateValues);
-    const [checkInDate, setCheckInDate]: [MaterialUiPickersDate, any] = useState(new Date());
+    const [checkInDate, setCheckInDate]: [Date, any] = useState(new Date());
     const tomorrow: MaterialUiPickersDate = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1)
-    const [checkOutDate, setCheckOutDate]: [MaterialUiPickersDate, any] = useState(tomorrow);
+    const [checkOutDate, setCheckOutDate]: [Date, any] = useState(tomorrow);
+    const [checkInDateToBook, setCheckInDateToBook]: [string, any] = useState("");
+    const [checkOutDateToBook, setCheckOutDateToBook]: [string, any] = useState("");
     const [numPeople, setNumPeople]: [number, any] = useState(1);
+    const [availability, setAvailability]: [boolean, any] = useState(false);
+    const [disableAvailability, setDisableAvailability]: [boolean, any] = useState(false);
+    const [roomData, setRoomData]: [Room[], any] = useState(location.state.response);
+    const [numRooms, setNumRooms]: [number, any] = useState(location.state.response.length);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [roomToBook, setRoomToBook] = useState(location.state.response[0]);
 
-    function bookRoom(index: number) {
+    const past: [Date, Date, number] = [tomorrow, tomorrow, -1]
 
+    location.state.response.forEach((room: Room) => {
+        room.enabled = true;
+        room.tooltip = "";
+    })
+
+    function confirmBookRoom(room: Room) {
+        setRoomToBook(room);
+        setDialogOpen(true);
+    }
+
+    function bookRoom(typeID: number) {
+        setDialogOpen(false);
+    }
+
+    async function checkAvailability() {
+        //Only check availability if filters have been changed
+        if (past[0] !== checkInDate || past[1] !== checkOutDate || past[2] !== numPeople) {
+            setDisableAvailability(true);
+            try {
+                let url: string = process.env.REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/rooms/availability"
+                url += "?check-in=" + dateToString(checkInDate) + "&check-out=" + dateToString(checkOutDate) + "&people=" + numPeople;
+
+                let response: Response = await fetch(url);
+                if (response.status !== 200) {
+                    return;
+                }
+                const availableRooms: AvailableRoom[] = await response.json();
+                const newRoomData: Room[] = JSON.parse(JSON.stringify(roomData));
+                let roomNum: number = newRoomData.length;
+                newRoomData.forEach(room => {
+                    const roomInfo = getRoom(room.type_id, availableRooms);
+                    room.enabled = true;
+                    room.tooltip = "";
+                    room.rooms_available = room.total_number_rooms - roomInfo.occupancy;
+                    //Room capacity is too small; disable
+                    if (roomInfo.type_id === -1) {
+                        room.enabled = false;
+                        room.tooltip = "Room capacity is too small";
+                        roomNum--;
+                    }
+                    if (room.rooms_available <= 0) {
+                        room.enabled = false;
+                        room.tooltip = "Room is booked up over these dates"
+                        roomNum--;
+                    }
+                });
+                newRoomData.sort((r1: Room, r2: Room) => {
+                    if (r1.enabled && !r2.enabled) {
+                        return -1;
+                    }
+                    if (!r1.enabled && r2.enabled) {
+                        return 1;
+                    }
+                    return r1.type_id > r2.type_id ? -1 : 1;
+                })
+                setRoomData(newRoomData);
+                setNumRooms(roomNum);
+                setCheckInDateToBook(dateToString(checkInDate));
+                setCheckOutDateToBook(dateToString(checkOutDate));
+            } catch (error) {
+                console.error('Error:', error);
+            }
+            setDisableAvailability(false);
+        }
+        if (!availability) {
+            setAvailability(true);
+        }
+    }
+
+    function getRoom(typeID: number, roomData: AvailableRoom[]): AvailableRoom {
+        for (let i = 0; i < roomData.length; i++) {
+            if (roomData[i].type_id === typeID) {
+                return roomData[i];
+            }
+        }
+        return {
+            type_id: -1,
+            occupancy: -1
+        }
     }
 
     function setNumberOfPeople(num: number) {
         if (num > 0) {
             setNumPeople(num);
+            setAvailability(false);
         }
     }
 
     function setCheckOut(date: MaterialUiPickersDate) {
         if (date !== null && checkInDate !== null) {
-            if (date <= checkInDate) {
+            if (date.getTime() <= checkInDate.getTime()) {
                 const checkIn: MaterialUiPickersDate = new Date();
+                checkIn.setMonth(date.getMonth())
                 checkIn.setDate(date.getDate() - 1)
                 setCheckInDate(checkIn);
             }
+            setAvailability(false);
             setCheckOutDate(date);
         }
     }
 
     function setCheckIn(date: MaterialUiPickersDate) {
         if (date !== null && checkOutDate !== null) {
-            if (date >= checkOutDate) {
+            if (date.getTime() >= checkOutDate.getTime()) {
                 const checkOut: MaterialUiPickersDate = new Date();
+                checkOut.setMonth(date.getMonth())
                 checkOut.setDate(date.getDate() + 1)
                 setCheckOutDate(checkOut);
             }
+            setAvailability(false);
+            setCheckInDate(date);
         }
-        setCheckInDate(date);
+    }
+
+    function dateToString(date: Date): string {
+        let year: string = date.getFullYear().toString();
+        let month: string = '' + (date.getMonth() + 1);
+        let day: string = '' + date.getDate();
+
+        if (month.length < 2) {
+            month = '0' + month;
+        }
+        if (day.length < 2) {
+            day = '0' + day;
+        }
+        return year + '-' + month + '-' + day;
+    }
+
+    function getRoomAvailabilityMessage(numAvailable: number, total: number): string {
+        return numAvailable + '/' + total + ' rooms available';
+    }
+
+    function ConfirmationDialog() {
+        return <Dialog onClose={() => setDialogOpen(false)} aria-labelledby="simple-dialog-title" open={dialogOpen}>
+            <DialogTitle id="dialog-title" className={classes.dialogTitle}>Confirm Room Booking</DialogTitle>
+            <div className={classes.dialogAddress}>
+                <Typography align="center">{location.state.address}</Typography>
+            </div>
+            <br/>
+            <Divider/>
+            <Typography align="center" className={classes.dialogHeader}>Customer Info</Typography>
+            <Divider/>
+            <div className={classes.dialogDiv}>
+                <Typography>{location.state.customerName}</Typography>
+                <Typography>{location.state.customerAddress}</Typography>
+            </div>
+            <br/>
+            <Divider/>
+            <Typography align="center" className={classes.dialogHeader}>Room Details</Typography>
+            <Divider/>
+            <div className={classes.dialogDiv}>
+                <Typography>Room type: {roomToBook.title}</Typography>
+                <Typography>{checkInDateToBook} to {checkOutDateToBook}</Typography>
+            </div>
+            <br/>
+            <DialogActions>
+                <Button onClick={() => bookRoom(roomToBook.type_id)} variant="contained" color="primary">
+                    Book Room
+                </Button>
+                <Button onClick={() => setDialogOpen(false)} variant="contained" color="secondary">
+                    Cancel
+                </Button>
+            </DialogActions>
+        </Dialog>
     }
 
     return (
@@ -169,11 +362,11 @@ export default function Rooms() {
             <TitleBar/>
             <Typography className={classes.centreTitle}>{location.state.brandName}</Typography>
             <Typography className={classes.centreTitleNoSpace}>{location.state.address}</Typography>
-            <GridList className={classes.dateGrid}>
-                <Grid container alignItems="center" xs={2} className={classes.dateGrid}>
+            <GridList className={classes.gridParent}>
+                <Grid container item alignItems="center" xs={2} className={classes.dateGrid}>
                     <Typography>Enter booking info to select a room:</Typography>
                 </Grid>
-                <Grid container alignItems="center" xs={2} className={classes.dateGrid}>
+                <Grid container item alignItems="center" xs={2} className={classes.dateGrid}>
                     <MuiPickersUtilsProvider utils={DateFnsUtils}>
                         <KeyboardDatePicker
                             margin="normal"
@@ -189,7 +382,7 @@ export default function Rooms() {
                         />
                     </MuiPickersUtilsProvider>
                 </Grid>
-                <Grid container alignItems="center" xs={2} className={classes.dateGrid}>
+                <Grid container item alignItems="center" xs={2} className={classes.dateGrid}>
                     <MuiPickersUtilsProvider utils={DateFnsUtils}>
                         <KeyboardDatePicker
                             margin="normal"
@@ -205,7 +398,7 @@ export default function Rooms() {
                         />
                     </MuiPickersUtilsProvider>
                 </Grid>
-                <Grid container alignItems="center" xs={2} className={classes.dateGrid}>
+                <Grid container item alignItems="center" xs={2} className={classes.dateGrid}>
                     <TextField
                         id="capacity-number"
                         label="# of people"
@@ -218,45 +411,62 @@ export default function Rooms() {
                         onChange={e => setNumberOfPeople(parseInt(e.target.value))}
                     />
                 </Grid>
-                <Grid container alignItems="center" xs={2} className={classes.dateGrid}>
-                    <Button variant="contained">Check Availability</Button>
+                <Grid container item alignItems="center" xs={2} className={classes.dateGrid}>
+                    <Button variant="contained" onClick={checkAvailability} disabled={disableAvailability}>Check
+                        Availability</Button>
                 </Grid>
             </GridList>
-            <Typography className={classes.smallerTitle}>{location.state.response.length} Rooms Found</Typography>
+            <Typography className={classes.smallerTitle}>{numRooms} Rooms Found</Typography>
             <div className={classes.outsideGrid}>
                 <GridList cols={1} cellHeight={190} className={classes.grid}>
+                    <div style={{height: '1em'}}/>
                     {
-                        location.state.response.map((room: Room, index: number) => {
+                        roomData.map((room: Room) => {
                             return (
                                 <GridListTile key={room.type_id} cols={1}>
-                                    <Paper elevation={3} key={room.type_id} className={classes.brandPaper}>
-                                        <Grid container spacing={2} alignItems="center">
-                                            <Grid className={classes.hotelGrid}>
-                                                <Typography
-                                                    className={classes.hotelTitle}>{room.title}</Typography>
-                                                <Typography>Amenities: {room.amenities.length === 0 ? "None" : room.amenities}</Typography>
-                                                <Typography>Max capacity: {room.room_capacity} adults</Typography>
-                                                <Typography>View: {room.view}</Typography>
-                                                <Typography>Extendable: {room.is_extendable ? "Yes" : "No"}</Typography>
-                                            </Grid>
-                                            <Divider orientation="vertical" flexItem className={classes.divider}/>
-                                            <Grid item xs={3} alignItems="center">
-                                                <Grid className={classes.priceDiv}>
-                                                    <Typography
-                                                        className={classes.hotelTitle}>${room.price}/night</Typography>
-                                                    <br/><br/>
-                                                    <Button variant='contained' onClick={() => bookRoom(index)}
-                                                            disabled={buttonStates[index]}>Book Room</Button>
+                                    <BootstrapTooltip title={room.tooltip} aria-label="add" placement="top">
+                                        <Paper elevation={3} key={room.type_id} className={classes.brandPaper}
+                                               style={room.enabled ? {} : {
+                                                   backgroundColor: 'grey'
+                                               }}>
+                                            <div style={room.enabled ? {opacity: '1'} : {
+                                                opacity: '0.40'
+                                            }}>
+                                                <Grid container spacing={2} alignItems="center">
+                                                    <Grid className={classes.hotelGrid}>
+                                                        <Typography
+                                                            className={classes.hotelTitle}>{room.title}</Typography>
+                                                        <Typography>Amenities: {room.amenities.length === 0 ? "None" : room.amenities.join(', ')}</Typography>
+                                                        <Typography>Max
+                                                            capacity: {room.room_capacity} adults</Typography>
+                                                        <Typography>View: {room.view}</Typography>
+                                                        <Typography>Extendable: {room.is_extendable ? "Yes" : "No"}</Typography>
+                                                    </Grid>
+                                                    <Divider orientation="vertical" flexItem
+                                                             className={classes.divider}/>
+                                                    <Grid container item xs={3} alignItems="center">
+                                                        <Grid container className={classes.priceDiv}>
+                                                            <Typography
+                                                                className={classes.hotelTitle}>${room.price}/night</Typography>
+                                                            <Typography>{getRoomAvailabilityMessage(room.rooms_available, room.total_number_rooms)}</Typography>
+                                                            <br/>
+                                                            <Button variant='contained'
+                                                                    onClick={() => confirmBookRoom(room)}
+                                                                    disabled={!room.enabled || !availability}>Book
+                                                                Room</Button>
+                                                        </Grid>
+                                                    </Grid>
                                                 </Grid>
-                                            </Grid>
-                                        </Grid>
-                                    </Paper>
+                                            </div>
+                                        </Paper>
+                                    </BootstrapTooltip>
                                 </GridListTile>
                             );
                         })
                     }
                 </GridList>
             </div>
+            <ConfirmationDialog/>
         </div>
     )
 }

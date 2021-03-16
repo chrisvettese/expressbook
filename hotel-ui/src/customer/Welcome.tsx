@@ -32,13 +32,13 @@ const useStyles = makeStyles(() => ({
 
 export default function Welcome() {
     const classes = useStyles();
-    const location = useLocation<{ customer_sin: string, customer_name: string, customer_address: string }>();
+    const location = useLocation<{ customerSIN: string, customerName: string, customerAddress: string }>();
     const history = useHistory();
     const [disableHotelButton, setDisableHotelButton] = useState(false);
     const [disableReservationButton, setDisableReservationButton] = useState(false);
 
-    const welcomeMessage = "Welcome, " + location.state.customer_name;
-    const addressMessage = "Your address: " + location.state.customer_address;
+    const welcomeMessage = "Welcome, " + location.state.customerName;
+    const addressMessage = "Your address: " + location.state.customerAddress;
 
     async function goToBrandPage() {
         setDisableHotelButton(true);
@@ -48,8 +48,13 @@ export default function Welcome() {
                 setDisableHotelButton(false);
                 return;
             }
-            response = await response.json()
-            history.push('/ui/customer/brands', {customer_sin: location.state.customer_sin, response: response});
+            response = await response.json();
+            history.push('/ui/customer/brands', {
+                customerSIN: location.state.customerSIN,
+                customerAddress: location.state.customerAddress,
+                customerName: location.state.customerName,
+                response: response
+            });
         } catch (error) {
             console.error('Error:', error);
             setDisableHotelButton(false);
@@ -59,15 +64,16 @@ export default function Welcome() {
     async function goToReservationsPage() {
         setDisableReservationButton(true);
         try {
-            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + location.state.customer_sin + "/reservations");
+            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + location.state.customerSIN + "/reservations");
             if (response.status !== 200) {
                 setDisableReservationButton(false);
                 return;
             }
             response = await response.json();
             history.push('/ui/customer/reservations', {
-                customer_name: location.state.customer_name,
-                customer_sin: location.state.customer_sin,
+                customerName: location.state.customerName,
+                customerSIN: location.state.customerSIN,
+                customerAddress: location.state.customerAddress,
                 response: response
             });
         } catch (error) {

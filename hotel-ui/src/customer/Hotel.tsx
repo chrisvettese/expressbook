@@ -70,7 +70,9 @@ const useStyles = makeStyles(theme => ({
 export default function Hotel() {
     const classes = useStyles();
     const location = useLocation<{
-        customer_sin: string,
+        customerSIN: string,
+        customerName: string,
+        customerAddress: string,
         response: any,
         brandName: string
     }>();
@@ -96,10 +98,13 @@ export default function Hotel() {
             }
             response = await response.json()
             history.push('/ui/customer/rooms', {
-                customer_sin: location.state.customer_sin,
+                customerSIN: location.state.customerSIN,
+                customerName: location.state.customerName,
+                customerAddress: location.state.customerAddress,
                 response: response,
                 brandName: location.state.brandName,
-                address: location.state.response[index].physical_address
+                address: location.state.response[index].physical_address,
+                hotelID: location.state.response[index].hotel_id
             });
         } catch (error) {
             console.error('Error:', error);

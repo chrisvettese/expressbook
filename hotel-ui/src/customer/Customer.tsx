@@ -51,10 +51,14 @@ export default function Customer() {
         fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + SIN)
             .then(response => {
                 if (response.status === 404) {
-                    history.push('/ui/customer/name', {customer_sin: SIN})
+                    history.push('/ui/customer/name', {customerSIN: SIN})
                 } else {
                     response.json().then(response => {
-                        history.push('/ui/customer/welcome', response)
+                        history.push('/ui/customer/welcome', {
+                            customerSIN: response.customer_sin,
+                            customerName: response.customer_name,
+                            customerAddress: response.customer_address
+                        })
                     })
                 }
             }).catch(error => {

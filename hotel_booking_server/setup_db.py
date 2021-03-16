@@ -55,7 +55,7 @@ def table_creation(conn):
             curs.execute('''
                 CREATE TABLE hotel.view_type(
                     view_ID SMALLINT PRIMARY KEY,
-                    view_type VARCHAR(20) NOT NULL)
+                    view VARCHAR(20) NOT NULL)
                 ''')
             curs.execute('''
                 INSERT INTO hotel.view_type(view_ID, view) VALUES (1, 'Mountain');
@@ -131,26 +131,7 @@ def table_creation(conn):
                 AFTER INSERT ON hotel.hotel FOR EACH ROW 
                 EXECUTE PROCEDURE hotel.update_num_hotels()
                 ''')
-            # trigger function to adjust room capacity based on how many rooms are currently being rented
-            curs.execute('''
-                CREATE FUNCTION hotel.update_rooms_available() RETURNS TRIGGER AS
-                    $$ 
-                    BEGIN 
-                    IF ((TG_OP = 'INSERT') OR (TG_OP = 'UPDATE' AND OLD.status_ID != 2)) 
-                            AND NEW.status_ID = 2 THEN 
-                        UPDATE hotel.hotel_room_type SET rooms_available = rooms_available - 1 
-                        WHERE NEW.type_ID = type_ID; 
-                    ELSIF TG_OP = 'UPDATE' AND OLD.status_ID = 2 AND NEW.status_ID != 2 THEN 
-                        UPDATE hotel.hotel_room_type SET rooms_available = rooms_available + 1 
-                        WHERE NEW.type_ID = type_ID; 
-                    END IF; 
-                    RETURN NEW; 
-                    END; 
-                    $$ LANGUAGE plpgsql;
-                CREATE TRIGGER update_rooms_available 
-                BEFORE INSERT OR UPDATE ON hotel.room_booking FOR EACH ROW 
-                EXECUTE PROCEDURE hotel.update_rooms_available()
-                ''')
+
             # function to determine how many rooms of a specific type are occupied over a given date range
             # for example if the total_number_rooms is 100, and max_occupancy is 100, then the room is booked up
             curs.execute('''
@@ -175,22 +156,41 @@ def table_creation(conn):
                     END;
                     $$ LANGUAGE plpgsql;
                 ''')
+
             # trigger function to prevent rooms from being overbooked
+            # a room is considered occupied today if it is booked tonight (from today to tomorrow)
             curs.execute('''
                 CREATE FUNCTION hotel.prevent_overbook() RETURNS TRIGGER AS
                     $$ 
                     BEGIN 
-                    IF hotel.max_occupancy(NEW.check_in_day, NEW.check_out_day, NEW.type_ID) >=
-                            (SELECT t.total_number_rooms FROM hotel.hotel_room_type t WHERE t.type_ID = NEW.type_ID) THEN
-                        RAISE EXCEPTION 'This room is already booked up over these dates.';
-                    END IF;
-                    RETURN NEW;
+                        IF hotel.max_occupancy(NEW.check_in_day, NEW.check_out_day, NEW.type_ID) >=
+                                (SELECT t.total_number_rooms FROM hotel.hotel_room_type t WHERE t.type_ID = NEW.type_ID)
+                            THEN RAISE EXCEPTION 'This room is already booked up over these dates. type_ID=%s,
+                                check_in_day=%s, check_out_day=%s', NEW.type_ID, NEW.check_in_day, NEW.check_out_day;
+                        END IF;
+                        RETURN NEW;
                     END; 
                     $$ LANGUAGE plpgsql;
                 CREATE TRIGGER prevent_overbook 
-                AFTER INSERT ON hotel.room_booking FOR EACH ROW 
+                BEFORE INSERT ON hotel.room_booking FOR EACH ROW 
                 EXECUTE PROCEDURE hotel.prevent_overbook()
                 ''')
+
+            # trigger function to update the current rooms_available for a certain room type
+            curs.execute('''
+                CREATE FUNCTION hotel.update_availability() RETURNS TRIGGER AS
+                    $$ 
+                    BEGIN 
+                        UPDATE hotel.hotel_room_type SET rooms_available = total_number_rooms - 
+                            hotel.max_occupancy(CURRENT_DATE, DATE (CURRENT_DATE + INTERVAL '1 day'), type_ID);
+                        RETURN NEW;
+                    END; 
+                    $$ LANGUAGE plpgsql;
+                CREATE TRIGGER update_availability 
+                AFTER INSERT OR UPDATE ON hotel.room_booking FOR EACH ROW 
+                EXECUTE PROCEDURE hotel.update_availability()
+                ''')
+
             # function to correct room status for a customer if it has not been updated
             curs.execute('''
                 CREATE OR REPLACE FUNCTION hotel.correct_status(cust_sin VARCHAR(11))
@@ -279,8 +279,8 @@ def generate_room_bookings(conn, curs, customer_sin):
                              .format(type_id, temp_hotel_data[2], customer_sin, registration_date, check_in,
                                      check_out, status_id))
 
-        except psycopg2.DatabaseError:
-            print("Skipping overbooked room")
+        except psycopg2.DatabaseError as e:
+            print(e)
             conn.rollback()
             continue
 
@@ -320,7 +320,7 @@ def populate_hotel(brand_index, hotel_index, curs, hotel_id):
 
         num_rooms -= num_room_type
         room_index = random.randrange(0, len(hotel_data.room_titles))
-        price = "{:.2f}".format((hotel[2] - 1) * 100 + (room_index + 1) * 100 + random.randint(0, 15000) / 100)
+        price = "{:.2f}".format(((hotel[2] - 1) * 70 + (room_index + 1) * 70 + random.randint(0, 10000) / 100) / 2.5)
         amenities = to_pg_array(random.sample(hotel_data.room_amenities, random.randint(0, 6)))
         view = random.randint(1, 4)
 

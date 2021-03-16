@@ -90,8 +90,8 @@ type Severity = "error" | "success" | "info" | "warning" | undefined;
 export default function Reservations() {
     const classes = useStyles();
     const location = useLocation<{
-        customer_name: string;
-        customer_sin: string,
+        customerName: string;
+        customerSIN: string,
         response: Reservation[]
     }>();
 
@@ -142,7 +142,7 @@ export default function Reservations() {
         setButtonStates(newStates);
 
         try {
-            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + location.state.customer_sin + "/reservations/" + reservation.reservation.booking_id, {
+            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + location.state.customerSIN + "/reservations/" + reservation.reservation.booking_id, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
@@ -291,7 +291,7 @@ export default function Reservations() {
     return (
         <div className={classes.root}>
             <TitleBar/>
-            <Typography className={classes.centreTitle}>My Reservations - {location.state.customer_name}</Typography>
+            <Typography className={classes.centreTitle}>My Reservations - {location.state.customerName}</Typography>
             <RadioGroup className={classes.radioGroup} value={radioState} onChange={e => setReservationRadioState(e)}
                         row>
                 <Typography>Filter by:&nbsp;&nbsp;&nbsp;</Typography>

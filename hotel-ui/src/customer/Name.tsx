@@ -20,7 +20,7 @@ const useStyles = makeStyles(() => ({
 
 export default function Name() {
     const classes = useStyles();
-    const location = useLocation<{ customer_sin: string }>();
+    const location = useLocation<{ customerSIN: string }>();
     const history = useHistory();
     const [name, setName] = useState("");
     const [address, setAddress] = useState("");
@@ -47,16 +47,16 @@ export default function Name() {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        customer_sin: location.state.customer_sin,
+                        customer_sin: location.state.customerSIN,
                         customer_name: name,
                         customer_address: address
                     })
                 })
                 if (response.status === 201) {
                     history.push('/ui/customer/welcome', {
-                        customer_sin: location.state.customer_sin,
-                        customer_name: name,
-                        customer_address: address
+                        customerSIN: location.state.customerSIN,
+                        customerName: name,
+                        customerAddress: address
                     })
                 }
             } catch(error) {

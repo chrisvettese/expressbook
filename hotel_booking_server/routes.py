@@ -75,7 +75,8 @@ def add_routes(app, conn):
 
         try:
             check_in_date = datetime.strptime(check_in, '%Y-%m-%d')
-            if check_in_date < datetime.today():
+            today = datetime.today().strptime(check_in, '%Y-%m-%d')
+            if check_in_date < today:
                 raise BadRequestError(message="Check in date cannot be in the past")
         except ValueError:
             raise BadRequestError(message="Invalid date format for check_in. Must be YYYY-MM-DD")
@@ -206,8 +207,6 @@ def add_routes(app, conn):
                    WHERE t.hotel_ID = {} AND t.room_capacity >= {}'''.format(hid, people)
 
         response = get_results(query, conn, jsonify=False)
-        if len(response) == 0:
-            raise ResourceNotFoundError(message='Hotel ID={} not found'.format(hid))
 
         for room in response:
             query = '''SELECT hotel.max_occupancy(DATE '{}', DATE '{}', {})'''.format(check_in_day, check_out_day,
