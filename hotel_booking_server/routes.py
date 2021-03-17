@@ -54,7 +54,7 @@ def add_routes(app, conn):
     @app.route('/customers/<cid>/reservations')
     @cross_origin()
     def get_reservations_by_customer(cid):
-        execute('SELECT hotel.correct_status(\'{}\')'.format(cid), conn)
+        execute('SELECT hotel.correct_status_customer(\'{}\')'.format(cid), conn)
         query = '''SELECT b.booking_id, b.date_of_registration, b.check_in_day, b.check_out_day, s.value AS status,
                    t.title, t.is_extendable, t.amenities, v.view, h.physical_address, t.price
                    FROM hotel.room_booking b
@@ -83,7 +83,7 @@ def add_routes(app, conn):
 
         try:
             check_in_date = datetime.strptime(check_in, '%Y-%m-%d')
-            today = datetime.today().strptime(check_in, '%Y-%m-%d')
+            today = datetime.strptime(datetime.today(), '%Y-%m-%d')
             if check_in_date < today:
                 raise BadRequestError(message="Check in date cannot be in the past")
         except ValueError:
@@ -185,11 +185,11 @@ def add_routes(app, conn):
         check_out_day = request.args.get('check-out')
 
         if people is None:
-            raise BadRequestError(message="Missing required header field 'people'")
+            raise BadRequestError(message="Missing required query param 'people'")
         if check_in_day is None:
-            raise BadRequestError(message="Missing required header field 'check-in'")
+            raise BadRequestError(message="Missing required query param 'check-in'")
         if check_out_day is None:
-            raise BadRequestError(message="Missing required header field 'check-out'")
+            raise BadRequestError(message="Missing required query param 'check-out'")
 
         try:
             people = int(people)
@@ -288,6 +288,48 @@ def add_routes(app, conn):
         response = get_results(query, conn)
         if response == '[]':
             raise ResourceNotFoundError(message='Hotel ID={} not found'.format(hid))
+        return Response(response, status=200, mimetype='application/json')
+
+    @app.route('/hotels/<hid>/reservations')
+    @cross_origin()
+    def get_reservations(hid):
+        action = request.args.get('action')
+        if action is None:
+            raise BadRequestError(message='Missing required query param action')
+        if action != 'check-in' and action != 'check-out':
+            raise BadRequestError(message='Invalid action param, must be check-in or check-out')
+
+        try:
+            hid = int(hid)
+        except ValueError:
+            raise BadRequestError(message="Invalid hotel_ID: must be an integer")
+
+        execute('SELECT hotel.correct_status_hotel({})'.format(hid), conn)
+
+        today = datetime.today().strftime('%Y-%m-%d')
+
+        if action == 'check-in':
+            query = '''SELECT b.booking_id, b.date_of_registration, b.check_in_day, b.check_out_day,
+                       t.title, t.is_extendable, t.amenities, v.view, t.price, c.customer_sin, c.customer_name
+                       FROM hotel.room_booking b
+                       JOIN hotel.booking_status s ON s.status_ID = b.status_ID
+                       JOIN hotel.hotel_room_type t ON t.type_ID = b.type_ID
+                       JOIN hotel.view_type v ON v.view_ID = t.view_ID
+                       JOIN hotel.customer c ON b.customer_sin = c.customer_sin
+                       WHERE s.value = 'Booked' AND b.hotel_id = {} AND b.check_in_day = DATE '{}\'''' \
+                .format(hid, today)
+
+        else:
+            query = '''SELECT b.booking_id, b.date_of_registration, b.check_in_day, b.check_out_day,
+                       t.title, t.is_extendable, t.amenities, v.view, t.price, c.customer_sin, c.customer_name
+                       FROM hotel.room_booking b
+                       JOIN hotel.booking_status s ON s.status_ID = b.status_ID
+                       JOIN hotel.hotel_room_type t ON t.type_ID = b.type_ID
+                       JOIN hotel.view_type v ON v.view_ID = t.view_ID
+                       JOIN hotel.customer c ON b.customer_sin = c.customer_sin
+                       WHERE b.hotel_id = {} AND s.value = 'Renting\''''.format(hid)
+
+        response = get_results(query, conn)
         return Response(response, status=200, mimetype='application/json')
 
     @app.route('/employees/<eid>')

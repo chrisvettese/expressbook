@@ -1,6 +1,6 @@
 import {Button, Grid, makeStyles, Paper, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBarCustomer} from "../index";
+import {TitleBarCustomer, TitleBarEmployee} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
 
 const useStyles = makeStyles(() => ({
@@ -94,7 +94,7 @@ export default function WelcomeEmployee() {
 
     return (
         <>
-            <TitleBarCustomer/>
+            <TitleBarEmployee/>
             <Typography className={classes.centreTitle}>{welcomeMessage}</Typography>
             <Typography className={classes.centre}>Your profile:</Typography>
             <div className={classes.paperContainer}>

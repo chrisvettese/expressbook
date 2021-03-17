@@ -195,7 +195,7 @@ def table_creation(conn):
 
             # function to correct room status for a customer if it has not been updated
             curs.execute('''
-                CREATE OR REPLACE FUNCTION hotel.correct_status(cust_sin VARCHAR(11))
+                CREATE OR REPLACE FUNCTION hotel.correct_status_customer(cust_sin VARCHAR(11))
                 RETURNS VOID AS
                     $$
                     BEGIN
@@ -204,6 +204,23 @@ def table_creation(conn):
                     UPDATE hotel.room_booking SET status_ID = 4 WHERE customer_sin = cust_sin
                     AND status_id = 1 AND CURRENT_DATE > check_out_day;
                     UPDATE hotel.room_booking SET status_ID = 1 WHERE customer_sin = cust_sin
+                    AND status_id = 2 AND CURRENT_DATE < check_in_day;
+                    END;
+                    $$ LANGUAGE plpgsql;
+                ''')
+            conn.commit()
+
+            # function to correct room status for a hotel if it has not been updated
+            curs.execute('''
+                CREATE OR REPLACE FUNCTION hotel.correct_status_hotel(h_ID VARCHAR(11))
+                RETURNS VOID AS
+                    $$
+                    BEGIN
+                    UPDATE hotel.room_booking SET status_ID = 3 WHERE hotel_ID = h_ID
+                    AND status_id = 2 AND CURRENT_DATE > check_out_day;
+                    UPDATE hotel.room_booking SET status_ID = 4 WHERE hotel_ID = h_ID
+                    AND status_id = 1 AND CURRENT_DATE > check_out_day;
+                    UPDATE hotel.room_booking SET status_ID = 1 WHERE hotel_ID = h_ID
                     AND status_id = 2 AND CURRENT_DATE < check_in_day;
                     END;
                     $$ LANGUAGE plpgsql;
