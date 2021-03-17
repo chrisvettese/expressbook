@@ -224,6 +224,43 @@ def add_routes(app, conn):
 
         return Response(json.dumps(response, default=str), status=200, mimetype='application/json')
 
+    @app.route('/hotels/<hid>/employees', methods=["POST"])
+    @cross_origin()
+    def create_employee(hid):
+        data = request.json
+        if 'employee_sin' not in data:
+            raise BadRequestError(message="Missing required body field 'employee_sin'")
+        if 'manager_sin' not in data:
+            raise BadRequestError(message="Missing required body field 'manager_sin'")
+        if 'name' not in data:
+            raise BadRequestError(message="Missing required body field 'name'")
+        if 'address' not in data:
+            raise BadRequestError(message="Missing required body field 'address'")
+        if 'salary' not in data:
+            raise BadRequestError(message="Missing required body field 'salary'")
+        if 'job_title' not in data:
+            raise BadRequestError(message="Missing required body field 'job_title'")
+
+        employee_sin = data['employee_sin']
+        manager_sin = data['manager_sin']
+        name = data['name']
+        address = data['address']
+        salary = data['salary']
+        job_title = data['job_title']
+
+        if not verify_manager(manager_sin, hid, conn):
+            raise BadRequestError(message='Invalid manager SIN')
+
+        query = """INSERT INTO hotel.employee(employee_sin, employee_name, employee_address, salary, job_title,
+                   hotel_ID) VALUES ('{}', '{}', '{}', '{}', '{}', '{}')""" \
+            .format(employee_sin, name, address, salary, job_title, hid)
+
+        try:
+            execute(query, conn)
+        except psycopg2.DatabaseError:
+            raise ResourceConflictError(message='Employee already exists')
+        return Response(status=201, mimetype='application/json')
+
     @app.route('/employees/<eid>')
     @cross_origin()
     def get_employee(eid):
@@ -259,3 +296,16 @@ def execute(query, conn):
     with conn:
         with conn.cursor() as curs:
             curs.execute(query)
+
+
+def verify_manager(manager_sin, hotel_id, conn):
+    query = 'SELECT employee_sin FROM hotel.employee WHERE job_title = \'Manager\' AND hotel_id = {}'.format(hotel_id)
+    result = get_results(query, conn, jsonify=False)
+    if len(result) == 0:
+        return False
+    for employee in result:
+        sin = employee.get('employee_sin')
+        if sin is not None:
+            if sin == manager_sin:
+                return True
+    return False
