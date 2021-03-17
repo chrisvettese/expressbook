@@ -5,7 +5,7 @@ import {
     GridList,
     GridListTile,
     makeStyles,
-    Paper, TextField, Tooltip,
+    Paper, Snackbar, TextField, Tooltip,
     TooltipProps,
     Typography
 } from "@material-ui/core";
@@ -18,6 +18,7 @@ import {
 } from '@material-ui/pickers';
 import DateFnsUtils from "@date-io/date-fns";
 import {MaterialUiPickersDate} from "@material-ui/pickers/typings/date";
+import {Alert} from "@material-ui/lab";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -153,10 +154,65 @@ interface Room {
     tooltip: string;
 }
 
+type Severity = "error" | "success" | "info" | "warning" | undefined;
+
 interface AvailableRoom {
     type_id: number;
     occupancy: number;
 }
+
+const ConfirmationDialog = ({
+                                dialogOpen,
+                                setDialogOpen,
+                                roomToBook,
+                                classes,
+                                location,
+                                checkInDateToBook,
+                                checkOutDateToBook,
+                                disableBookRoomButton,
+                                bookRoom
+                            }: any) => {
+
+    return <Dialog onClose={() => setDialogOpen(false)} aria-labelledby="simple-dialog-title" open={dialogOpen}>
+        <DialogTitle id="dialog-title" className={classes.dialogTitle}>
+            <Typography className={classes.dialogTitle}>Confirm Room Booking</Typography>
+        </DialogTitle>
+        <div className={classes.dialogAddress}>
+            <Typography align="center">{location.state.address}</Typography>
+        </div>
+        <br/>
+        <Divider/>
+        <Typography align="center" className={classes.dialogHeader}>Customer Info</Typography>
+        <Divider/>
+        <div className={classes.dialogDiv}>
+            <Typography>{location.state.customerName}</Typography>
+            <Typography>{location.state.customerAddress}</Typography>
+        </div>
+        <br/>
+        <Divider/>
+        <Typography align="center" className={classes.dialogHeader}>Room Details</Typography>
+        <Divider/>
+        <div className={classes.dialogDiv}>
+            <Typography>Room type: {roomToBook.title}</Typography>
+            <Typography>{checkInDateToBook} to {checkOutDateToBook}</Typography>
+            <Typography>Amenities: {roomToBook.amenities.join(', ')}</Typography>
+            <Typography>View: {roomToBook.view}</Typography>
+            <Typography>
+                Extendable: {roomToBook.is_extendable ? "Yes" : "No"}
+            </Typography>
+        </div>
+        <br/>
+        <DialogActions>
+            <Button disabled={disableBookRoomButton} onClick={() => bookRoom(roomToBook.type_id)} variant="contained"
+                    color="primary">
+                Book Room
+            </Button>
+            <Button onClick={() => setDialogOpen(false)} variant="contained" color="secondary">
+                Cancel
+            </Button>
+        </DialogActions>
+    </Dialog>
+};
 
 export default function Rooms() {
     const classes = useStyles();
@@ -186,8 +242,12 @@ export default function Rooms() {
     const [disableAvailability, setDisableAvailability]: [boolean, any] = useState(false);
     const [roomData, setRoomData]: [Room[], any] = useState(location.state.response);
     const [numRooms, setNumRooms]: [number, any] = useState(location.state.response.length);
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [roomToBook, setRoomToBook] = useState(location.state.response[0]);
+    const [dialogOpen, setDialogOpen]: [boolean, any] = useState(false);
+    const [roomToBook, setRoomToBook]: [Room, any] = useState(location.state.response[0]);
+    const [disableBookRoomButton, setDisableBookRoomButton]: [boolean, any] = useState(false);
+    const [alertOpen, setAlertOpen] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
+    const [alertStatus, setAlertStatus]: [Severity, any] = useState("success");
 
     const past: [Date, Date, number] = [tomorrow, tomorrow, -1]
 
@@ -201,8 +261,42 @@ export default function Rooms() {
         setDialogOpen(true);
     }
 
-    function bookRoom(typeID: number) {
-        setDialogOpen(false);
+    async function bookRoom(typeID: number) {
+        setDisableBookRoomButton(true);
+        try {
+            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + location.state.customerSIN + "/reservations", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    type_id: typeID,
+                    check_in: checkInDateToBook,
+                    check_out: checkOutDateToBook
+                })
+            })
+            if (response.status === 201) {
+                await checkAvailability();
+                openAlert('Successfully booked room', 'success');
+                setDialogOpen(false);
+            } else {
+                openAlert('Error: Unable to book room', 'error');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            openAlert('Error: Unable to book room', 'error');
+        }
+        setDisableBookRoomButton(false);
+    }
+
+    function openAlert(message: string, status: string) {
+        setAlertMessage(message);
+        setAlertStatus(status);
+        setAlertOpen(true);
+    }
+
+    function closeAlert() {
+        setAlertOpen(false);
     }
 
     async function checkAvailability() {
@@ -323,42 +417,6 @@ export default function Rooms() {
         return numAvailable + '/' + total + ' rooms available';
     }
 
-    function ConfirmationDialog() {
-        return <Dialog onClose={() => setDialogOpen(false)} aria-labelledby="simple-dialog-title" open={dialogOpen}>
-            <DialogTitle id="dialog-title" className={classes.dialogTitle}>
-                <Typography className={classes.dialogTitle}>Confirm Room Booking</Typography>
-            </DialogTitle>
-            <div className={classes.dialogAddress}>
-                <Typography align="center">{location.state.address}</Typography>
-            </div>
-            <br/>
-            <Divider/>
-            <Typography align="center" className={classes.dialogHeader}>Customer Info</Typography>
-            <Divider/>
-            <div className={classes.dialogDiv}>
-                <Typography>{location.state.customerName}</Typography>
-                <Typography>{location.state.customerAddress}</Typography>
-            </div>
-            <br/>
-            <Divider/>
-            <Typography align="center" className={classes.dialogHeader}>Room Details</Typography>
-            <Divider/>
-            <div className={classes.dialogDiv}>
-                <Typography>Room type: {roomToBook.title}</Typography>
-                <Typography>{checkInDateToBook} to {checkOutDateToBook}</Typography>
-            </div>
-            <br/>
-            <DialogActions>
-                <Button onClick={() => bookRoom(roomToBook.type_id)} variant="contained" color="primary">
-                    Book Room
-                </Button>
-                <Button onClick={() => setDialogOpen(false)} variant="contained" color="secondary">
-                    Cancel
-                </Button>
-            </DialogActions>
-        </Dialog>
-    }
-
     return (
         <div className={classes.root}>
             <TitleBarCustomer/>
@@ -468,7 +526,15 @@ export default function Rooms() {
                     }
                 </GridList>
             </div>
-            <ConfirmationDialog/>
+            <ConfirmationDialog dialogOpen={dialogOpen} setDialogOpen={setDialogOpen} roomToBook={roomToBook}
+                                classes={classes} location={location} checkInDateToBook={checkInDateToBook}
+                                bookRoom={bookRoom} checkOutDateToBook={checkOutDateToBook}
+                                disableBookRoomButton={disableBookRoomButton}/>
+            <Snackbar open={alertOpen} autoHideDuration={6000} onClose={closeAlert}>
+                <Alert onClose={closeAlert} severity={alertStatus}>
+                    {alertMessage}
+                </Alert>
+            </Snackbar>
         </div>
     )
 }
