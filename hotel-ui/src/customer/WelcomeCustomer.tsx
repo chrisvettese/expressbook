@@ -1,4 +1,4 @@
-import {Button, makeStyles, Typography} from "@material-ui/core";
+import {Button, makeStyles, Paper, Typography} from "@material-ui/core";
 import React, {useState} from "react";
 import {TitleBarCustomer} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
@@ -9,11 +9,10 @@ const useStyles = makeStyles(() => ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        fontSize: '1.4em'
     },
-    centreNoPad: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+    inPaper: {
+        display: 'flex'
     },
     centreTitle: {
         paddingTop: '2em',
@@ -32,10 +31,21 @@ const useStyles = makeStyles(() => ({
     buttonSpacing: {
         marginLeft: '1.5em',
         marginRight: '1.5em'
+    },
+    paperContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    paper: {
+        display: 'inline-block',
+        padding: '1em',
+        alignItems: 'center',
+        justifyContent: 'center',
     }
 }));
 
-export default function Welcome() {
+export default function WelcomeCustomer() {
     const classes = useStyles();
     const location = useLocation<{ customerSIN: string, customerName: string, customerAddress: string, customerEmail: string, customerPhone: string }>();
     const history = useHistory();
@@ -92,9 +102,13 @@ export default function Welcome() {
             <TitleBarCustomer/>
             <Typography className={classes.centreTitle}>{welcomeMessage}</Typography>
             <Typography className={classes.centre}>Your profile:</Typography>
-            <Typography className={classes.centreNoPad}>Address: {location.state.customerAddress}</Typography>
-            <Typography className={classes.centreNoPad}>Email: {location.state.customerEmail}</Typography>
-            <Typography className={classes.centreNoPad}>Phone number: {location.state.customerPhone}</Typography>
+            <div className={classes.paperContainer}>
+                <Paper elevation={3} className={classes.paper}>
+                    <Typography className={classes.inPaper}>Address: {location.state.customerAddress}</Typography>
+                    <Typography className={classes.inPaper}>Email: {location.state.customerEmail}</Typography>
+                    <Typography className={classes.inPaper}>Phone number: {location.state.customerPhone}</Typography>
+                </Paper>
+            </div>
             <div className={classes.buttonCentre}>
                 <Button variant="contained" className={classes.buttonSpacing} onClick={() => goToBrandPage()}
                         disabled={disableHotelButton}>Find A Hotel</Button>

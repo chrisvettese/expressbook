@@ -36,7 +36,7 @@ interface CustomerResponse {
     customer_phone: string
 }
 
-export default function Customer() {
+export default function SignInCustomer() {
     const classes = useStyles();
     const history = useHistory();
 

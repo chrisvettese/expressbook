@@ -18,7 +18,7 @@ def add_routes(app, conn):
         query = 'SELECT * FROM hotel.customer c WHERE c.customer_sin = \'{}\''.format(cid)
         response = get_results(query, conn, single=True)
         if len(response) == 0:
-            raise ResourceNotFoundError(message='Customer SIN={} not found'.format(cid))
+            raise ResourceNotFoundError(message='SignInCustomer SIN={} not found'.format(cid))
         return Response(response, status=200, mimetype='application/json')
 
     @app.route('/customers', methods=["POST"])
@@ -48,7 +48,7 @@ def add_routes(app, conn):
         try:
             execute(query, conn)
         except psycopg2.DatabaseError:
-            raise ResourceConflictError(message='Customer already exists')
+            raise ResourceConflictError(message='SignInCustomer already exists')
         return Response(status=201, mimetype='application/json')
 
     @app.route('/customers/<cid>/reservations')
@@ -116,7 +116,7 @@ def add_routes(app, conn):
         except psycopg2.DatabaseError as e:
             e = str(e)
             if 'Key (customer_sin)=' in e:
-                raise BadRequestError(message='Customer id not found: ' + cid)
+                raise BadRequestError(message='SignInCustomer id not found: ' + cid)
             if 'This room is already booked up' in e:
                 raise ResourceConflictError(message='Room is already booked up')
             raise BadRequestError
@@ -293,8 +293,9 @@ def add_routes(app, conn):
     @app.route('/employees/<eid>')
     @cross_origin()
     def get_employee(eid):
-        query = '''SELECT e.employee_sin, e.employee_name, e.employee_address, e.salary, e.job_title, b.name,
-                   h.brand_id, h.hotel_id FROM hotel.employee e JOIN hotel.hotel h ON h.hotel_id = e.hotel_id
+        query = '''SELECT e.employee_sin, e.employee_name, e.employee_address, e.salary, e.job_title,
+                   b.name AS brand_name, h.brand_id, h.hotel_id, h.physical_address AS hotel_address
+                   FROM hotel.employee e JOIN hotel.hotel h ON h.hotel_id = e.hotel_id
                    JOIN hotel.hotel_brand b ON b.brand_id = h.brand_id WHERE e.employee_sin = '{}\''''.format(eid)
         response = get_results(query, conn, single=True)
         if len(response) == 0:

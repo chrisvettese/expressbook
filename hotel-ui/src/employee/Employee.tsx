@@ -28,6 +28,18 @@ const useStyles = makeStyles(() => ({
     }
 }));
 
+interface GetEmployeeResponse {
+    employee_sin: string;
+    employee_name: string;
+    employee_address: string;
+    salary: string;
+    job_title: string;
+    brand_name: string;
+    brand_id: number;
+    hotel_id: number;
+    hotel_address: string;
+}
+
 export default function Employee() {
     const classes = useStyles();
     const history = useHistory();
@@ -52,11 +64,17 @@ export default function Employee() {
         fetch(process.env.REACT_APP_SERVER_URL + "/employees/" + SIN)
             .then(response => {
                 if (response.status === 200) {
-                    response.json().then(response => {
+                    response.json().then((response: GetEmployeeResponse) => {
                         history.push('/ui/employee/welcome', {
                             employeeSIN: response.employee_sin,
-                            customerName: response.customer_name,
-                            customerAddress: response.customer_address
+                            employeeName: response.employee_name,
+                            employeeAddress: response.employee_address,
+                            salary: response.salary,
+                            jobTitle: response.job_title,
+                            brandName: response.brand_name,
+                            brandID: response.brand_id,
+                            hotelID: response.hotel_id,
+                            hotelAddress: response.hotel_address
                         })
                     })
                 } else {
