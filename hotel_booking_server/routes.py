@@ -261,6 +261,16 @@ def add_routes(app, conn):
             raise ResourceConflictError(message='Employee already exists')
         return Response(status=201, mimetype='application/json')
 
+    @app.route('/hotels/<hid>/employees')
+    @cross_origin()
+    def get_employees_by_hotel(hid):
+        query = '''SELECT e.employee_sin, e.employee_name, e.employee_address, e.salary, e.job_title
+                   FROM hotel.employee e WHERE e.hotel_id = {}'''.format(hid)
+        response = get_results(query, conn)
+        if response == '[]':
+            raise ResourceNotFoundError(message='Hotel ID={} not found'.format(hid))
+        return Response(response, status=200, mimetype='application/json')
+
     @app.route('/employees/<eid>')
     @cross_origin()
     def get_employee(eid):
