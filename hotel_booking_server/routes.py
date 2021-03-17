@@ -43,8 +43,8 @@ def add_routes(app, conn):
         customer_phone = data['customer_phone']
 
         query = """INSERT INTO hotel.customer(customer_SIN, customer_name, customer_address, customer_email,
-            customer_phone) VALUES ('{}', '{}', '{}', '{}', '{}')"""\
-                .format(customer_sin, customer_name, customer_address, customer_email, customer_phone)
+            customer_phone) VALUES ('{}', '{}', '{}', '{}', '{}')""" \
+            .format(customer_sin, customer_name, customer_address, customer_email, customer_phone)
         try:
             execute(query, conn)
         except psycopg2.DatabaseError:
@@ -223,6 +223,17 @@ def add_routes(app, conn):
             room['occupancy'] = occupancy[0].get('max_occupancy')
 
         return Response(json.dumps(response, default=str), status=200, mimetype='application/json')
+
+    @app.route('/employees/<eid>')
+    @cross_origin()
+    def get_employee(eid):
+        query = '''SELECT e.employee_sin, e.employee_name, e.employee_address, e.salary, e.job_title, b.name,
+                   h.brand_id, h.hotel_id FROM hotel.employee e JOIN hotel.hotel h ON h.hotel_id = e.hotel_id
+                   JOIN hotel.hotel_brand b ON b.brand_id = h.brand_id WHERE e.employee_sin = '{}\''''.format(eid)
+        response = get_results(query, conn, single=True)
+        if len(response) == 0:
+            raise ResourceNotFoundError(message='Employee SIN={} not found'.format(eid))
+        return Response(response, status=200, mimetype='application/json')
 
 
 def get_results(query, conn, single=False, jsonify=True):

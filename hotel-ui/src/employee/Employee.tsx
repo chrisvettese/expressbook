@@ -53,8 +53,8 @@ export default function Employee() {
             .then(response => {
                 if (response.status === 200) {
                     response.json().then(response => {
-                        history.push('/ui/customer/welcome', {
-                            customerSIN: response.customer_sin,
+                        history.push('/ui/employee/welcome', {
+                            employeeSIN: response.employee_sin,
                             customerName: response.customer_name,
                             customerAddress: response.customer_address
                         })
