@@ -67,7 +67,14 @@ const useStyles = makeStyles(theme => ({
 
 export default function HotelBrand() {
     const classes = useStyles();
-    const location = useLocation<{customerSIN: string, customerName: string, customerAddress: string, response: any }>();
+    const location = useLocation<{
+        customerSIN: string,
+        customerName: string,
+        customerAddress: string,
+        customerEmail: string,
+        customerPhone: string,
+        response: any
+    }>();
     const history = useHistory();
 
     const buttonStateValues: boolean[] = []
@@ -93,6 +100,8 @@ export default function HotelBrand() {
                 customerSIN: location.state.customerSIN,
                 customerName: location.state.customerName,
                 customerAddress: location.state.customerAddress,
+                customerEmail: location.state.customerEmail,
+                customerPhone: location.state.customerPhone,
                 response: response,
                 brandName: location.state.response[index].name,
             });

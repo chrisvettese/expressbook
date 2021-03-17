@@ -10,6 +10,11 @@ const useStyles = makeStyles(() => ({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    centreNoPad: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     centreTitle: {
         paddingTop: '2em',
         fontWeight: 'bold',
@@ -32,13 +37,12 @@ const useStyles = makeStyles(() => ({
 
 export default function Welcome() {
     const classes = useStyles();
-    const location = useLocation<{ customerSIN: string, customerName: string, customerAddress: string }>();
+    const location = useLocation<{ customerSIN: string, customerName: string, customerAddress: string, customerEmail: string, customerPhone: string }>();
     const history = useHistory();
     const [disableHotelButton, setDisableHotelButton] = useState(false);
     const [disableReservationButton, setDisableReservationButton] = useState(false);
 
     const welcomeMessage = "Welcome, " + location.state.customerName;
-    const addressMessage = "Your address: " + location.state.customerAddress;
 
     async function goToBrandPage() {
         setDisableHotelButton(true);
@@ -53,6 +57,8 @@ export default function Welcome() {
                 customerSIN: location.state.customerSIN,
                 customerAddress: location.state.customerAddress,
                 customerName: location.state.customerName,
+                customerEmail: location.state.customerEmail,
+                customerPhone: location.state.customerPhone,
                 response: response
             });
         } catch (error) {
@@ -73,7 +79,6 @@ export default function Welcome() {
             history.push('/ui/customer/reservations', {
                 customerName: location.state.customerName,
                 customerSIN: location.state.customerSIN,
-                customerAddress: location.state.customerAddress,
                 response: response
             });
         } catch (error) {
@@ -86,7 +91,10 @@ export default function Welcome() {
         <>
             <TitleBarCustomer/>
             <Typography className={classes.centreTitle}>{welcomeMessage}</Typography>
-            <Typography className={classes.centre}>{addressMessage}</Typography>
+            <Typography className={classes.centre}>Your profile:</Typography>
+            <Typography className={classes.centreNoPad}>Address: {location.state.customerAddress}</Typography>
+            <Typography className={classes.centreNoPad}>Email: {location.state.customerEmail}</Typography>
+            <Typography className={classes.centreNoPad}>Phone number: {location.state.customerPhone}</Typography>
             <div className={classes.buttonCentre}>
                 <Button variant="contained" className={classes.buttonSpacing} onClick={() => goToBrandPage()}
                         disabled={disableHotelButton}>Find A Hotel</Button>

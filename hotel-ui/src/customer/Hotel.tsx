@@ -72,7 +72,9 @@ export default function Hotel() {
     const location = useLocation<{
         customerSIN: string,
         customerName: string,
-        customerAddress: string,
+        customerAddress: string
+        customerEmail: string,
+        customerPhone: string,
         response: any,
         brandName: string
     }>();
@@ -101,6 +103,8 @@ export default function Hotel() {
                 customerSIN: location.state.customerSIN,
                 customerName: location.state.customerName,
                 customerAddress: location.state.customerAddress,
+                customerEmail: location.state.customerEmail,
+                customerPhone: location.state.customerPhone,
                 response: response,
                 brandName: location.state.brandName,
                 address: location.state.response[index].physical_address,

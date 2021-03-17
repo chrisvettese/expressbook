@@ -28,6 +28,14 @@ const useStyles = makeStyles(() => ({
     }
 }));
 
+interface CustomerResponse {
+    customer_sin: string,
+    customer_name: string,
+    customer_address: string,
+    customer_email: string,
+    customer_phone: string
+}
+
 export default function Customer() {
     const classes = useStyles();
     const history = useHistory();
@@ -53,11 +61,13 @@ export default function Customer() {
                 if (response.status === 404) {
                     history.push('/ui/customer/name', {customerSIN: SIN})
                 } else {
-                    response.json().then(response => {
+                    response.json().then((response: CustomerResponse) => {
                         history.push('/ui/customer/welcome', {
                             customerSIN: response.customer_sin,
                             customerName: response.customer_name,
-                            customerAddress: response.customer_address
+                            customerAddress: response.customer_address,
+                            customerEmail: response.customer_email,
+                            customerPhone: response.customer_phone
                         })
                     })
                 }

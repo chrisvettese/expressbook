@@ -31,12 +31,20 @@ def add_routes(app, conn):
             raise BadRequestError(message="Missing required body field 'customer_name'")
         if 'customer_address' not in data:
             raise BadRequestError(message="Missing required body field 'customer_address'")
+        if 'customer_email' not in data:
+            raise BadRequestError(message="Missing required body field 'customer_email'")
+        if 'customer_phone' not in data:
+            raise BadRequestError(message="Missing required body field 'customer_phone'")
 
         customer_sin = data['customer_sin']
         customer_name = data['customer_name']
         customer_address = data['customer_address']
-        query = 'INSERT INTO hotel.customer(customer_SIN, customer_name, customer_address) ' \
-                "VALUES ('{}', '{}', '{}')".format(customer_sin, customer_name, customer_address)
+        customer_email = data['customer_email']
+        customer_phone = data['customer_phone']
+
+        query = """INSERT INTO hotel.customer(customer_SIN, customer_name, customer_address, customer_email,
+            customer_phone) VALUES ('{}', '{}', '{}', '{}', '{}')"""\
+                .format(customer_sin, customer_name, customer_address, customer_email, customer_phone)
         try:
             execute(query, conn)
         except psycopg2.DatabaseError:

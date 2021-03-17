@@ -187,6 +187,8 @@ const ConfirmationDialog = ({
         <div className={classes.dialogDiv}>
             <Typography>{location.state.customerName}</Typography>
             <Typography>{location.state.customerAddress}</Typography>
+            <Typography>{location.state.customerEmail}</Typography>
+            <Typography>{location.state.customerPhone}</Typography>
         </div>
         <br/>
         <Divider/>
@@ -221,6 +223,8 @@ export default function Rooms() {
         customerSIN: string,
         customerName: string,
         customerAddress: string,
+        customerEmail: string,
+        customerPhone: string,
         response: Room[],
         brandName: string,
         hotelID: string

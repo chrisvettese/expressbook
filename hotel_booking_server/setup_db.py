@@ -50,7 +50,9 @@ def table_creation(conn):
                 CREATE TABLE hotel.customer(
                     customer_SIN VARCHAR(11) PRIMARY KEY,
                     customer_name VARCHAR(255) NOT NULL,
-                    customer_address VARCHAR(255) NOT NULL)
+                    customer_address VARCHAR(255) NOT NULL,
+                    customer_email VARCHAR(255) NOT NULL,
+                    customer_phone VARCHAR(20) NOT NULL)
                 ''')
             curs.execute('''
                 CREATE TABLE hotel.view_type(
@@ -234,11 +236,20 @@ def populate(conn):
                 rand_brand = random.randrange(0, len(hotel_data.hotel_brands))
                 hotel = hotel_data.hotels[rand_brand][random.randrange(0, len(hotel_data.hotel_brands[rand_brand]))]
                 customer_sin = new_sin()
-
+                customer_name = random.choice(hotel_data.names)
+                customer_name_parts = customer_name.lower().split(' ')
+                customer_email = customer_name_parts[0] + '.' + customer_name_parts[1] + '@' + random.choice(
+                    hotel_data.email_providers)
+                customer_phone = '{} ({}{}{}) {}{}{}-{}{}{}{}'.format(1, random.randint(1, 9), random.randint(0, 9),
+                                                                      random.randint(0, 9), random.randint(0, 9),
+                                                                      random.randint(0, 9), random.randint(0, 9),
+                                                                      random.randint(0, 9), random.randint(0, 9),
+                                                                      random.randint(0, 9), random.randint(0, 9))
                 curs.execute(
-                    'INSERT INTO hotel.customer(customer_SIN, customer_name, customer_address) '
-                    "VALUES ('{}', '{}', '{}')"
-                        .format(customer_sin, random.choice(hotel_data.names), generate_address(hotel[0])))
+                    """INSERT INTO hotel.customer(customer_SIN, customer_name, customer_address, customer_email,
+                    customer_phone) VALUES ('{}', '{}', '{}', '{}', '{}')"""
+                        .format(customer_sin, customer_name, generate_address(hotel[0]), customer_email,
+                                customer_phone))
 
                 generate_room_bookings(conn, curs, customer_sin)
 
@@ -280,6 +291,10 @@ def generate_room_bookings(conn, curs, customer_sin):
                                      check_out, status_id))
 
         except psycopg2.DatabaseError as e:
+            # skip expected error message from overbooked rooms
+            if 'This room is already booked up' in str(e):
+                conn.rollback()
+                continue
             print(e)
             conn.rollback()
             continue
