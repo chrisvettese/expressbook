@@ -510,10 +510,17 @@ export default function Rooms() {
                                                                 className={classes.hotelTitle}>${room.price}/night</Typography>
                                                             <Typography>{getRoomAvailabilityMessage(room.rooms_available, room.total_number_rooms)}</Typography>
                                                             <br/>
-                                                            <Button variant='contained'
-                                                                    onClick={() => confirmBookRoom(room)}
-                                                                    disabled={!room.enabled || !availability}>Book
-                                                                Room</Button>
+                                                            <BootstrapTooltip
+                                                                title={(!availability && room.enabled) ? "Check availability to book a room" : ""}
+                                                                aria-label="add" placement="top">
+                                                                <div>
+                                                                    <Button variant='contained'
+                                                                            onClick={() => confirmBookRoom(room)}
+                                                                            disabled={!room.enabled || !availability}>
+                                                                        Book Room
+                                                                    </Button>
+                                                                </div>
+                                                            </BootstrapTooltip>
                                                         </Grid>
                                                     </Grid>
                                                 </Grid>
