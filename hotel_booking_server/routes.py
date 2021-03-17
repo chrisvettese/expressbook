@@ -261,6 +261,25 @@ def add_routes(app, conn):
             raise ResourceConflictError(message='Employee already exists')
         return Response(status=201, mimetype='application/json')
 
+    @app.route('/hotels/<hid>/employees/<eid>', methods=["DELETE"])
+    @cross_origin()
+    def delete_employee(hid, eid):
+        data = request.json
+        if 'manager_sin' not in data:
+            raise BadRequestError(message="Missing required body field 'manager_sin'")
+
+        manager_sin = data['manager_sin']
+
+        if not verify_manager(manager_sin, hid, conn):
+            raise BadRequestError(message='Invalid manager SIN')
+
+        query = 'DELETE FROM hotel.employee WHERE employee_sin = \'{}\''.format(eid)
+        try:
+            execute(query, conn)
+        except psycopg2.DatabaseError:
+            raise ResourceConflictError(message='Unable to delete employee')
+        return Response(status=204, mimetype='application/json')
+
     @app.route('/hotels/<hid>/employees')
     @cross_origin()
     def get_employees_by_hotel(hid):
