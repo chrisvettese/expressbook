@@ -1,6 +1,6 @@
 import ast
 import json
-from datetime import datetime
+from datetime import datetime, date
 
 import psycopg2
 from flask import Response, request
@@ -82,22 +82,22 @@ def add_routes(app, conn):
         type_id = data['type_id']
 
         try:
-            check_in_date = datetime.strptime(check_in, '%Y-%m-%d')
-            today = datetime.strptime(datetime.today(), '%Y-%m-%d')
+            check_in_date = datetime.strptime(check_in, '%Y-%m-%d').date()
+            today = date.today()
             if check_in_date < today:
                 raise BadRequestError(message="Check in date cannot be in the past")
         except ValueError:
             raise BadRequestError(message="Invalid date format for check_in. Must be YYYY-MM-DD")
 
         try:
-            check_out_date = datetime.strptime(check_out, '%Y-%m-%d')
+            check_out_date = datetime.strptime(check_out, '%Y-%m-%d').date()
             if check_out_date <= check_in_date:
                 raise BadRequestError(message="Check out date must be later than check in date")
         except ValueError:
             raise BadRequestError(message="Invalid date format for check_out. Must be YYYY-MM-DD")
 
         try:
-            check_out_date = datetime.strptime(check_out, '%Y-%m-%d')
+            check_out_date = datetime.strptime(check_out, '%Y-%m-%d').date()
             if check_out_date <= check_in_date:
                 raise BadRequestError(message="Check out date must be later than check in date")
         except ValueError:

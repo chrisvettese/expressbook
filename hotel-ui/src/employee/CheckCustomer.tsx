@@ -5,7 +5,7 @@ import {
     GridList,
     GridListTile,
     makeStyles,
-    Paper, Radio, RadioGroup, Snackbar,
+    Paper, Radio, RadioGroup, Snackbar, TextField,
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
@@ -25,6 +25,14 @@ const useStyles = makeStyles(theme => ({
         paddingTop: '2em',
         fontWeight: 'bold',
         fontSize: '2em',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%'
+    },
+    centreSubTitle: {
+        paddingTop: '0.5em',
+        fontSize: '1.4em',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -63,26 +71,28 @@ const useStyles = makeStyles(theme => ({
         flexDirection: 'column',
         justifyContent: 'center'
     },
-    radioGroup: {
+    centreDiv: {
         width: '100%',
+        display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: '1em'
+        marginBottom: '1em',
+        marginTop: '1em'
     }
 }));
 
-type Reservation = {
+interface Reservation {
     booking_id: number;
-    physical_address: string;
     date_of_registration: string;
     check_in_day: string;
     check_out_day: string;
-    status: string;
     title: string;
     is_extendable: boolean;
     amenities: string[];
     view: string;
     price: string;
+    customer_sin: string;
+    customer_name: string;
 }
 
 type Severity = "error" | "success" | "info" | "warning" | undefined;
@@ -91,22 +101,29 @@ const GenerateReservations = ({
                                   classes,
                                   reservations,
                                   editButtonToDisable,
-                                  radioState,
                                   setEditButtonToDisable,
                                   setAlertMessage,
                                   setAlertStatus,
                                   setAlertOpen,
-                                  customerSIN,
-                                  setReservations
+                                  setReservations,
+                                  isCheckIn,
+                                  searchSIN
                               }: any) => {
+
+    const filteredReservations = reservations.filter((reservation: Reservation) => reservation.customer_sin.includes(searchSIN));
+    if (filteredReservations.length === 0) {
+        return (
+            <GridList cols={1} cellHeight={220} className={classes.grid}>
+                <GridListTile cols={1}>
+                    <Typography className={classes.centreSubTitle}>No reservations found!</Typography>
+                </GridListTile>
+            </GridList>
+        )
+    }
 
     return <GridList cols={1} cellHeight={220} className={classes.grid}>
         {
-            reservations.filter((reservation: Reservation) => {
-                return !((radioState === 1 && reservation.status !== 'Renting')
-                    || (radioState === 2 && reservation.status !== 'Booked')
-                    || (radioState === 3 && reservation.status !== 'Archived' && reservation.status !== 'Cancelled'))
-            }).map((reservation: Reservation) => {
+            filteredReservations.map((reservation: Reservation, index: number) => {
                 const checkIn: Date = new Date(reservation.check_in_day.replace('-', '/'))
                 const checkOut: Date = new Date(reservation.check_out_day.replace('-', '/'))
                 const days: number = Math.round(Math.abs(+checkIn - +checkOut) / 24 / 60 / 60 / 1000)
@@ -124,8 +141,8 @@ const GenerateReservations = ({
                                     <Typography
                                         className={classes.hotelTitle}>Room: {reservation.title} | {reservation.check_in_day} to {reservation.check_out_day}
                                     </Typography>
-                                    <Typography>{reservation.physical_address}</Typography>
-                                    <Typography>Booking status: {reservation.status}</Typography>
+                                    <Typography>Customer name: {reservation.customer_name}</Typography>
+                                    <Typography>Customer SIN: {reservation.customer_sin}</Typography>
                                     <Typography>Amenities: {reservation.amenities.join(', ')}</Typography>
                                     <Typography>View: {reservation.view}</Typography>
                                     <Typography>
@@ -139,15 +156,11 @@ const GenerateReservations = ({
                                         <Typography className={classes.hotelTitle}>Total price:</Typography>
                                         <Typography className={classes.hotelTitle}>${totalPrice}</Typography>
                                         <br/>
-                                        <ReservationEditButton reservation={reservation}
-                                                               reservations={reservations}
-                                                               setEditButtonToDisable={setEditButtonToDisable}
-                                                               editButtonToDisable={editButtonToDisable}
-                                                               setAlertMessage={setAlertMessage}
-                                                               setAlertStatus={setAlertStatus}
-                                                               setAlertOpen={setAlertOpen}
-                                                               customerSIN={customerSIN}
-                                                               setReservations={setReservations}/>
+                                        <Button variant='contained'
+                                                onClick={() => patchReservation(isCheckIn ? 'Renting' : 'Archived', setEditButtonToDisable, reservations, reservation, setAlertMessage, setAlertStatus, setAlertOpen, setReservations, index)}
+                                                disabled={editButtonToDisable === reservation.booking_id}>
+                                            {isCheckIn ? "Check In" : "Check Out"}
+                                        </Button>
                                     </Grid>
                                 </Grid>
                             </Grid>
@@ -159,46 +172,10 @@ const GenerateReservations = ({
     </GridList>
 }
 
-type ReservationEditProps = {
-    reservation: Reservation;
-    reservations: Reservation[];
-    editButtonToDisable: number;
-    setEditButtonToDisable: any;
-    setAlertMessage: any;
-    setAlertStatus: any;
-    setAlertOpen: any;
-    customerSIN: string;
-    setReservations: any;
-}
-
-const ReservationEditButton = ({
-                                   reservation,
-                                   reservations,
-                                   editButtonToDisable,
-                                   setEditButtonToDisable,
-                                   setAlertMessage,
-                                   setAlertStatus,
-                                   setAlertOpen,
-                                   customerSIN,
-                                   setReservations
-                               }: ReservationEditProps) => {
-    if (reservation.status === 'Renting') {
-        return <Button variant='contained'
-                       onClick={() => patchReservation('Archived', setEditButtonToDisable, reservations, reservation, setAlertMessage, setAlertStatus, setAlertOpen, customerSIN, setReservations)}
-                       disabled={editButtonToDisable === reservation.booking_id}>Check Out</Button>
-    }
-    if (reservation.status === 'Booked') {
-        return <Button variant='contained'
-                       onClick={() => patchReservation('Cancelled', setEditButtonToDisable, reservations, reservation, setAlertMessage, setAlertStatus, setAlertOpen, customerSIN, setReservations)}
-                       disabled={editButtonToDisable === reservation.booking_id}>Cancel</Button>
-    }
-    return <></>
-}
-
-async function patchReservation(action: string, setEditButtonToDisable: any, reservations: Reservation[], reservation: Reservation, setAlertMessage: any, setAlertStatus: any, setAlertOpen: any, customerSIN: string, setReservations: any) {
+async function patchReservation(action: string, setEditButtonToDisable: any, reservations: Reservation[], reservation: Reservation, setAlertMessage: any, setAlertStatus: any, setAlertOpen: any, setReservations: any, index: number) {
     setEditButtonToDisable(reservation.booking_id);
     try {
-        let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + customerSIN + "/reservations/" + reservation.booking_id, {
+        let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + reservation.customer_sin + "/reservations/" + reservation.booking_id, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
@@ -208,14 +185,14 @@ async function patchReservation(action: string, setEditButtonToDisable: any, res
             })
         })
         if (response.status === 204) {
-            if (action === 'Archived') {
-                updateReservations([...reservations], reservation.booking_id, 'Archived', setReservations);
-                openAlert('Successfully checked out of hotel', 'success', setAlertMessage, setAlertStatus, setAlertOpen);
-
+            if (action === 'Renting') {
+                openAlert('Successfully checked in customer', 'success', setAlertMessage, setAlertStatus, setAlertOpen);
             } else {
-                updateReservations([...reservations], reservation.booking_id, 'Cancelled', setReservations);
-                openAlert('Successfully cancelled room booking', 'success', setAlertMessage, setAlertStatus, setAlertOpen)
+                openAlert('Successfully checked out customer', 'success', setAlertMessage, setAlertStatus, setAlertOpen);
             }
+            const newReservations: Reservation[] = [...reservations];
+            newReservations.splice(index, 1);
+            setReservations(newReservations);
         } else {
             openAlert('Error: Unable to modify reservation', 'error', setAlertMessage, setAlertStatus, setAlertOpen);
         }
@@ -226,65 +203,50 @@ async function patchReservation(action: string, setEditButtonToDisable: any, res
     setEditButtonToDisable(-1);
 }
 
-function updateReservations(reservations: Reservation[], bookingID: number, status: string, setReservations: any) {
-    for (let i = 0; i < reservations.length; i++) {
-        if (reservations[i].booking_id === bookingID) {
-            reservations[i].status = status;
-            setReservations(reservations);
-            return;
-        }
-    }
-}
-
 function openAlert(message: string, status: string, setAlertMessage: any, setAlertStatus: any, setAlertOpen: any) {
     setAlertMessage(message);
     setAlertStatus(status);
     setAlertOpen(true);
 }
 
-export default function CheckIn() {
+export default function CheckCustomer() {
     const classes = useStyles();
     const location = useLocation<{
-        customerName: string;
-        customerSIN: string,
-        response: Reservation[]
+        response: Reservation[];
+        checkIn: boolean;
     }>();
 
     location.state.response.sort((r1: Reservation, r2: Reservation) => (r1.check_in_day > r2.check_in_day) ? 1 : -1);
 
-    const [radioState, setRadioState] = useState(0);
     const [alertOpen, setAlertOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
     const [alertStatus, setAlertStatus]: [Severity, any] = useState("success");
     const [editButtonToDisable, setEditButtonToDisable]: [number, any] = useState(-1);
     const [reservations, setReservations]: [Reservation[], any] = useState([...location.state.response]);
+    const [searchSIN, setSearchSIN]: [string, any] = useState("");
+
+    const dateWords = new Date().toDateString();
+    const subTitle = location.state.checkIn ? 'For ' + dateWords : 'Customers currently renting rooms'
 
     function closeAlert() {
         setAlertOpen(false);
     }
 
-    function setReservationRadioState(event: React.ChangeEvent<HTMLInputElement>) {
-        const value = parseInt(event.target.value);
-        setRadioState(value);
-    }
-
     return (
         <div className={classes.root}>
             <TitleBarCustomer/>
-            <Typography className={classes.centreTitle}>My Reservations - {location.state.customerName}</Typography>
-            <RadioGroup className={classes.radioGroup} value={radioState} onChange={e => setReservationRadioState(e)}
-                        row>
-                <Typography>Filter by:&nbsp;&nbsp;&nbsp;</Typography>
-                <FormControlLabel value={0} control={<Radio/>} label="All Reservations"/>
-                <FormControlLabel value={1} control={<Radio/>} label="Ongoing"/>
-                <FormControlLabel value={2} control={<Radio/>} label="Upcoming"/>
-                <FormControlLabel value={3} control={<Radio/>} label="Cancelled/Archived"/>
-            </RadioGroup>
+            <Typography
+                className={classes.centreTitle}>Customer {location.state.checkIn ? 'Check In' : 'Check Out'}</Typography>
+            <Typography className={classes.centreSubTitle}>{subTitle}</Typography>
+            <div className={classes.centreDiv}>
+                <TextField label="Search by SIN" variant="outlined" value={searchSIN}
+                           onChange={event => setSearchSIN(event.currentTarget.value)}/>
+            </div>
             <GenerateReservations classes={classes} reservations={reservations}
-                                  editButtonToDisable={editButtonToDisable} radioState={radioState}
+                                  editButtonToDisable={editButtonToDisable}
                                   setEditButtonToDisable={setEditButtonToDisable} setAlertMessage={setAlertMessage}
-                                  setAlertStatus={setAlertStatus} setAlertOpen={setAlertOpen}
-                                  customerSIN={location.state.customerSIN} setReservations={setReservations}/>
+                                  setAlertStatus={setAlertStatus} setAlertOpen={setAlertOpen} searchSIN={searchSIN}
+                                  setReservations={setReservations} isCheckIn={location.state.checkIn}/>
             <Snackbar open={alertOpen} autoHideDuration={6000} onClose={closeAlert}>
                 <Alert onClose={closeAlert} severity={alertStatus}>
                     {alertMessage}

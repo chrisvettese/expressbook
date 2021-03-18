@@ -15,7 +15,7 @@ import Hotel from "./customer/Hotel";
 import Reservations from "./customer/Reservations";
 import Rooms from "./customer/Rooms";
 import WelcomeEmployee from "./employee/WelcomeEmployee";
-import CheckIn from "./employee/CheckIn";
+import CheckCustomer from "./employee/CheckCustomer";
 
 require('dotenv').config()
 
@@ -47,7 +47,8 @@ ReactDOM.render(
             <Switch>
                 <Route exact path="/ui/employee" component={Employee}/>
                 <Route exact path="/ui/employee/welcome" component={WelcomeEmployee}/>
-                <Route exact path="/ui/employee/checkin" component={CheckIn}/>
+                <Route exact path="/ui/employee/checkin" component={CheckCustomer}/>
+                <Route exact path="/ui/employee/checkout" component={CheckCustomer}/>
                 <Route exact path="/ui/customer" component={SignInCustomer}/>
                 <Route exact path="/ui/customer/name" component={Name}/>
                 <Route exact path="/ui/customer/welcome" component={WelcomeCustomer}/>

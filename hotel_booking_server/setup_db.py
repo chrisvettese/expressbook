@@ -396,7 +396,7 @@ def generate_postal_or_zip(country):
 def generate_address(hotel_address):
     components = hotel_address.split(',')
     return str(random.randint(1, 2000)) + ' ' + random.choice(hotel_data.streets) + ',' + components[1] + ',' \
-           + components[2] + ',' + generate_postal_or_zip(components[4]) + ',' + components[4]
+           + components[2] + ', ' + generate_postal_or_zip(components[4]) + ',' + components[4]
 
 
 def random_salary():
