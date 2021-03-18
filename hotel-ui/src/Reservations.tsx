@@ -9,7 +9,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBarCustomer} from "../index";
+import {TitleBarCustomer} from "./index";
 import {useLocation} from "react-router-dom";
 import {Alert} from "@material-ui/lab";
 
@@ -246,8 +246,9 @@ export default function Reservations() {
     const classes = useStyles();
     const location = useLocation<{
         customerName: string;
-        customerSIN: string,
-        response: Reservation[]
+        customerSIN: string;
+        response: Reservation[];
+        isCustomer: boolean;
     }>();
 
     location.state.response.sort((r1: Reservation, r2: Reservation) => (r1.check_in_day > r2.check_in_day) ? 1 : -1);
@@ -258,6 +259,8 @@ export default function Reservations() {
     const [alertStatus, setAlertStatus]: [Severity, any] = useState("success");
     const [editButtonToDisable, setEditButtonToDisable]: [number, any] = useState(-1);
     const [reservations, setReservations]: [Reservation[], any] = useState([...location.state.response]);
+
+    const titleMessage = location.state.isCustomer ? 'My Reservations - ' + location.state.customerName : 'Customer Reservations - ' + location.state.customerName;
 
     function closeAlert() {
         setAlertOpen(false);
@@ -271,7 +274,7 @@ export default function Reservations() {
     return (
         <div className={classes.root}>
             <TitleBarCustomer/>
-            <Typography className={classes.centreTitle}>My Reservations - {location.state.customerName}</Typography>
+            <Typography className={classes.centreTitle}>{titleMessage}</Typography>
             <RadioGroup className={classes.radioGroup} value={radioState} onChange={e => setReservationRadioState(e)}
                         row>
                 <Typography>Filter by:&nbsp;&nbsp;&nbsp;</Typography>

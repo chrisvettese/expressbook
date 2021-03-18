@@ -1,11 +1,11 @@
 import {
     Button,
-    Divider, FormControlLabel,
+    Divider,
     Grid,
     GridList,
     GridListTile,
     makeStyles,
-    Paper, Radio, RadioGroup, Snackbar, TextField,
+    Paper, Snackbar, TextField,
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";

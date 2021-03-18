@@ -89,7 +89,8 @@ export default function WelcomeCustomer() {
             history.push('/ui/customer/reservations', {
                 customerName: location.state.customerName,
                 customerSIN: location.state.customerSIN,
-                response: response
+                response: response,
+                isCustomer: true
             });
         } catch (error) {
             console.error('Error:', error);

@@ -76,7 +76,6 @@ export default function WelcomeEmployee() {
     const [checkInDisabled, setCheckInDisabled]: [boolean, any] = useState(false);
     const [checkOutDisabled, setCheckOutDisabled]: [boolean, any] = useState(false);
     const [createDisabled, setCreateDisabled]: [boolean, any] = useState(false);
-    const [manageCustomerDisabled, setManageCustomerDisabled]: [boolean, any] = useState(false);
     const [manageEmployeeDisabled, setManageEmployeeDisabled]: [boolean, any] = useState(false);
 
     const welcomeMessage = location.state.brandName + ", " + location.state.hotelAddress
@@ -95,6 +94,10 @@ export default function WelcomeEmployee() {
             console.error('Error:', error);
             setCheckInDisabled(false);
         }
+    }
+
+    function manageCustomer() {
+        history.push('/ui/employee/managecustomer');
     }
 
     async function checkOut() {
@@ -160,13 +163,14 @@ export default function WelcomeEmployee() {
                     </Grid>
                     <Grid item xs className={classes.gridSpacing}>
                         <Grid item xs className={classes.buttonSpacing}>
-                            <Button variant="contained" className={classes.buttonSpacing} disabled={checkOutDisabled} onClick={() => checkOut()}>
+                            <Button variant="contained" className={classes.buttonSpacing} disabled={checkOutDisabled}
+                                    onClick={() => checkOut()}>
                                 Customer Check Out
                             </Button>
                         </Grid>
                         <Grid item xs className={classes.buttonSpacing}>
                             <Button variant="contained" className={classes.buttonSpacing}
-                                    disabled={manageCustomerDisabled}>
+                                    onClick={() => manageCustomer()}>
                                 Manage Customer
                             </Button>
                         </Grid>

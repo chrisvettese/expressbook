@@ -5,17 +5,18 @@ import {
     Switch,
     Route
 } from "react-router-dom";
-import Employee from "./employee/Employee";
+import SignInEmployee from "./employee/SignInEmployee";
 import SignInCustomer from "./customer/SignInCustomer";
 import {AppBar, makeStyles, Typography} from "@material-ui/core";
 import Name from "./customer/Name";
 import WelcomeCustomer from "./customer/WelcomeCustomer";
 import HotelBrand from "./customer/HotelBrand";
 import Hotel from "./customer/Hotel";
-import Reservations from "./customer/Reservations";
+import Reservations from "./Reservations";
 import Rooms from "./customer/Rooms";
 import WelcomeEmployee from "./employee/WelcomeEmployee";
 import CheckCustomer from "./employee/CheckCustomer";
+import ManageCustomer from "./employee/ManageCustomer";
 
 require('dotenv').config()
 
@@ -45,10 +46,12 @@ ReactDOM.render(
     <>
         <Router>
             <Switch>
-                <Route exact path="/ui/employee" component={Employee}/>
+                <Route exact path="/ui/employee" component={SignInEmployee}/>
                 <Route exact path="/ui/employee/welcome" component={WelcomeEmployee}/>
                 <Route exact path="/ui/employee/checkin" component={CheckCustomer}/>
                 <Route exact path="/ui/employee/checkout" component={CheckCustomer}/>
+                <Route exact path="/ui/employee/managecustomer" component={ManageCustomer}/>
+                <Route exact path="/ui/employee/reservations" component={Reservations}/>
                 <Route exact path="/ui/customer" component={SignInCustomer}/>
                 <Route exact path="/ui/customer/name" component={Name}/>
                 <Route exact path="/ui/customer/welcome" component={WelcomeCustomer}/>

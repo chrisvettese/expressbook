@@ -29,11 +29,11 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface CustomerResponse {
-    customer_sin: string,
-    customer_name: string,
-    customer_address: string,
-    customer_email: string,
-    customer_phone: string
+    customer_sin: string;
+    customer_name: string;
+    customer_address: string;
+    customer_email: string;
+    customer_phone: string;
 }
 
 export default function SignInCustomer() {
@@ -42,14 +42,14 @@ export default function SignInCustomer() {
 
     const [SIN, setSIN] = useState("");
     const [disableSignIn, setDisableSignIn] = useState(false);
-    const sin_re: RegExp = /^[0-9]{3}-[0-9]{3}-[0-9]{3}$/;
+    const sinRegex: RegExp = /^[0-9]{3}-[0-9]{3}-[0-9]{3}$/;
 
     function validateSIN(): boolean {
-        return !sin_re.test(SIN) && SIN.length !== 0;
+        return !sinRegex.test(SIN) && SIN.length !== 0;
     }
 
     function keyPressed(e: React.KeyboardEvent<HTMLDivElement>) {
-        if (e.key === 'Enter' && sin_re.test(SIN)) {
+        if (e.key === 'Enter' && sinRegex.test(SIN)) {
             checkCustomer();
         }
     }
@@ -93,7 +93,7 @@ export default function SignInCustomer() {
             </div>
             <div className={classes.buttonCentre}>
                 <Button variant="contained" onClick={() => checkCustomer()}
-                        disabled={!sin_re.test(SIN) || disableSignIn}>Sign In</Button>
+                        disabled={!sinRegex.test(SIN) || disableSignIn}>Sign In</Button>
             </div>
         </>
     )

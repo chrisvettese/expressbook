@@ -40,21 +40,21 @@ interface GetEmployeeResponse {
     hotel_address: string;
 }
 
-export default function Employee() {
+export default function SignInEmployee() {
     const classes = useStyles();
     const history = useHistory();
 
     const [SIN, setSIN] = useState("");
     const [disableSignIn, setDisableSignIn] = useState(false);
     const [error, setError] = useState("");
-    const sin_re: RegExp = /^[0-9]{3}-[0-9]{3}-[0-9]{3}$/;
+    const sinRegex: RegExp = /^[0-9]{3}-[0-9]{3}-[0-9]{3}$/;
 
     function validateSIN(): boolean {
-        return !sin_re.test(SIN) && SIN.length !== 0;
+        return !sinRegex.test(SIN) && SIN.length !== 0;
     }
 
     function keyPressed(e: React.KeyboardEvent<HTMLDivElement>) {
-        if (e.key === 'Enter' && sin_re.test(SIN)) {
+        if (e.key === 'Enter' && sinRegex.test(SIN)) {
             checkEmployee();
         }
     }
@@ -103,9 +103,11 @@ export default function Employee() {
             </div>
             <div className={classes.buttonCentre}>
                 <Button variant="contained" onClick={() => checkEmployee()}
-                        disabled={!sin_re.test(SIN) || disableSignIn}>Sign In</Button>
+                        disabled={!sinRegex.test(SIN) || disableSignIn}>Sign In</Button>
             </div>
-            <Typography style={{color: "red"}}>{error}</Typography>
+            <div className={classes.sinCentre}>
+                <Typography style={{color: "red"}}>{error}</Typography>
+            </div>
         </>
     )
 }

@@ -212,7 +212,7 @@ def table_creation(conn):
 
             # function to correct room status for a hotel if it has not been updated
             curs.execute('''
-                CREATE OR REPLACE FUNCTION hotel.correct_status_hotel(h_ID VARCHAR(11))
+                CREATE OR REPLACE FUNCTION hotel.correct_status_hotel(h_ID INTEGER)
                 RETURNS VOID AS
                     $$
                     BEGIN
