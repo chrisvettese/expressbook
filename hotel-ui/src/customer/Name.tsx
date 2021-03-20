@@ -10,6 +10,12 @@ const useStyles = makeStyles(() => ({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    textField: {
+        paddingTop: '2em',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     buttonCentre: {
         paddingTop: '2em',
         display: 'flex',
@@ -26,11 +32,11 @@ export default function Name() {
     const [address, setAddress] = useState("");
     const [email, setEmail] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
-    const [nameError, setNameError] = useState(false);
-    const [addressError, setAddressError] = useState(false);
-    const [emailError, setEmailError] = useState(false);
-    const [phoneError, setPhoneError] = useState(false);
-    const [disableUseButton, setDisableUseButton] = useState(false);
+    const [nameError, setNameError]: [boolean, any] = useState(false);
+    const [addressError, setAddressError]: [boolean, any] = useState(false);
+    const [emailError, setEmailError]: [boolean, any] = useState(false);
+    const [phoneError, setPhoneError]: [boolean, any] = useState(false);
+    const [disableUseButton, setDisableUseButton]: [boolean, any] = useState(false);
 
     async function submitInfo() {
         const nameError: boolean = name.length === 0;
@@ -48,8 +54,6 @@ export default function Name() {
         setAddressError(addressError);
         setEmailError(emailError);
         setPhoneError(phoneError);
-
-        console.log(nameError +','+addressError+','+emailError+','+phoneError)
 
         if (nameError || addressError || emailError || phoneError) {
             return;
@@ -102,22 +106,22 @@ export default function Name() {
             <div className={classes.centre}>
                 <Typography>Welcome to ExpressBook. Please provide some information about yourself:</Typography>
             </div>
-            <div className={classes.centre}>
+            <div className={classes.textField}>
                 <TextField label="Full Name" variant="outlined" value={name} error={nameError}
                            helperText={nameError ? "Must provide name" : ""}
                            onChange={event => setName(event.currentTarget.value)}/>
             </div>
-            <div className={classes.centre}>
+            <div className={classes.textField}>
                 <TextField label="Address" variant="outlined" value={address} error={addressError}
                            helperText={addressError ? "Must provide address" : ""}
                            onChange={event => setAddress(event.currentTarget.value)}/>
             </div>
-            <div className={classes.centre}>
+            <div className={classes.textField}>
                 <TextField label="Email" variant="outlined" value={email} error={emailError}
                            helperText={emailError ? "Must provide valid email" : ""}
                            onChange={event => setEmail(event.currentTarget.value)}/>
             </div>
-            <div className={classes.centre}>
+            <div className={classes.textField}>
                 <TextField label="Phone Number" variant="outlined" value={phoneNumber} error={phoneError}
                            helperText={phoneError ? "Must provide valid phone number" : ""}
                            onChange={event => setPhoneNumber(event.currentTarget.value)}/>

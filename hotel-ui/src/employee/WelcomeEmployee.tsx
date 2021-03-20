@@ -1,4 +1,4 @@
-import {Button, Grid, makeStyles, Paper, Typography} from "@material-ui/core";
+import {Box, Button, makeStyles, Paper, Typography} from "@material-ui/core";
 import React, {useState} from "react";
 import {TitleBarEmployee} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
@@ -34,7 +34,9 @@ const useStyles = makeStyles(() => ({
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: '1em',
-        marginTop: '1em'
+        marginTop: '1em',
+        marginLeft: '1em',
+        marginRight: '1em'
     },
     gridSpacing: {
         alignItems: 'center',
@@ -75,7 +77,6 @@ export default function WelcomeEmployee() {
 
     const [checkInDisabled, setCheckInDisabled]: [boolean, any] = useState(false);
     const [checkOutDisabled, setCheckOutDisabled]: [boolean, any] = useState(false);
-    const [createDisabled, setCreateDisabled]: [boolean, any] = useState(false);
     const [manageEmployeeDisabled, setManageEmployeeDisabled]: [boolean, any] = useState(false);
 
     const welcomeMessage = location.state.brandName + ", " + location.state.hotelAddress
@@ -147,35 +148,26 @@ export default function WelcomeEmployee() {
                 </Paper>
             </div>
             <div className={classes.paperContainer}>
-                <Grid container alignItems="center" justify="center" className={classes.topGrid}>
-                    <Grid item xs className={classes.gridSpacing}>
-                        <Grid item xs className={classes.buttonSpacing}>
-                            <Button variant="contained" className={classes.buttonSpacing} disabled={checkInDisabled}
-                                    onClick={() => checkIn()}>
-                                Customer Check In
-                            </Button>
-                        </Grid>
-                        <Grid item xs className={classes.buttonSpacing}>
-                            <Button variant="contained" className={classes.buttonSpacing} disabled={createDisabled}>
-                                Create Booking
-                            </Button>
-                        </Grid>
-                    </Grid>
-                    <Grid item xs className={classes.gridSpacing}>
-                        <Grid item xs className={classes.buttonSpacing}>
-                            <Button variant="contained" className={classes.buttonSpacing} disabled={checkOutDisabled}
-                                    onClick={() => checkOut()}>
-                                Customer Check Out
-                            </Button>
-                        </Grid>
-                        <Grid item xs className={classes.buttonSpacing}>
-                            <Button variant="contained" className={classes.buttonSpacing}
-                                    onClick={() => manageCustomer()}>
-                                Manage Customer
-                            </Button>
-                        </Grid>
-                    </Grid>
-                </Grid>
+                <Box display="flex" flexDirection="row" p={1} m={1}>
+                    <Box p={1}>
+                        <Button variant="contained" className={classes.buttonSpacing} disabled={checkInDisabled}
+                                onClick={() => checkIn()}>
+                            Customer Check In
+                        </Button>
+                    </Box>
+                    <Box p={1}>
+                        <Button variant="contained" className={classes.buttonSpacing} disabled={checkOutDisabled}
+                                onClick={() => checkOut()}>
+                            Customer Check Out
+                        </Button>
+                    </Box>
+                    <Box p={1}>
+                        <Button variant="contained" className={classes.buttonSpacing}
+                                onClick={() => manageCustomer()}>
+                            Manage Customer
+                        </Button>
+                    </Box>
+                </Box>
             </div>
             <br/>
             <ManagerActions/>

@@ -28,6 +28,8 @@ const useTitleStyles = makeStyles(() => ({
     }
 }));
 
+export type Severity = "error" | "success" | "info" | "warning" | undefined;
+
 export function TitleBarCustomer() {
     const classes = useTitleStyles();
     return <AppBar position="static">

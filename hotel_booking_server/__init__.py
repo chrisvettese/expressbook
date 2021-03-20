@@ -6,7 +6,7 @@ import psycopg2
 import atexit
 
 import yaml
-from flask import Flask, jsonify
+from flask import Flask
 from flask_cors import CORS
 
 from hotel_booking_server import setup_db, routes

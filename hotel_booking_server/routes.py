@@ -18,7 +18,7 @@ def add_routes(app, conn):
         query = 'SELECT * FROM hotel.customer c WHERE c.customer_sin = \'{}\''.format(cid)
         response = get_results(query, conn, single=True)
         if len(response) == 0:
-            raise ResourceNotFoundError(message='SignInCustomer SIN={} not found'.format(cid))
+            raise ResourceNotFoundError(message='Customer SIN={} not found'.format(cid))
         return Response(response, status=200, mimetype='application/json')
 
     @app.route('/customers', methods=["POST"])
@@ -48,7 +48,7 @@ def add_routes(app, conn):
         try:
             execute(query, conn)
         except psycopg2.DatabaseError:
-            raise ResourceConflictError(message='SignInCustomer already exists')
+            raise ResourceConflictError(message='Customer already exists')
         return Response(status=201, mimetype='application/json')
 
     @app.route('/customers/<cid>/reservations')
@@ -116,7 +116,7 @@ def add_routes(app, conn):
         except psycopg2.DatabaseError as e:
             e = str(e)
             if 'Key (customer_sin)=' in e:
-                raise BadRequestError(message='SignInCustomer id not found: ' + cid)
+                raise BadRequestError(message='Customer id not found: ' + cid)
             if 'This room is already booked up' in e:
                 raise ResourceConflictError(message='Room is already booked up')
             raise BadRequestError
@@ -306,8 +306,6 @@ def add_routes(app, conn):
 
         execute('SELECT hotel.correct_status_hotel({})'.format(hid), conn)
 
-        today = datetime.today().strftime('%Y-%m-%d')
-
         if action == 'check-in':
             query = '''SELECT b.booking_id, b.date_of_registration, b.check_in_day, b.check_out_day,
                        t.title, t.is_extendable, t.amenities, v.view, t.price, c.customer_sin, c.customer_name
@@ -316,8 +314,9 @@ def add_routes(app, conn):
                        JOIN hotel.hotel_room_type t ON t.type_ID = b.type_ID
                        JOIN hotel.view_type v ON v.view_ID = t.view_ID
                        JOIN hotel.customer c ON b.customer_sin = c.customer_sin
-                       WHERE s.value = 'Booked' AND b.hotel_id = {} AND b.check_in_day = DATE '{}\'''' \
-                .format(hid, today)
+                       WHERE s.value = 'Booked' AND b.hotel_id = {} AND CURRENT_DATE >= b.check_in_day
+                       AND CURRENT_DATE < b.check_out_day
+                       '''.format(hid)
 
         else:
             query = '''SELECT b.booking_id, b.date_of_registration, b.check_in_day, b.check_out_day,

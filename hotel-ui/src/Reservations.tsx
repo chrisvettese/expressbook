@@ -9,7 +9,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBarCustomer} from "./index";
+import {Severity, TitleBarCustomer} from "./index";
 import {useLocation} from "react-router-dom";
 import {Alert} from "@material-ui/lab";
 
@@ -84,8 +84,6 @@ type Reservation = {
     view: string;
     price: string;
 }
-
-type Severity = "error" | "success" | "info" | "warning" | undefined;
 
 const GenerateReservations = ({
                                   classes,

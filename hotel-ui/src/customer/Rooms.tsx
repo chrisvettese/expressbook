@@ -10,7 +10,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBarCustomer} from "../index";
+import {Severity, TitleBarCustomer} from "../index";
 import {useLocation} from "react-router-dom";
 import {
     MuiPickersUtilsProvider,
@@ -121,7 +121,11 @@ const useStyles = makeStyles(theme => ({
     dialogAddress: {
         marginLeft: "0.5em",
         marginRight: "0.5em",
-        fontStyle: "italic"
+        fontStyle: "italic",
+        display: 'flex',
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center'
     }
 }));
 
@@ -153,8 +157,6 @@ interface Room {
     enabled: undefined | boolean;
     tooltip: string;
 }
-
-type Severity = "error" | "success" | "info" | "warning" | undefined;
 
 interface AvailableRoom {
     type_id: number;
