@@ -10,7 +10,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {Severity, TitleBarCustomer} from "../index";
+import {Severity, TitleBarCustomer} from "./index";
 import {useLocation} from "react-router-dom";
 import {
     MuiPickersUtilsProvider,
@@ -163,6 +163,24 @@ interface AvailableRoom {
     occupancy: number;
 }
 
+function EmployeeInfo({location, classes}: any) {
+    if (location.state.employeeName !== undefined) {
+        return (
+            <>
+                <Divider/>
+                <Typography align="center" className={classes.dialogHeader}>Employee Info</Typography>
+                <Divider/>
+                <div className={classes.dialogDiv}>
+                    <Typography>{location.state.employeeName}</Typography>
+                    <Typography>{location.state.jobTitle}</Typography>
+                </div>
+                <br/>
+            </>
+        )
+    }
+    return <></>
+}
+
 const ConfirmationDialog = ({
                                 dialogOpen,
                                 setDialogOpen,
@@ -183,6 +201,7 @@ const ConfirmationDialog = ({
             <Typography align="center">{location.state.address}</Typography>
         </div>
         <br/>
+        <EmployeeInfo location={location} classes={classes}/>
         <Divider/>
         <Typography align="center" className={classes.dialogHeader}>Customer Info</Typography>
         <Divider/>
@@ -229,7 +248,10 @@ export default function Rooms() {
         customerPhone: string,
         response: Room[],
         brandName: string,
-        hotelID: string
+        hotelID: string,
+        employeeName: string,
+        employeeSIN: string,
+        jobTitle: string
     }>();
 
     const buttonStateValues: boolean[] = []

@@ -11,7 +11,7 @@ import {
 } from "@material-ui/core";
 import React, {useState} from "react";
 import {Severity, TitleBarEmployee} from "../index";
-import {useHistory,} from "react-router-dom";
+import {useHistory, useLocation,} from "react-router-dom";
 import {Alert} from "@material-ui/lab";
 
 const useStyles = makeStyles(() => ({
@@ -158,7 +158,7 @@ async function createCustomer(customerSIN: string, name: string, address: string
             isEmailError = true;
         }
     }
-    const isPhoneError: boolean = !(/^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/im).test(phoneNumber);
+    const isPhoneError: boolean = !(/^(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?$/).test(phoneNumber);
 
     setNameError(isNameError);
     setAddressError(isAddressError);
@@ -211,14 +211,25 @@ function openAlert(message: string, status: string, setAlertMessage: any, setAle
     setAlertOpen(true);
 }
 
+interface ManageCustomerState {
+    employeeSIN: string;
+    employeeName: string;
+    jobTitle: string;
+    hotelID: number;
+    brandName: string;
+    address: string;
+}
+
 export default function ManageCustomer() {
     const classes = useStyles();
     const history = useHistory();
+    const location = useLocation<ManageCustomerState>();
 
     const [SIN, setSIN] = useState("");
     const [disableFindCustomer, setDisableFindCustomer]: [boolean, any] = useState(false);
     const [customerData, setCustomerData]: [CustomerResponse | CustomerError | null, any] = useState(null);
     const [disableReservations, setDisableReservations]: [boolean, any] = useState(false);
+    const [disableCreate, setDisableCreate]: [boolean, any] = useState(false);
     const [dialogOpen, setDialogOpen]: [boolean, any] = useState(false);
     const [alertOpen, setAlertOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
@@ -280,8 +291,13 @@ export default function ManageCustomer() {
                 </div>
                 <br/><br/>
                 <div className={classes.paperContainer}>
-                    <Button variant="contained" color="primary" disabled={disableReservations}
-                            onClick={getReservations}>View Customer Reservations</Button>
+                    <Button variant="contained" disabled={disableReservations}
+                            onClick={getReservations}>View Customer Bookings</Button>
+                </div>
+                <br/><br/>
+                <div className={classes.paperContainer}>
+                    <Button variant="contained" disabled={disableCreate}
+                            onClick={getRooms}>Create Booking for Customer</Button>
                 </div>
             </>
         );
@@ -308,6 +324,34 @@ export default function ManageCustomer() {
                 setDisableReservations(false);
             }
         }
+    }
+
+    async function getRooms() {
+        setDisableCreate(true);
+        try {
+            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/rooms");
+            if (response.status !== 200 || customerData === null || !("customer_name" in customerData)) {
+                return;
+            }
+            response = await response.json()
+            history.push('/ui/employee/rooms', {
+                customerSIN: customerData.customer_sin,
+                customerName: customerData.customer_name,
+                customerAddress: customerData.customer_address,
+                customerEmail: customerData.customer_email,
+                customerPhone: customerData.customer_phone,
+                response: response,
+                brandName: location.state.brandName,
+                address: location.state.address,
+                hotelID: location.state.hotelID,
+                employeeName: location.state.employeeName,
+                jobTitle: location.state.jobTitle,
+                employeeSIN: location.state.employeeSIN
+            });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+        setDisableCreate(false);
     }
 
     function findCustomer() {

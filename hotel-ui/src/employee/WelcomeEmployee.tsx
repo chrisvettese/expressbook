@@ -98,7 +98,14 @@ export default function WelcomeEmployee() {
     }
 
     function manageCustomer() {
-        history.push('/ui/employee/managecustomer');
+        history.push('/ui/employee/managecustomer', {
+            employeeSIN: location.state.employeeSIN,
+            employeeName: location.state.employeeName,
+            jobTitle: location.state.jobTitle,
+            hotelID: location.state.hotelID,
+            brandName: location.state.brandName,
+            address: location.state.hotelAddress
+        });
     }
 
     async function checkOut() {

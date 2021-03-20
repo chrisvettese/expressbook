@@ -258,7 +258,7 @@ def add_routes(app, conn):
         try:
             execute(query, conn)
         except psycopg2.DatabaseError:
-            raise ResourceConflictError(message='SignInEmployee already exists')
+            raise ResourceConflictError(message='Employee already exists')
         return Response(status=201, mimetype='application/json')
 
     @app.route('/hotels/<hid>/employees/<eid>', methods=["DELETE"])
@@ -340,7 +340,7 @@ def add_routes(app, conn):
                    JOIN hotel.hotel_brand b ON b.brand_id = h.brand_id WHERE e.employee_sin = '{}\''''.format(eid)
         response = get_results(query, conn, single=True)
         if len(response) == 0:
-            raise ResourceNotFoundError(message='SignInEmployee SIN={} not found'.format(eid))
+            raise ResourceNotFoundError(message='Employee SIN={} not found'.format(eid))
         return Response(response, status=200, mimetype='application/json')
 
 

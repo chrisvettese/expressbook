@@ -121,7 +121,7 @@ def table_creation(conn):
                 ''')
             # trigger function to update number_of_hotels for a brand when a new hotel is created
             curs.execute('''
-                CREATE FUNCTION hotel.update_num_hotels() RETURNS TRIGGER AS
+                CREATE FUNCTION hotel.increase_num_hotels() RETURNS TRIGGER AS
                     $$ 
                     BEGIN 
                     UPDATE hotel.hotel_brand SET number_of_hotels = number_of_hotels + 1 
@@ -129,9 +129,24 @@ def table_creation(conn):
                     RETURN NEW;
                     END; 
                     $$ LANGUAGE plpgsql;
-                CREATE TRIGGER update_num_hotels 
+                CREATE TRIGGER increase_num_hotels 
                 AFTER INSERT ON hotel.hotel FOR EACH ROW 
-                EXECUTE PROCEDURE hotel.update_num_hotels()
+                EXECUTE PROCEDURE hotel.increase_num_hotels()
+                ''')
+
+            # trigger function to update number_of_hotels for a brand when a new hotel is created
+            curs.execute('''
+                CREATE FUNCTION hotel.decrease_num_hotels() RETURNS TRIGGER AS
+                    $$ 
+                    BEGIN 
+                    UPDATE hotel.hotel_brand SET number_of_hotels = number_of_hotels - 1 
+                    WHERE NEW.brand_id = brand_id; 
+                    RETURN OLD;
+                    END; 
+                    $$ LANGUAGE plpgsql;
+                CREATE TRIGGER decrease_num_hotels 
+                BEFORE DELETE ON hotel.hotel FOR EACH ROW 
+                EXECUTE PROCEDURE hotel.decrease_num_hotels()
                 ''')
 
             # function to determine how many rooms of a specific type are occupied over a given date range

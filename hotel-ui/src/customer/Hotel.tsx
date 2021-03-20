@@ -86,7 +86,7 @@ export default function Hotel() {
     }
     const [buttonStates, setButtonStates] = useState(buttonStateValues);
 
-    async function getHotels(index: number) {
+    async function getRooms(index: number) {
         let newStates = [...buttonStates]
         newStates[index] = true;
         setButtonStates(newStates);
@@ -148,7 +148,7 @@ export default function Hotel() {
                                             <Grid className={classes.priceDiv}>
                                                 <Rating value={hotel.star_category} readOnly/>
                                                 <br/><br/>
-                                                <Button variant='contained' onClick={() => getHotels(index)}
+                                                <Button variant='contained' onClick={() => getRooms(index)}
                                                         disabled={buttonStates[index]}>View Details</Button>
                                             </Grid>
                                         </Grid>
