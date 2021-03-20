@@ -83,6 +83,8 @@ type Reservation = {
     amenities: string[];
     view: string;
     price: string;
+    employee_name: string;
+    job_title: string;
 }
 
 const GenerateReservations = ({
@@ -98,7 +100,7 @@ const GenerateReservations = ({
                                   setReservations
                               }: any) => {
 
-    return <GridList cols={1} cellHeight={220} className={classes.grid}>
+    return <GridList cols={1} cellHeight={230} className={classes.grid}>
         {
             reservations.filter((reservation: Reservation) => {
                 return !((radioState === 1 && reservation.status !== 'Renting')
@@ -122,6 +124,7 @@ const GenerateReservations = ({
                                     <Typography
                                         className={classes.hotelTitle}>Room: {reservation.title} | {reservation.check_in_day} to {reservation.check_out_day}
                                     </Typography>
+                                    <Typography>{reservation.job_title === undefined ? '' : 'Employee: ' + reservation.employee_name + ', ' + reservation.job_title}</Typography>
                                     <Typography>{reservation.physical_address}</Typography>
                                     <Typography>Booking status: {reservation.status}</Typography>
                                     <Typography>Amenities: {reservation.amenities.join(', ')}</Typography>

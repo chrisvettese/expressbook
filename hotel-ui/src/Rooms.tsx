@@ -291,17 +291,29 @@ export default function Rooms() {
 
     async function bookRoom(typeID: number) {
         setDisableBookRoomButton(true);
+        let body: string = "";
+        if (location.state.employeeSIN === undefined) {
+            body =JSON.stringify({
+                type_id: typeID,
+                check_in: checkInDateToBook,
+                check_out: checkOutDateToBook
+            });
+        } else {
+            body =JSON.stringify({
+                type_id: typeID,
+                check_in: checkInDateToBook,
+                check_out: checkOutDateToBook,
+                employee_sin: location.state.employeeSIN
+            });
+        }
+
         try {
             let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + location.state.customerSIN + "/reservations", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    type_id: typeID,
-                    check_in: checkInDateToBook,
-                    check_out: checkOutDateToBook
-                })
+                body: body
             })
             if (response.status === 201) {
                 await checkAvailability();

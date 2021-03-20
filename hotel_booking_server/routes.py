@@ -56,12 +56,14 @@ def add_routes(app, conn):
     def get_reservations_by_customer(cid):
         execute('SELECT hotel.correct_status_customer(\'{}\')'.format(cid), conn)
         query = '''SELECT b.booking_id, b.date_of_registration, b.check_in_day, b.check_out_day, s.value AS status,
-                   t.title, t.is_extendable, t.amenities, v.view, h.physical_address, t.price
+                   t.title, t.is_extendable, t.amenities, v.view, h.physical_address, t.price, e.employee_name,
+                   e.job_title
                    FROM hotel.room_booking b
                    JOIN hotel.booking_status s ON s.status_ID = b.status_ID
                    JOIN hotel.hotel_room_type t ON t.type_ID = b.type_ID
                    JOIN hotel.view_type v ON v.view_ID = t.view_ID
                    JOIN hotel.hotel h ON h.hotel_ID = b.hotel_ID
+                   LEFT JOIN hotel.employee e ON b.employee_sin = e.employee_sin
                    WHERE b.customer_sin = '{}';'''.format(cid)
         response = get_results(query, conn)
         return Response(response, status=200, mimetype='application/json')
@@ -106,11 +108,23 @@ def add_routes(app, conn):
         query = 'SELECT hotel_ID FROM hotel.hotel_room_type WHERE type_ID = {}'.format(type_id)
         result = get_results(query, conn, jsonify=False)
         if len(result) == 0:
-            raise BadRequestError(message="Hotel not found with type id=" + str(type_id))
+            raise ResourceNotFoundError(message="Hotel not found with type id=" + str(type_id))
 
-        query = 'INSERT INTO hotel.room_booking(type_ID, hotel_ID, customer_SIN, check_in_day, check_out_day) ' \
-                "VALUES ({}, {}, '{}', DATE '{}', DATE '{}')".format(type_id, result[0].get('hotel_id'), cid,
-                                                                     check_in_date, check_out_date)
+        if 'employee_sin' in data:
+            query = 'SELECT employee_SIN FROM hotel.employee WHERE employee_SIN = \'{}\' AND hotel_ID = {}'.format(
+                data['employee_sin'], int(result[0].get('hotel_id')))
+            e_result = get_results(query, conn, jsonify=False)
+            if len(e_result) == 0:
+                raise ResourceNotFoundError(message="Employee SIN not found")
+            query = '''INSERT INTO hotel.room_booking(type_ID, hotel_ID, customer_SIN, check_in_day, check_out_day,
+                       employee_SIN) VALUES ({}, {}, '{}', DATE '{}', DATE '{}', '{}')'''\
+                .format(type_id, result[0].get('hotel_id'), cid, check_in_date, check_out_date,
+                        e_result[0].get('employee_sin'))
+
+        else:
+            query = 'INSERT INTO hotel.room_booking(type_ID, hotel_ID, customer_SIN, check_in_day, check_out_day) ' \
+                    "VALUES ({}, {}, '{}', DATE '{}', DATE '{}')".format(type_id, result[0].get('hotel_id'), cid,
+                                                                         check_in_date, check_out_date)
         try:
             execute(query, conn)
         except psycopg2.DatabaseError as e:
@@ -126,9 +140,13 @@ def add_routes(app, conn):
     @app.route('/customers/<cid>/reservations/<rid>', methods=["PATCH"])
     @cross_origin()
     def update_reservation(cid, rid):
+        data = request.json
+        if 'status' not in data:
+            raise BadRequestError(message='Missing required body field \'status\'')
         status = request.json['status']
-        query = '''SELECT status_ID, check_in_day FROM hotel.room_booking
-            WHERE customer_sin = '{}' AND booking_ID = '{}\''''.format(cid, rid)
+
+        query = '''SELECT status_id, check_in_day, hotel_id FROM hotel.room_booking
+        WHERE customer_sin = '{}' AND booking_ID = '{}\''''.format(cid, rid)
         result = get_results(query, conn, single=True)
         if len(result) == 0:
             raise ResourceNotFoundError(message='Reservation does not exist or does not belong to this customer'
@@ -136,17 +154,30 @@ def add_routes(app, conn):
 
         result = ast.literal_eval(result)
         current_status = result['status_id']
-        date = result['check_in_day']
+        d = result['check_in_day']
 
         if not (current_status == 1 and status == 'Cancelled') and not (current_status == 2 and status == 'Archived') \
-                and not (current_status == 1 and status == 'Renting' and date == datetime.today().strftime('%Y-%m-%d')):
+                and not (current_status == 1 and status == 'Renting' and d == datetime.today().strftime('%Y-%m-%d')):
             raise BadRequestError(
                 message='Invalid status transition. Booked rooms can be cancelled, and rented rooms can be archived.'
                     .format(cid))
 
-        query = '''UPDATE hotel.room_booking SET status_ID = 
-                   (SELECT s.status_ID FROM hotel.booking_status s WHERE s.value = '{}')
-                   WHERE booking_ID = {};'''.format(status, rid)
+        if 'employee_sin' in data:
+            query = 'SELECT employee_SIN, hotel_id FROM hotel.employee WHERE employee_SIN = \'{}\''.format(data['employee_sin'])
+            e_result = get_results(query, conn, jsonify=False)
+            if len(e_result) == 0:
+                raise ResourceNotFoundError(message='Employee SIN not found')
+            if e_result[0].get('hotel_id') != result['hotel_id']:
+                raise BadRequestError(message="Given employee cannot update this reservation - works at different hotel")
+
+            query = '''UPDATE hotel.room_booking SET status_ID = 
+                   (SELECT s.status_ID FROM hotel.booking_status s WHERE s.value = '{}') , employee_sin = '{}'
+                   WHERE booking_ID = {}'''.format(status, e_result[0].get('employee_sin'), rid)
+
+        else:
+            query = '''UPDATE hotel.room_booking SET status_ID = 
+                       (SELECT s.status_ID FROM hotel.booking_status s WHERE s.value = '{}')
+                       WHERE booking_ID = {}'''.format(status, rid)
         execute(query, conn)
         return Response(status=204, mimetype='application/json')
 
@@ -308,12 +339,14 @@ def add_routes(app, conn):
 
         if action == 'check-in':
             query = '''SELECT b.booking_id, b.date_of_registration, b.check_in_day, b.check_out_day,
-                       t.title, t.is_extendable, t.amenities, v.view, t.price, c.customer_sin, c.customer_name
+                       t.title, t.is_extendable, t.amenities, v.view, t.price, c.customer_sin, c.customer_name,
+                       e.employee_name, e.job_title
                        FROM hotel.room_booking b
                        JOIN hotel.booking_status s ON s.status_ID = b.status_ID
                        JOIN hotel.hotel_room_type t ON t.type_ID = b.type_ID
                        JOIN hotel.view_type v ON v.view_ID = t.view_ID
                        JOIN hotel.customer c ON b.customer_sin = c.customer_sin
+                       LEFT JOIN hotel.employee e ON b.employee_sin = e.employee_sin
                        WHERE s.value = 'Booked' AND b.hotel_id = {} AND CURRENT_DATE >= b.check_in_day
                        AND CURRENT_DATE < b.check_out_day
                        '''.format(hid)
@@ -357,6 +390,12 @@ def get_results(query, conn, single=False, jsonify=True):
                 else:
                     return results
             if jsonify:
+                # remove null values from dictionaries
+                if not single:
+                    for i in range(0, len(results)):
+                        results[i] = {k: v for k, v in results[i].items() if v is not None}
+                else:
+                    results = {k: v for k, v in results.items() if v is not None}
                 return json.dumps(results, default=str)
             else:
                 return results

@@ -105,7 +105,8 @@ const GenerateReservations = ({
                                   setAlertOpen,
                                   setReservations,
                                   isCheckIn,
-                                  searchSIN
+                                  searchSIN,
+                                  employeeSIN
                               }: any) => {
 
     const filteredReservations = reservations.filter((reservation: Reservation) => reservation.customer_sin.includes(searchSIN));
@@ -155,7 +156,7 @@ const GenerateReservations = ({
                                         <Typography className={classes.hotelTitle}>${totalPrice}</Typography>
                                         <br/>
                                         <Button variant='contained'
-                                                onClick={() => patchReservation(isCheckIn ? 'Renting' : 'Archived', setEditButtonToDisable, reservations, reservation, setAlertMessage, setAlertStatus, setAlertOpen, setReservations, index)}
+                                                onClick={() => patchReservation(isCheckIn ? 'Renting' : 'Archived', setEditButtonToDisable, reservations, reservation, setAlertMessage, setAlertStatus, setAlertOpen, setReservations, index, employeeSIN)}
                                                 disabled={editButtonToDisable === reservation.booking_id}>
                                             {isCheckIn ? "Check In" : "Check Out"}
                                         </Button>
@@ -170,7 +171,7 @@ const GenerateReservations = ({
     </GridList>
 }
 
-async function patchReservation(action: string, setEditButtonToDisable: any, reservations: Reservation[], reservation: Reservation, setAlertMessage: any, setAlertStatus: any, setAlertOpen: any, setReservations: any, index: number) {
+async function patchReservation(action: string, setEditButtonToDisable: any, reservations: Reservation[], reservation: Reservation, setAlertMessage: any, setAlertStatus: any, setAlertOpen: any, setReservations: any, index: number, employeeSIN: string) {
     setEditButtonToDisable(reservation.booking_id);
     try {
         let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + reservation.customer_sin + "/reservations/" + reservation.booking_id, {
@@ -179,7 +180,8 @@ async function patchReservation(action: string, setEditButtonToDisable: any, res
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                status: action
+                status: action,
+                employee_sin: employeeSIN
             })
         })
         if (response.status === 204) {
@@ -212,6 +214,7 @@ export default function CheckCustomer() {
     const location = useLocation<{
         response: Reservation[];
         checkIn: boolean;
+        employeeSIN: string;
     }>();
 
     location.state.response.sort((r1: Reservation, r2: Reservation) => (r1.check_in_day > r2.check_in_day) ? 1 : -1);
@@ -241,7 +244,7 @@ export default function CheckCustomer() {
                            onChange={event => setSearchSIN(event.currentTarget.value)}/>
             </div>
             <GenerateReservations classes={classes} reservations={reservations}
-                                  editButtonToDisable={editButtonToDisable}
+                                  editButtonToDisable={editButtonToDisable} employeeSIN={location.state.employeeSIN}
                                   setEditButtonToDisable={setEditButtonToDisable} setAlertMessage={setAlertMessage}
                                   setAlertStatus={setAlertStatus} setAlertOpen={setAlertOpen} searchSIN={searchSIN}
                                   setReservations={setReservations} isCheckIn={location.state.checkIn}/>

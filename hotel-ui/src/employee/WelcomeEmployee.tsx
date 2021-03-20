@@ -90,7 +90,11 @@ export default function WelcomeEmployee() {
                 return;
             }
             response = await response.json();
-            history.push('/ui/employee/checkin', {response: response, checkIn: true});
+            history.push('/ui/employee/checkin', {
+                response: response,
+                checkIn: true,
+                employeeSIN: location.state.employeeSIN
+            });
         } catch (error) {
             console.error('Error:', error);
             setCheckInDisabled(false);
@@ -117,7 +121,11 @@ export default function WelcomeEmployee() {
                 return;
             }
             response = await response.json();
-            history.push('/ui/employee/checkout', {response: response, checkOut: false});
+            history.push('/ui/employee/checkout', {
+                response: response,
+                checkOut: false,
+                employeeSIN: location.state.employeeSIN
+            });
         } catch (error) {
             console.error('Error:', error);
             setCheckOutDisabled(false);
