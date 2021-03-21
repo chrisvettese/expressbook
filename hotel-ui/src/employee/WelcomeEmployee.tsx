@@ -139,7 +139,7 @@ export default function WelcomeEmployee() {
                     <Typography className={classes.centre}>Manager Actions:</Typography>
                     <br/>
                     <div className={classes.paperContainer}>
-                        <Button variant="contained" color='primary' disabled={manageEmployeeDisabled}>
+                        <Button variant="contained" color='primary' disabled={manageEmployeeDisabled} onClick={manageEmployee}>
                             Manage Employees
                         </Button>
                     </div>
@@ -147,6 +147,29 @@ export default function WelcomeEmployee() {
             )
         }
         return <></>
+    }
+
+    async function manageEmployee() {
+        setManageEmployeeDisabled(true);
+        try {
+            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/employees");
+            if (response.status !== 200) {
+                setManageEmployeeDisabled(false);
+                return;
+            }
+            response = await response.json();
+            history.push('/ui/employee/manageemployee', {
+                response: response,
+                checkIn: true,
+                managerSIN: location.state.employeeSIN,
+                brandName: location.state.brandName,
+                hotelAddress: location.state.hotelAddress,
+                hotelID: location.state.hotelID
+            });
+        } catch (error) {
+            console.error('Error:', error);
+            setManageEmployeeDisabled(false);
+        }
     }
 
     return (

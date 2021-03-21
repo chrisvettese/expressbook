@@ -117,7 +117,7 @@ def add_routes(app, conn):
             if len(e_result) == 0:
                 raise ResourceNotFoundError(message="Employee SIN not found")
             query = '''INSERT INTO hotel.room_booking(type_ID, hotel_ID, customer_SIN, check_in_day, check_out_day,
-                       employee_SIN) VALUES ({}, {}, '{}', DATE '{}', DATE '{}', '{}')'''\
+                       employee_SIN) VALUES ({}, {}, '{}', DATE '{}', DATE '{}', '{}')''' \
                 .format(type_id, result[0].get('hotel_id'), cid, check_in_date, check_out_date,
                         e_result[0].get('employee_sin'))
 
@@ -163,12 +163,14 @@ def add_routes(app, conn):
                     .format(cid))
 
         if 'employee_sin' in data:
-            query = 'SELECT employee_SIN, hotel_id FROM hotel.employee WHERE employee_SIN = \'{}\''.format(data['employee_sin'])
+            query = 'SELECT employee_SIN, hotel_id FROM hotel.employee WHERE employee_SIN = \'{}\''.format(
+                data['employee_sin'])
             e_result = get_results(query, conn, jsonify=False)
             if len(e_result) == 0:
                 raise ResourceNotFoundError(message='Employee SIN not found')
             if e_result[0].get('hotel_id') != result['hotel_id']:
-                raise BadRequestError(message="Given employee cannot update this reservation - works at different hotel")
+                raise BadRequestError(
+                    message="Given employee cannot update this reservation - works at different hotel")
 
             query = '''UPDATE hotel.room_booking SET status_ID = 
                    (SELECT s.status_ID FROM hotel.booking_status s WHERE s.value = '{}') , employee_sin = '{}'
@@ -304,7 +306,8 @@ def add_routes(app, conn):
         if not verify_manager(manager_sin, hid, conn):
             raise BadRequestError(message='Invalid manager SIN')
 
-        query = 'DELETE FROM hotel.employee WHERE employee_sin = \'{}\''.format(eid)
+        query = 'UPDATE hotel.employee e SET status_id = (SELECT status_id FROM hotel.employee_status s ' \
+                'WHERE s.status = \'Quit\') WHERE employee_sin = \'{}\''.format(eid)
         try:
             execute(query, conn)
         except psycopg2.DatabaseError:
@@ -315,7 +318,7 @@ def add_routes(app, conn):
     @cross_origin()
     def get_employees_by_hotel(hid):
         query = '''SELECT e.employee_sin, e.employee_name, e.employee_address, e.salary, e.job_title
-                   FROM hotel.employee e WHERE e.hotel_id = {}'''.format(hid)
+                   FROM hotel.employee e WHERE e.status_id = 1 AND e.hotel_id = {}'''.format(hid)
         response = get_results(query, conn)
         if response == '[]':
             raise ResourceNotFoundError(message='Hotel ID={} not found'.format(hid))
@@ -367,14 +370,19 @@ def add_routes(app, conn):
     @app.route('/employees/<eid>')
     @cross_origin()
     def get_employee(eid):
-        query = '''SELECT e.employee_sin, e.employee_name, e.employee_address, e.salary, e.job_title,
+        query = '''SELECT e.employee_sin, s.status, e.employee_name, e.employee_address, e.salary, e.job_title,
                    b.name AS brand_name, h.brand_id, h.hotel_id, h.physical_address AS hotel_address
-                   FROM hotel.employee e JOIN hotel.hotel h ON h.hotel_id = e.hotel_id
-                   JOIN hotel.hotel_brand b ON b.brand_id = h.brand_id WHERE e.employee_sin = '{}\''''.format(eid)
-        response = get_results(query, conn, single=True)
+                   FROM hotel.employee e
+                   JOIN hotel.hotel h ON h.hotel_id = e.hotel_id
+                   JOIN hotel.hotel_brand b ON b.brand_id = h.brand_id
+                   JOIN hotel.employee_status s ON s.status_id = e.status_id
+                   WHERE e.employee_sin = '{}\''''.format(eid)
+        response = get_results(query, conn, jsonify=False)
         if len(response) == 0:
             raise ResourceNotFoundError(message='Employee SIN={} not found'.format(eid))
-        return Response(response, status=200, mimetype='application/json')
+        if response[0].get('status') != 'Hired':
+            raise BadRequestError(message='Person is not currently employed by an affiliated hotel')
+        return Response(json.dumps(response[0], default=str), status=200, mimetype='application/json')
 
 
 def get_results(query, conn, single=False, jsonify=True):

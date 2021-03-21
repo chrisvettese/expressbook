@@ -38,13 +38,23 @@ def table_creation(conn):
                     CHECK (star_category BETWEEN 1 AND 5))
                 ''')
             curs.execute('''
+                CREATE TABLE hotel.employee_status(
+                    status_ID SMALLINT PRIMARY KEY,
+                    status VARCHAR(20) NOT NULL)
+                ''')
+            curs.execute('''
+                    INSERT INTO hotel.employee_status(status_ID, status) VALUES (1, 'Hired');
+                    INSERT INTO hotel.employee_status(status_ID, status) VALUES (2, 'Quit');
+                    ''')
+            curs.execute('''
                 CREATE TABLE hotel.employee(
                     employee_SIN VARCHAR(11) PRIMARY KEY,
                     hotel_ID SERIAL REFERENCES hotel.hotel(hotel_ID) ON DELETE CASCADE,
                     employee_name VARCHAR(255) NOT NULL,
                     employee_address VARCHAR(255) NOT NULL,
                     salary VARCHAR(15) NOT NULL,
-                    job_title VARCHAR(255) NOT NULL)
+                    job_title VARCHAR(255) NOT NULL,
+                    status_ID SMALLINT NOT NULL REFERENCES hotel.employee_status(status_ID) DEFAULT 1)
                 ''')
             curs.execute('''
                 CREATE TABLE hotel.customer(

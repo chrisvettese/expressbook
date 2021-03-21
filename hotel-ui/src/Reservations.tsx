@@ -237,7 +237,7 @@ function updateReservations(reservations: Reservation[], bookingID: number, stat
     }
 }
 
-function openAlert(message: string, status: string, setAlertMessage: any, setAlertStatus: any, setAlertOpen: any) {
+function openAlert(message: string, status: Severity, setAlertMessage: any, setAlertStatus: any, setAlertOpen: any) {
     setAlertMessage(message);
     setAlertStatus(status);
     setAlertOpen(true);
