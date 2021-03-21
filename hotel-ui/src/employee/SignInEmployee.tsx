@@ -1,6 +1,6 @@
 import {Button, makeStyles, TextField, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBarEmployee} from "../index";
+import {GetEmployeeResponse, TitleBarEmployee} from "../index";
 import {useHistory} from 'react-router-dom';
 
 
@@ -28,18 +28,6 @@ const useStyles = makeStyles(() => ({
     }
 }));
 
-interface GetEmployeeResponse {
-    employee_sin: string;
-    employee_name: string;
-    employee_address: string;
-    salary: string;
-    job_title: string;
-    brand_name: string;
-    brand_id: number;
-    hotel_id: number;
-    hotel_address: string;
-}
-
 export default function SignInEmployee() {
     const classes = useStyles();
     const history = useHistory();
@@ -65,17 +53,22 @@ export default function SignInEmployee() {
             .then(response => {
                 if (response.status === 200) {
                     response.json().then((response: GetEmployeeResponse) => {
-                        history.push('/ui/employee/welcome', {
-                            employeeSIN: response.employee_sin,
-                            employeeName: response.employee_name,
-                            employeeAddress: response.employee_address,
-                            salary: response.salary,
-                            jobTitle: response.job_title,
-                            brandName: response.brand_name,
-                            brandID: response.brand_id,
-                            hotelID: response.hotel_id,
-                            hotelAddress: response.hotel_address
-                        })
+                        if (response.status === 'hired') {
+                            history.push('/ui/employee/welcome', {
+                                employeeSIN: response.employee_sin,
+                                employeeName: response.employee_name,
+                                employeeAddress: response.employee_address,
+                                salary: response.salary,
+                                jobTitle: response.job_title,
+                                brandName: response.brand_name,
+                                brandID: response.brand_id,
+                                hotelID: response.hotel_id,
+                                hotelAddress: response.hotel_address
+                            })
+                        } else {
+                            setError("Unable to sign in. Please contact the hotel manager or database admin if you think this is a problem.")
+                            setDisableSignIn(false);
+                        }
                     })
                 } else {
                     setError("Unable to sign in. Please contact the hotel manager or database admin if you think this is a problem.")
@@ -83,6 +76,7 @@ export default function SignInEmployee() {
                 }
             }).catch(error => {
                 console.log('Error:', error);
+                setError("Unable to sign in. Please contact the hotel manager or database admin if you think this is a problem.")
                 setDisableSignIn(false);
             }
         )

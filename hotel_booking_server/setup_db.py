@@ -43,8 +43,8 @@ def table_creation(conn):
                     status VARCHAR(20) NOT NULL)
                 ''')
             curs.execute('''
-                    INSERT INTO hotel.employee_status(status_ID, status) VALUES (1, 'Hired');
-                    INSERT INTO hotel.employee_status(status_ID, status) VALUES (2, 'Quit');
+                    INSERT INTO hotel.employee_status(status_ID, status) VALUES (1, 'hired');
+                    INSERT INTO hotel.employee_status(status_ID, status) VALUES (2, 'quit');
                     ''')
             curs.execute('''
                 CREATE TABLE hotel.employee(

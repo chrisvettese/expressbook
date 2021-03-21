@@ -111,8 +111,8 @@ def add_routes(app, conn):
             raise ResourceNotFoundError(message="Hotel not found with type id=" + str(type_id))
 
         if 'employee_sin' in data:
-            query = 'SELECT employee_SIN FROM hotel.employee WHERE employee_SIN = \'{}\' AND hotel_ID = {}'.format(
-                data['employee_sin'], int(result[0].get('hotel_id')))
+            query = 'SELECT employee_SIN FROM hotel.employee WHERE status_id = 1 AND employee_SIN = \'{}\' ' \
+                    'AND hotel_ID = {}'.format(data['employee_sin'], int(result[0].get('hotel_id')))
             e_result = get_results(query, conn, jsonify=False)
             if len(e_result) == 0:
                 raise ResourceNotFoundError(message="Employee SIN not found")
@@ -163,8 +163,8 @@ def add_routes(app, conn):
                     .format(cid))
 
         if 'employee_sin' in data:
-            query = 'SELECT employee_SIN, hotel_id FROM hotel.employee WHERE employee_SIN = \'{}\''.format(
-                data['employee_sin'])
+            query = 'SELECT employee_SIN, hotel_id FROM hotel.employee WHERE status_id = 1 AND employee_SIN = \'{}\''\
+                .format(data['employee_sin'])
             e_result = get_results(query, conn, jsonify=False)
             if len(e_result) == 0:
                 raise ResourceNotFoundError(message='Employee SIN not found')
@@ -294,9 +294,9 @@ def add_routes(app, conn):
             raise ResourceConflictError(message='Employee already exists')
         return Response(status=201, mimetype='application/json')
 
-    @app.route('/hotels/<hid>/employees/<eid>', methods=["DELETE"])
+    @app.route('/hotels/<hid>/employees/<eid>', methods=["PATCH"])
     @cross_origin()
-    def delete_employee(hid, eid):
+    def update_employee(hid, eid):
         data = request.json
         if 'manager_sin' not in data:
             raise BadRequestError(message="Missing required body field 'manager_sin'")
@@ -306,10 +306,26 @@ def add_routes(app, conn):
         if not verify_manager(manager_sin, hid, conn):
             raise BadRequestError(message='Invalid manager SIN')
 
-        query = 'UPDATE hotel.employee e SET status_id = (SELECT status_id FROM hotel.employee_status s ' \
-                'WHERE s.status = \'Quit\') WHERE employee_sin = \'{}\''.format(eid)
+        query = ''
+        if 'status' in data:
+            query += '''UPDATE hotel.employee e SET status_id = (SELECT status_id FROM hotel.employee_status s
+                    WHERE s.status = '{}') WHERE employee_sin = \'{}\';'''.format(data['status'], eid)
+
+        if 'hotel_id' in data:
+            query += '''UPDATE hotel.employee e SET hotel_id = {} WHERE employee_sin = \'{}\';'''.format(hid, eid)
+        if 'employee_address' in data:
+            query += '''UPDATE hotel.employee e SET employee_address = '{}' WHERE employee_sin = \'{}\';'''\
+                .format(hid, eid)
+        if 'employee_name' in data:
+            query += '''UPDATE hotel.employee e SET employee_name = '{}' WHERE employee_sin = \'{}\';'''.format(hid, eid)
+        if 'salary' in data:
+            query += '''UPDATE hotel.employee e SET salary = '{}' WHERE employee_sin = \'{}\';'''.format(hid, eid)
+        if 'job_title' in data:
+            query += '''UPDATE hotel.employee e SET job_title = '{}' WHERE employee_sin = \'{}\';'''.format(hid, eid)
+
         try:
-            execute(query, conn)
+            if query != '':
+                execute(query, conn)
         except psycopg2.DatabaseError:
             raise ResourceConflictError(message='Unable to delete employee')
         return Response(status=204, mimetype='application/json')
@@ -349,7 +365,7 @@ def add_routes(app, conn):
                        JOIN hotel.hotel_room_type t ON t.type_ID = b.type_ID
                        JOIN hotel.view_type v ON v.view_ID = t.view_ID
                        JOIN hotel.customer c ON b.customer_sin = c.customer_sin
-                       LEFT JOIN hotel.employee e ON b.employee_sin = e.employee_sin
+                       JOIN hotel.employee e ON b.employee_sin = e.employee_sin
                        WHERE s.value = 'Booked' AND b.hotel_id = {} AND CURRENT_DATE >= b.check_in_day
                        AND CURRENT_DATE < b.check_out_day
                        '''.format(hid)
@@ -380,8 +396,6 @@ def add_routes(app, conn):
         response = get_results(query, conn, jsonify=False)
         if len(response) == 0:
             raise ResourceNotFoundError(message='Employee SIN={} not found'.format(eid))
-        if response[0].get('status') != 'Hired':
-            raise BadRequestError(message='Person is not currently employed by an affiliated hotel')
         return Response(json.dumps(response[0], default=str), status=200, mimetype='application/json')
 
 

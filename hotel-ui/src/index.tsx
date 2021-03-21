@@ -31,6 +31,21 @@ const useTitleStyles = makeStyles(() => ({
 
 export type Severity = "error" | "success" | "info" | "warning" | undefined;
 
+export type EmployeeStatus = "hired" | "quit";
+
+export interface GetEmployeeResponse {
+    employee_sin: string;
+    employee_name: string;
+    employee_address: string;
+    salary: string;
+    job_title: string;
+    brand_name: string;
+    brand_id: number;
+    hotel_id: number;
+    hotel_address: string;
+    status: EmployeeStatus;
+}
+
 export function TitleBarCustomer() {
     const classes = useTitleStyles();
     return <AppBar position="static">

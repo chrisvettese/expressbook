@@ -1,15 +1,15 @@
 import {
-    Button,
+    Button, Dialog, DialogActions, DialogTitle,
     Divider,
     Grid,
     GridList,
     GridListTile,
     makeStyles,
-    Paper, Snackbar,
+    Paper, Snackbar, TextField,
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {Severity, TitleBarCustomer} from "../index";
+import {GetEmployeeResponse, Severity, TitleBarCustomer} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
 import {Alert} from "@material-ui/lab";
 
@@ -36,7 +36,8 @@ const useStyles = makeStyles(theme => ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: '1em'
+        marginBottom: '1em',
+        width: '100%'
     },
     brandPaper: {
         marginTop: '2em',
@@ -71,8 +72,173 @@ const useStyles = makeStyles(theme => ({
         alignItems: 'center',
         flexDirection: 'column',
         justifyContent: 'center'
+    },
+    dialogTitle: {
+        fontSize: "1.8em",
+        display: 'flex',
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center'
+    },
+    dialogAddress: {
+        marginLeft: "0.5em",
+        marginRight: "0.5em",
+        display: 'flex',
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center'
     }
 }));
+
+const CreateEmployee = ({
+                            dialogOpen, setDialogOpen,
+                            classes,
+                            openAlert
+                        }: any) => {
+
+    const sinRegex: RegExp = /^[0-9]{3}-[0-9]{3}-[0-9]{3}$/;
+
+    const [sinError, setSINError]: [boolean, any] = useState(false);
+    const [sinHelper, setSINHelper]: [string, any] = useState('');
+
+    const [disableCheck, setDisableCheck]: [boolean, any] = useState(false);
+    const [disableCreateEmployee, setDisableCreateEmployee]: [boolean, any] = useState(false);
+
+    const [showInfo, setShowInfo]: [boolean, any] = useState(false);
+
+    const [employeeSIN, setEmployeeSIN]: [string, any] = useState("");
+    const [employeeName, setEmployeeName]: [string, any] = useState("");
+    const [employeeAddress, setEmployeeAddress]: [string, any] = useState("");
+    const [employeeSalary, setEmployeeSalary]: [string, any] = useState("");
+    const [employeeJobTitle, setEmployeeJobTitle]: [string, any] = useState("");
+
+    function AdditionalInfo() {
+        if (showInfo) {
+            return (
+                <>
+                    <TextField label="Name" variant="outlined" value={employeeName} error={sinError}
+                               helperText={sinHelper}
+                               onChange={event => setEmployeeName(event.currentTarget.value)}/>
+                    <br/>
+                    <TextField label="Address" variant="outlined" value={employeeAddress} error={sinError}
+                               helperText={sinHelper}
+                               onChange={event => setEmployeeAddress(event.currentTarget.value)}/>
+                    <br/>
+                    <TextField label="Salary" variant="outlined" value={employeeSalary} error={sinError}
+                               helperText={sinHelper}
+                               onChange={event => setEmployeeSalary(event.currentTarget.value)}/>
+                    <br/>
+                    <TextField label="Job Title" variant="outlined" value={employeeJobTitle} error={sinError}
+                               helperText={sinHelper}
+                               onChange={event => setEmployeeJobTitle(event.currentTarget.value)}/>
+                    <br/>
+                </>
+            )
+        } else {
+            return <></>
+        }
+    }
+
+    async function validateEmployeeSIN() {
+        setDisableCheck(true);
+        if (!sinRegex.test(employeeSIN) || employeeSIN.length === 0) {
+            setSINHelper("Must enter valid SIN");
+            setSINError(true);
+            setDisableCheck(false);
+            setShowInfo(false);
+            return;
+        }
+
+        try {
+            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/employees/" + employeeSIN);
+            if (response.status === 404) {
+                setShowInfo(true);
+                setSINError(false);
+                setDisableCheck(false);
+                setShowInfo(true);
+                setSINHelper("");
+                setEmployeeName("");
+                setEmployeeJobTitle("");
+                setEmployeeSalary("");
+                setEmployeeAddress("");
+                openAlert("Employee SIN validated", "success")
+            } else if (response.status === 200) {
+                const employeeResponse: GetEmployeeResponse = await response.json();
+                if (employeeResponse.status === 'hired') {
+                    setSINHelper("Invalid SIN. Employee already exists!");
+                    setSINError(true);
+                } else {
+                    setSINError(false);
+                    setDisableCheck(false);
+                    setSINHelper("");
+                    openAlert('Existing profile found', 'success');
+                    //Show additional info filled out
+                    setEmployeeAddress(employeeResponse.employee_address);
+                    setEmployeeName(employeeResponse.employee_name);
+                    setEmployeeJobTitle(employeeResponse.job_title);
+                    setEmployeeSalary(employeeResponse.salary);
+                    setShowInfo(true);
+                }
+            } else {
+                openAlert('Unable to verify SIN', 'error');
+            }
+        } catch (error) {
+            console.log('Error:', error);
+            openAlert('Unable to verify SIN', 'error');
+        }
+        setDisableCheck(false);
+    }
+
+    async function createEmployee() {
+        setDisableCreateEmployee(true);
+        //TODO: either PATCH or POST depending on whether employee SIN is new or not
+        setDisableCreateEmployee(false);
+    }
+
+    function closeDialog() {
+        setDialogOpen(false);
+        setSINError(false);
+        setDisableCheck(false);
+        setEmployeeSIN("");
+        setEmployeeAddress("");
+        setEmployeeSalary("");
+        setEmployeeJobTitle("");
+        setEmployeeName("");
+        setShowInfo(false);
+    }
+
+
+    return <Dialog onClose={() => closeDialog()} aria-labelledby="simple-dialog-title" open={dialogOpen}>
+        <DialogTitle id="dialog-title" className={classes.dialogTitle}>
+            <Typography className={classes.dialogTitle}>Add New Employee</Typography>
+        </DialogTitle>
+        <div className={classes.dialogAddress}>
+            <TextField label="Employee SIN" variant="outlined" value={employeeSIN} error={sinError}
+                       helperText={sinHelper}
+                       onChange={event => {
+                           setEmployeeSIN(event.currentTarget.value);
+                           setShowInfo(false);
+                       }}/>
+            <br/>
+            <Button variant='contained' disabled={disableCheck} onClick={validateEmployeeSIN}>Check SIN</Button>
+            <br/>
+            <AdditionalInfo/>
+        </div>
+        <DialogActions>
+            <Button disabled={disableCreateEmployee}
+                    onClick={() => createEmployee()}
+                    variant="contained"
+                    color="primary">
+                Create Profile
+            </Button>
+            <Button onClick={() => {
+                setDialogOpen(false);
+            }} variant="contained" color="secondary">
+                Cancel
+            </Button>
+        </DialogActions>
+    </Dialog>
+};
 
 interface Employee {
     employee_sin: string;
@@ -90,6 +256,7 @@ interface State {
     hotelAddress: string;
     hotelID: number;
 }
+
 
 export default function ManageEmployee() {
     const classes = useStyles();
@@ -110,6 +277,7 @@ export default function ManageEmployee() {
     const [alertOpen, setAlertOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
     const [alertStatus, setAlertStatus]: [Severity, any] = useState("success");
+    const [dialogOpen, setDialogOpen]: [boolean, any] = useState(false);
 
     function openAlert(message: string, status: Severity) {
         setAlertMessage(message);
@@ -165,6 +333,9 @@ export default function ManageEmployee() {
             <Typography
                 className={classes.subTitle}>{location.state.brandName + ", " + location.state.hotelAddress}
             </Typography>
+            <div className={classes.subTitle}>
+                <Button variant='contained' onClick={() => setDialogOpen(true)}>New Employee</Button>
+            </div>
             <GridList cols={1} cellHeight={200} className={classes.grid}>
                 {
                     employees.map((emp: Employee, index: number) => {
@@ -196,6 +367,8 @@ export default function ManageEmployee() {
                     })
                 }
             </GridList>
+            <CreateEmployee dialogOpen={dialogOpen} setDialogOpen={setDialogOpen} classes={classes}
+                            openAlert={openAlert}/>
             <Snackbar open={alertOpen} autoHideDuration={6000} onClose={closeAlert}>
                 <Alert onClose={closeAlert} severity={alertStatus}>
                     {alertMessage}
