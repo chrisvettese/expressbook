@@ -1,6 +1,6 @@
-host: example.host
-port: 1234
-database: db_name
-user: my_username
-password: my_password
+host: postgres
+port: 5432
+database: postgres
+user: postgres
+password: postgres
 reset-db: false
