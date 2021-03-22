@@ -25,6 +25,8 @@ services:
       - postgres
     command:
       poetry run main
+    depends_on:
+      - postgres
 
   nginx:
     image: nginx:latest
@@ -34,6 +36,8 @@ services:
     ports:
       - 127.0.0.1:1236:80
       - 127.0.0.1:1237:443
+    depends_on:
+      - flask
 
   pgadmin:
     image: dpage/pgadmin4
@@ -47,6 +51,8 @@ services:
     ports:
       - "1235:80"
     networks:
+      - postgres
+    depends_on:
       - postgres
 
 networks:
