@@ -16,7 +16,7 @@ from hotel_booking_server.ResourceNotFoundError import ResourceNotFoundError
 
 
 def main():
-    app = Flask(__name__, static_folder='../hotel-ui/build', static_url_path='/')
+    app = Flask(__name__, static_folder='../hotel-ui/build')
     cors = CORS(app)
     app.config['CORS_HEADERS'] = 'Content-Type'
 
@@ -35,12 +35,14 @@ def main():
         print('Connected to db')
         if config['reset-db']:
             setup_db.setup(conn)
+        else:
+            setup_db.setup_if_missing(conn)
     except psycopg2.DatabaseError as e:
         print('Error connecting to db')
         raise e
 
     @app.route('/ui/<path:path>')
-    def customer(path):
+    def user(path):
         return app.send_static_file('index.html')
 
     @app.errorhandler(ResourceNotFoundError)
@@ -61,7 +63,7 @@ def main():
 
     # remove before releasing production build
     os.environ['FLASK_ENV'] = 'development'
-    app.run(host='localhost', port=1234, debug=True, use_reloader=False)
+    app.run(host='0.0.0.0', port=1234, debug=True, use_reloader=False)
 
 
 if __name__ == '__main__':

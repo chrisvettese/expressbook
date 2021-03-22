@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import psycopg2
 
 from hotel_booking_server import hotel_data
+from hotel_booking_server.routes import get_results
 
 sins = set()
 # Given brand_index and hotel_index, return array of [employee[], type_ID[], hotel_id]
@@ -436,3 +437,11 @@ def setup(conn):
     sins.clear()
     temp_hotels_data.clear()
     print('Done.')
+
+
+def setup_if_missing(conn):
+    results = get_results("SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'hotel'", conn,
+                          jsonify=False)
+    if len(results) == 0:
+        print("Schema is empty! Generating...")
+        setup(conn)

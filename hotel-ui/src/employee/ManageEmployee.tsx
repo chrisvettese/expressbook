@@ -3,14 +3,14 @@ import {
     Divider,
     Grid,
     GridList,
-    GridListTile,
+    GridListTile, InputAdornment,
     makeStyles,
     Paper, Snackbar, TextField,
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {GetEmployeeResponse, Severity, TitleBarCustomer} from "../index";
-import {useHistory, useLocation} from "react-router-dom";
+import {GetEmployeeResponse, Severity, TitleBarEmployee} from "../index";
+import {useLocation} from "react-router-dom";
 import {Alert} from "@material-ui/lab";
 
 const useStyles = makeStyles(theme => ({
@@ -59,6 +59,7 @@ const useStyles = makeStyles(theme => ({
         width: '85%',
         marginTop: '10em',
         marginLeft: '10em',
+        paddingBottom: '1em'
     },
     divider: {
         marginLeft: '1em',
@@ -93,13 +94,24 @@ const useStyles = makeStyles(theme => ({
 const CreateEmployee = ({
                             dialogOpen, setDialogOpen,
                             classes,
-                            openAlert
+                            openAlert,
+                            hotelID, managerSIN,
+                            employees, setEmployees
                         }: any) => {
 
     const sinRegex: RegExp = /^[0-9]{3}-[0-9]{3}-[0-9]{3}$/;
 
     const [sinError, setSINError]: [boolean, any] = useState(false);
+    const [nameError, setNameError]: [boolean, any] = useState(false);
+    const [addressError, setAddressError]: [boolean, any] = useState(false);
+    const [salaryError, setSalaryError]: [boolean, any] = useState(false);
+    const [jobError, setJobError]: [boolean, any] = useState(false);
+
     const [sinHelper, setSINHelper]: [string, any] = useState('');
+    const [nameHelper, setNameHelper]: [string, any] = useState('');
+    const [addressHelper, setAddressHelper]: [string, any] = useState('');
+    const [salaryHelper, setSalaryHelper]: [string, any] = useState('');
+    const [jobHelper, setJobHelper]: [string, any] = useState('');
 
     const [disableCheck, setDisableCheck]: [boolean, any] = useState(false);
     const [disableCreateEmployee, setDisableCreateEmployee]: [boolean, any] = useState(false);
@@ -112,24 +124,29 @@ const CreateEmployee = ({
     const [employeeSalary, setEmployeeSalary]: [string, any] = useState("");
     const [employeeJobTitle, setEmployeeJobTitle]: [string, any] = useState("");
 
+    const [isNewSIN, setIsNewSIN]: [boolean, any] = useState(false);
+
     function AdditionalInfo() {
         if (showInfo) {
             return (
                 <>
-                    <TextField label="Name" variant="outlined" value={employeeName} error={sinError}
-                               helperText={sinHelper}
+                    <TextField label="Name" variant="outlined" value={employeeName} error={nameError}
+                               helperText={nameHelper}
                                onChange={event => setEmployeeName(event.currentTarget.value)}/>
                     <br/>
-                    <TextField label="Address" variant="outlined" value={employeeAddress} error={sinError}
-                               helperText={sinHelper}
+                    <TextField label="Address" variant="outlined" value={employeeAddress} error={addressError}
+                               helperText={addressHelper}
                                onChange={event => setEmployeeAddress(event.currentTarget.value)}/>
                     <br/>
-                    <TextField label="Salary" variant="outlined" value={employeeSalary} error={sinError}
-                               helperText={sinHelper}
-                               onChange={event => setEmployeeSalary(event.currentTarget.value)}/>
+                    <TextField label="Salary" variant="outlined" value={employeeSalary} error={salaryError}
+                               helperText={salaryHelper} type="number"
+                               onChange={event => setEmployeeSalary(event.currentTarget.value)}
+                               InputProps={{
+                                   startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                               }}/>
                     <br/>
-                    <TextField label="Job Title" variant="outlined" value={employeeJobTitle} error={sinError}
-                               helperText={sinHelper}
+                    <TextField label="Job Title" variant="outlined" value={employeeJobTitle} error={jobError}
+                               helperText={jobHelper}
                                onChange={event => setEmployeeJobTitle(event.currentTarget.value)}/>
                     <br/>
                 </>
@@ -156,11 +173,13 @@ const CreateEmployee = ({
                 setSINError(false);
                 setDisableCheck(false);
                 setShowInfo(true);
+                setDisableCreateEmployee(false);
                 setSINHelper("");
                 setEmployeeName("");
                 setEmployeeJobTitle("");
                 setEmployeeSalary("");
                 setEmployeeAddress("");
+                setIsNewSIN(true);
                 openAlert("Employee SIN validated", "success")
             } else if (response.status === 200) {
                 const employeeResponse: GetEmployeeResponse = await response.json();
@@ -168,16 +187,18 @@ const CreateEmployee = ({
                     setSINHelper("Invalid SIN. Employee already exists!");
                     setSINError(true);
                 } else {
+                    setIsNewSIN(false);
                     setSINError(false);
                     setDisableCheck(false);
                     setSINHelper("");
-                    openAlert('Existing profile found', 'success');
+                    setDisableCreateEmployee(false);
                     //Show additional info filled out
                     setEmployeeAddress(employeeResponse.employee_address);
                     setEmployeeName(employeeResponse.employee_name);
                     setEmployeeJobTitle(employeeResponse.job_title);
                     setEmployeeSalary(employeeResponse.salary);
                     setShowInfo(true);
+                    openAlert('Existing profile found', 'success');
                 }
             } else {
                 openAlert('Unable to verify SIN', 'error');
@@ -191,22 +212,131 @@ const CreateEmployee = ({
 
     async function createEmployee() {
         setDisableCreateEmployee(true);
-        //TODO: either PATCH or POST depending on whether employee SIN is new or not
+        const validateName = employeeName.length > 0 && employeeName.length < 255;
+        const validateAddress = employeeAddress.length > 0 && employeeAddress.length < 255;
+        const validateSalary = !Number.isNaN(employeeSalary) && parseFloat(employeeSalary) > 0;
+        const validateJobTitle = employeeJobTitle.length > 0;
+
+        setNameError(!validateName);
+        setAddressError(!validateAddress);
+        setSalaryError(!validateSalary);
+        setJobError(!validateJobTitle);
+
+        if (!validateName) {
+            setNameHelper('Must enter valid name for employee')
+        }
+        if (!validateAddress) {
+            setAddressHelper('Must enter valid address for employee')
+        }
+        if (!validateSalary) {
+            setSalaryHelper('Must enter valid salary for employee')
+        }
+        if (!validateJobTitle) {
+            setJobHelper('Must enter valid job title for employee')
+        }
+        if (!validateName || !validateAddress || !validateSalary || !validateJobTitle) {
+            setDisableCreateEmployee(false);
+            return;
+        }
+
+        const fixedESalary: string = parseFloat(employeeSalary).toFixed(2)
+
+        console.log(isNewSIN)
+        if (isNewSIN) {
+            try {
+                let response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + hotelID + "/employees", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        employee_sin: employeeSIN,
+                        manager_sin: managerSIN,
+                        name: employeeName,
+                        address: employeeAddress,
+                        salary: fixedESalary,
+                        job_title: employeeJobTitle
+                    })
+                })
+                if (response.status === 201) {
+                    openAlert('Successfully added employee', 'success');
+                    const newEmployees = [...employees];
+                    newEmployees.push({
+                        employee_sin: employeeSIN,
+                        employee_name: employeeName,
+                        employee_address: employeeAddress,
+                        salary: fixedESalary,
+                        job_title: employeeJobTitle,
+                    });
+                    setEmployees(newEmployees);
+                    closeDialog();
+                } else {
+                    openAlert('Error: Unable to add employee', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                openAlert('Error: Unable to add employee', 'error');
+            }
+        } else {
+            try {
+                let response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + hotelID + "/employees/" + employeeSIN, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        manager_sin: managerSIN,
+                        name: employeeName,
+                        address: employeeAddress,
+                        salary: fixedESalary,
+                        job_title: employeeJobTitle,
+                        status: 'hired'
+                    })
+                })
+                if (response.status === 204) {
+                    openAlert('Successfully added employee', 'success');
+                    const newEmployees = [...employees];
+                    newEmployees.push({
+                        employee_sin: employeeSIN,
+                        employee_name: employeeName,
+                        employee_address: employeeAddress,
+                        salary: fixedESalary,
+                        job_title: employeeJobTitle,
+                    });
+                    setEmployees(newEmployees);
+                    closeDialog();
+                } else {
+                    openAlert('Error: Unable to add employee', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                openAlert('Error: Unable to add employee', 'error');
+            }
+        }
         setDisableCreateEmployee(false);
     }
 
     function closeDialog() {
         setDialogOpen(false);
         setSINError(false);
+        setNameError(false);
+        setAddressError(false);
+        setSalaryError(false);
+        setJobError(false);
         setDisableCheck(false);
+        setSINHelper("");
+        setNameHelper("");
+        setAddressHelper("");
+        setJobHelper("");
+        setSalaryHelper("");
         setEmployeeSIN("");
         setEmployeeAddress("");
         setEmployeeSalary("");
         setEmployeeJobTitle("");
         setEmployeeName("");
         setShowInfo(false);
+        setDisableCreateEmployee(true);
     }
-
 
     return <Dialog onClose={() => closeDialog()} aria-labelledby="simple-dialog-title" open={dialogOpen}>
         <DialogTitle id="dialog-title" className={classes.dialogTitle}>
@@ -217,12 +347,15 @@ const CreateEmployee = ({
                        helperText={sinHelper}
                        onChange={event => {
                            setEmployeeSIN(event.currentTarget.value);
+                           setDisableCreateEmployee(true);
                            setShowInfo(false);
                        }}/>
             <br/>
             <Button variant='contained' disabled={disableCheck} onClick={validateEmployeeSIN}>Check SIN</Button>
             <br/>
-            <AdditionalInfo/>
+            {
+                AdditionalInfo()
+            }
         </div>
         <DialogActions>
             <Button disabled={disableCreateEmployee}
@@ -261,7 +394,6 @@ interface State {
 export default function ManageEmployee() {
     const classes = useStyles();
     const location = useLocation<State>();
-    const history = useHistory();
 
     const buttonStateValues: boolean[] = []
     for (let i = 0; i < location.state.response.length; i++) {
@@ -328,7 +460,7 @@ export default function ManageEmployee() {
 
     return (
         <div className={classes.root}>
-            <TitleBarCustomer/>
+            <TitleBarEmployee/>
             <Typography className={classes.centreTitle}>Hotel Employees</Typography>
             <Typography
                 className={classes.subTitle}>{location.state.brandName + ", " + location.state.hotelAddress}
@@ -336,7 +468,7 @@ export default function ManageEmployee() {
             <div className={classes.subTitle}>
                 <Button variant='contained' onClick={() => setDialogOpen(true)}>New Employee</Button>
             </div>
-            <GridList cols={1} cellHeight={200} className={classes.grid}>
+            <GridList cols={1} cellHeight={185} className={classes.grid}>
                 {
                     employees.map((emp: Employee, index: number) => {
                         return (
@@ -348,7 +480,7 @@ export default function ManageEmployee() {
                                             <Typography>{emp.job_title}</Typography>
                                             <Typography>SIN: {emp.employee_sin}</Typography>
                                             <Typography>Address: {emp.employee_address}</Typography>
-                                            <Typography>Salary: {emp.salary}</Typography>
+                                            <Typography>Salary: ${emp.salary}</Typography>
                                         </Grid>
                                         <Divider orientation="vertical" flexItem className={classes.divider}/>
                                         <Grid item xs={2}>
@@ -368,7 +500,8 @@ export default function ManageEmployee() {
                 }
             </GridList>
             <CreateEmployee dialogOpen={dialogOpen} setDialogOpen={setDialogOpen} classes={classes}
-                            openAlert={openAlert}/>
+                            openAlert={openAlert} hotelID={location.state.hotelID} employees={employees}
+                            managerSIN={location.state.managerSIN} setEmployees={setEmployees}/>
             <Snackbar open={alertOpen} autoHideDuration={6000} onClose={closeAlert}>
                 <Alert onClose={closeAlert} severity={alertStatus}>
                     {alertMessage}
