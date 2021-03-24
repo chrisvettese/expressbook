@@ -13,247 +13,6 @@ temp_hotels_data = [[], [], [], [], [], []]
 current_type_id = 1
 
 
-def table_creation(conn):
-    with conn:
-        with conn.cursor() as curs:
-            curs.execute('DROP SCHEMA IF EXISTS hotel CASCADE;')
-            curs.execute('CREATE SCHEMA hotel')
-            curs.execute('''
-                CREATE TABLE hotel.hotel_brand(
-                    brand_ID SERIAL PRIMARY KEY,
-                    name VARCHAR(255) NOT NULL,
-                    main_office_address VARCHAR(255) NOT NULL,
-                    email_address VARCHAR(255) NOT NULL,
-                    phone_number VARCHAR(20) NOT NULL,
-                    number_of_hotels INTEGER NOT NULL DEFAULT 0)
-                ''')
-            curs.execute('''
-                CREATE TABLE hotel.hotel(
-                    hotel_ID SERIAL PRIMARY KEY,
-                    brand_ID SERIAL NOT NULL REFERENCES hotel.hotel_brand(brand_ID) ON DELETE CASCADE,
-                    physical_address VARCHAR(255) NOT NULL,
-                    number_of_rooms INTEGER NOT NULL,
-                    star_category SMALLINT NOT NULL,
-                    email_address VARCHAR(255) NOT NULL,
-                    phone_number VARCHAR(20) NOT NULL,
-                    CHECK (star_category BETWEEN 1 AND 5))
-                ''')
-            curs.execute('''
-                CREATE TABLE hotel.employee_status(
-                    status_ID SMALLINT PRIMARY KEY,
-                    status VARCHAR(20) NOT NULL)
-                ''')
-            curs.execute('''
-                    INSERT INTO hotel.employee_status(status_ID, status) VALUES (1, 'hired');
-                    INSERT INTO hotel.employee_status(status_ID, status) VALUES (2, 'quit');
-                    ''')
-            curs.execute('''
-                CREATE TABLE hotel.employee(
-                    employee_SIN VARCHAR(11) PRIMARY KEY,
-                    hotel_ID SERIAL REFERENCES hotel.hotel(hotel_ID) ON DELETE CASCADE,
-                    employee_name VARCHAR(255) NOT NULL,
-                    employee_address VARCHAR(255) NOT NULL,
-                    salary VARCHAR(15) NOT NULL,
-                    job_title VARCHAR(255) NOT NULL,
-                    status_ID SMALLINT NOT NULL REFERENCES hotel.employee_status(status_ID) DEFAULT 1)
-                ''')
-            curs.execute('''
-                CREATE TABLE hotel.customer(
-                    customer_SIN VARCHAR(11) PRIMARY KEY,
-                    customer_name VARCHAR(255) NOT NULL,
-                    customer_address VARCHAR(255) NOT NULL,
-                    customer_email VARCHAR(255) NOT NULL,
-                    customer_phone VARCHAR(20) NOT NULL)
-                ''')
-            curs.execute('''
-                CREATE TABLE hotel.view_type(
-                    view_ID SMALLINT PRIMARY KEY,
-                    view VARCHAR(20) NOT NULL)
-                ''')
-            curs.execute('''
-                INSERT INTO hotel.view_type(view_ID, view) VALUES (1, 'Mountain');
-                INSERT INTO hotel.view_type(view_ID, view) VALUES (2, 'Lake');
-                INSERT INTO hotel.view_type(view_ID, view) VALUES (3, 'City');
-                INSERT INTO hotel.view_type(view_ID, view) VALUES (4, 'None');
-                ''')
-            curs.execute('''
-                CREATE TABLE hotel.hotel_room_type(
-                    type_ID SERIAL PRIMARY KEY,
-                    hotel_ID SERIAL REFERENCES hotel.hotel(hotel_ID) ON DELETE CASCADE,
-                    title VARCHAR(255) NOT NULL,
-                    price VARCHAR(15) NOT NULL,
-                    amenities VARCHAR(255)[],
-                    room_capacity SMALLINT NOT NULL,
-                    view_ID SMALLINT NOT NULL REFERENCES hotel.view_type(view_ID),
-                    is_extendable BOOLEAN,
-                    total_number_rooms SMALLINT NOT NULL,
-                    rooms_available SMALLINT NOT NULL)
-                ''')
-            curs.execute('''
-                CREATE TABLE hotel.booking_status(
-                    status_ID SMALLINT PRIMARY KEY,
-                    value VARCHAR(20) NOT NULL)
-                ''')
-            curs.execute('''
-                INSERT INTO hotel.booking_status(status_ID, value) VALUES (1, 'Booked');
-                INSERT INTO hotel.booking_status(status_ID, value) VALUES (2, 'Renting');
-                INSERT INTO hotel.booking_status(status_ID, value) VALUES (3, 'Archived');
-                INSERT INTO hotel.booking_status(status_ID, value) VALUES (4, 'Cancelled');
-                ''')
-            curs.execute('''
-                CREATE TABLE hotel.room_booking(
-                    booking_ID SERIAL PRIMARY KEY,
-                    type_ID SERIAL REFERENCES hotel.hotel_room_type(type_ID),
-                    hotel_ID SERIAL REFERENCES hotel.hotel(hotel_ID) ON DELETE CASCADE,
-                    employee_SIN VARCHAR(11) REFERENCES hotel.employee(employee_SIN) ON UPDATE CASCADE,
-                    customer_SIN VARCHAR(11) NOT NULL REFERENCES hotel.customer(customer_SIN) ON UPDATE CASCADE,
-                    date_of_registration DATE NOT NULL DEFAULT CURRENT_DATE,
-                    check_in_day DATE NOT NULL,
-                    check_out_day DATE NOT NULL,
-                    status_ID SMALLINT NOT NULL REFERENCES hotel.booking_status(status_ID) DEFAULT 1)
-                ''')
-            # trigger function to if a hotel has no manager, they must be the next employee hired
-            curs.execute('''
-                CREATE FUNCTION hotel.require_hotel_manager() RETURNS TRIGGER AS
-                    $$ 
-                    BEGIN 
-                    IF (CAST((SELECT COUNT(*) FROM hotel.employee e 
-                            WHERE e.hotel_ID = NEW.hotel_ID AND e.job_title = 'Manager') AS INTEGER) = 0) THEN 
-                        RAISE EXCEPTION 'Hotel must have employee with job title "Manager" 
-                        before other employees can be hired.'; 
-                    END IF; 
-                    RETURN NEW; 
-                    END; 
-                    $$ LANGUAGE plpgsql;
-                CREATE TRIGGER require_hotel_manager 
-                BEFORE INSERT ON hotel.employee FOR EACH ROW 
-                WHEN (NEW.job_title != 'Manager') 
-                EXECUTE PROCEDURE hotel.require_hotel_manager()
-                ''')
-            # trigger function to update number_of_hotels for a brand when a new hotel is created
-            curs.execute('''
-                CREATE FUNCTION hotel.increase_num_hotels() RETURNS TRIGGER AS
-                    $$ 
-                    BEGIN 
-                    UPDATE hotel.hotel_brand SET number_of_hotels = number_of_hotels + 1 
-                    WHERE NEW.brand_id = brand_id; 
-                    RETURN NEW;
-                    END; 
-                    $$ LANGUAGE plpgsql;
-                CREATE TRIGGER increase_num_hotels 
-                AFTER INSERT ON hotel.hotel FOR EACH ROW 
-                EXECUTE PROCEDURE hotel.increase_num_hotels()
-                ''')
-
-            # trigger function to update number_of_hotels for a brand when a new hotel is created
-            curs.execute('''
-                CREATE FUNCTION hotel.decrease_num_hotels() RETURNS TRIGGER AS
-                    $$ 
-                    BEGIN 
-                    UPDATE hotel.hotel_brand SET number_of_hotels = number_of_hotels - 1 
-                    WHERE NEW.brand_id = brand_id; 
-                    RETURN OLD;
-                    END; 
-                    $$ LANGUAGE plpgsql;
-                CREATE TRIGGER decrease_num_hotels 
-                BEFORE DELETE ON hotel.hotel FOR EACH ROW 
-                EXECUTE PROCEDURE hotel.decrease_num_hotels()
-                ''')
-
-            # function to determine how many rooms of a specific type are occupied over a given date range
-            # for example if the total_number_rooms is 100, and max_occupancy is 100, then the room is booked up
-            curs.execute('''
-                CREATE OR REPLACE FUNCTION 
-                    hotel.max_occupancy(new_check_in DATE, new_check_out DATE, new_type_ID INTEGER)
-                RETURNS INTEGER AS
-                    $$
-                    DECLARE day DATE;
-                    DECLARE current_max INTEGER DEFAULT 0;
-                    DECLARE current INTEGER;
-                    BEGIN
-                    FOR day IN (SELECT d.day::DATE FROM generate_series(new_check_in, new_check_out - 1, 
-                            INTERVAL '1 day') AS d(day)) LOOP
-                        current = (SELECT COUNT(*) FROM hotel.room_booking r WHERE r.type_ID = new_type_ID
-                        AND (r.status_id = 1 OR r.status_id = 2)
-                        AND r.check_in_day <= day AND day < r.check_out_day);
-                        IF current > current_max THEN
-                            current_max = current;
-                        END IF;
-                    END LOOP;
-                    RETURN current_max;
-                    END;
-                    $$ LANGUAGE plpgsql;
-                ''')
-
-            # trigger function to prevent rooms from being overbooked
-            # a room is considered occupied today if it is booked tonight (from today to tomorrow)
-            curs.execute('''
-                CREATE FUNCTION hotel.prevent_overbook() RETURNS TRIGGER AS
-                    $$ 
-                    BEGIN 
-                        IF hotel.max_occupancy(NEW.check_in_day, NEW.check_out_day, NEW.type_ID) >=
-                                (SELECT t.total_number_rooms FROM hotel.hotel_room_type t WHERE t.type_ID = NEW.type_ID)
-                            THEN RAISE EXCEPTION 'This room is already booked up over these dates. type_ID=%s,
-                                check_in_day=%s, check_out_day=%s', NEW.type_ID, NEW.check_in_day, NEW.check_out_day;
-                        END IF;
-                        RETURN NEW;
-                    END; 
-                    $$ LANGUAGE plpgsql;
-                CREATE TRIGGER prevent_overbook 
-                BEFORE INSERT ON hotel.room_booking FOR EACH ROW 
-                EXECUTE PROCEDURE hotel.prevent_overbook()
-                ''')
-
-            # trigger function to update the current rooms_available for a certain room type
-            curs.execute('''
-                CREATE FUNCTION hotel.update_availability() RETURNS TRIGGER AS
-                    $$ 
-                    BEGIN 
-                        UPDATE hotel.hotel_room_type SET rooms_available = total_number_rooms - 
-                            hotel.max_occupancy(CURRENT_DATE, DATE (CURRENT_DATE + INTERVAL '1 day'), type_ID);
-                        RETURN NEW;
-                    END; 
-                    $$ LANGUAGE plpgsql;
-                CREATE TRIGGER update_availability 
-                AFTER INSERT OR UPDATE ON hotel.room_booking FOR EACH ROW 
-                EXECUTE PROCEDURE hotel.update_availability()
-                ''')
-
-            # function to correct room status for a customer if it has not been updated
-            curs.execute('''
-                CREATE OR REPLACE FUNCTION hotel.correct_status_customer(cust_sin VARCHAR(11))
-                RETURNS VOID AS
-                    $$
-                    BEGIN
-                    UPDATE hotel.room_booking SET status_ID = 3 WHERE customer_sin = cust_sin
-                    AND status_id = 2 AND CURRENT_DATE > check_out_day;
-                    UPDATE hotel.room_booking SET status_ID = 4 WHERE customer_sin = cust_sin
-                    AND status_id = 1 AND CURRENT_DATE >= check_out_day;
-                    UPDATE hotel.room_booking SET status_ID = 1 WHERE customer_sin = cust_sin
-                    AND status_id = 2 AND CURRENT_DATE < check_in_day;
-                    END;
-                    $$ LANGUAGE plpgsql;
-                ''')
-            conn.commit()
-
-            # function to correct room status for a hotel if it has not been updated
-            curs.execute('''
-                CREATE OR REPLACE FUNCTION hotel.correct_status_hotel(h_ID INTEGER)
-                RETURNS VOID AS
-                    $$
-                    BEGIN
-                    UPDATE hotel.room_booking SET status_ID = 3 WHERE hotel_ID = h_ID
-                    AND status_id = 2 AND CURRENT_DATE > check_out_day;
-                    UPDATE hotel.room_booking SET status_ID = 4 WHERE hotel_ID = h_ID
-                    AND status_id = 1 AND CURRENT_DATE > check_out_day;
-                    UPDATE hotel.room_booking SET status_ID = 1 WHERE hotel_ID = h_ID
-                    AND status_id = 2 AND CURRENT_DATE < check_in_day;
-                    END;
-                    $$ LANGUAGE plpgsql;
-                ''')
-            conn.commit()
-
-
 def populate(conn):
     with conn:
         with conn.cursor() as curs:
@@ -432,7 +191,7 @@ def random_salary():
 def setup(conn, data_mode):
     if data_mode == 'random':
         print('Creating tables...')
-        table_creation(conn)
+        create_empty(conn)
         print('Populating tables with random generation (this may take a while)...')
         populate(conn)
         sins.clear()
@@ -442,12 +201,20 @@ def setup(conn, data_mode):
         with conn:
             with conn.cursor() as curs:
                 curs.execute(open("hotel_db_example.sql", "r").read())
+                conn.commit()
     elif data_mode == 'empty':
         print('Creating empty schema and tables')
-        table_creation(conn)
+        create_empty(conn)
     else:
         raise Exception('Invalid data mode')
     print('Done.')
+
+
+def create_empty(conn):
+    with conn:
+        with conn.cursor() as curs:
+            curs.execute(open("hotel_db_empty.sql", "r").read())
+            conn.commit()
 
 
 def setup_if_missing(conn, data_mode):

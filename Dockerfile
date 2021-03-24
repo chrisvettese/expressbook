@@ -2,7 +2,8 @@ FROM python:3.9 AS backend
 RUN mkdir /app
 RUN mkdir /app/hotel_booking_server
 WORKDIR /app
-COPY pyproject.toml poetry.lock config.yml hotel_db_example.sql ./
+COPY pyproject.toml poetry.lock config.yml ./
+COPY ./sql ./
 COPY requirements.txt ./
 ENV PYTHONPATH=${PYTHONPATH}:${PWD}
 RUN pip3 install -r requirements.txt
@@ -12,9 +13,9 @@ COPY ./hotel_booking_server ./hotel_booking_server
 RUN poetry install --no-dev
 
 FROM node:14 AS build
-RUN mkdir /app
-WORKDIR /app
-ENV PATH /app/node_modules/.bin:$PATH
+RUN mkdir /react
+WORKDIR /react
+ENV PATH /react/node_modules/.bin:$PATH
 COPY ./hotel-ui/package.json ./hotel-ui/package.json
 COPY ./hotel-ui/package-lock.json ./hotel-ui/package-lock.json
 WORKDIR ./hotel-ui
@@ -23,6 +24,6 @@ COPY ./hotel-ui ./
 RUN npm run build
 
 FROM nginx:alpine AS frontend
-COPY --from=build ./app/hotel-ui/build ./usr/share/nginx/html
+COPY --from=build ./react/hotel-ui/build ./usr/share/nginx/html
 COPY ./nginx.conf ./etc/nginx/nginx.conf
 CMD ["nginx", "-g", "daemon off;"]

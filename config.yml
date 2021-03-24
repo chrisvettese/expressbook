@@ -3,5 +3,5 @@ port: 5432
 database: postgres
 user: postgres
 password: postgres
-reset-db: false
-data-mode: example
+reset-db: true
+data-mode: empty
