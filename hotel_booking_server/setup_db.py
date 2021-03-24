@@ -200,7 +200,7 @@ def setup(conn, data_mode):
         print('Creating schema from example file')
         with conn:
             with conn.cursor() as curs:
-                curs.execute(open("hotel_db_example.sql", "r").read())
+                curs.execute(open("sql/hotel_db_example.sql", "r").read())
                 conn.commit()
     elif data_mode == 'empty':
         print('Creating empty schema and tables')
@@ -213,7 +213,7 @@ def setup(conn, data_mode):
 def create_empty(conn):
     with conn:
         with conn.cursor() as curs:
-            curs.execute(open("hotel_db_empty.sql", "r").read())
+            curs.execute(open("sql/hotel_db_empty.sql", "r").read())
             conn.commit()
 
 
