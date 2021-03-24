@@ -429,19 +429,30 @@ def random_salary():
     return str(random.randint(20000, 90000)) + '.' + '{:02}'.format(random.randint(0, 99))
 
 
-def setup(conn):
-    print('Creating tables...')
-    table_creation(conn)
-    print('Populating tables (this may take a while)...')
-    populate(conn)
-    sins.clear()
-    temp_hotels_data.clear()
+def setup(conn, data_mode):
+    if data_mode == 'random':
+        print('Creating tables...')
+        table_creation(conn)
+        print('Populating tables with random generation (this may take a while)...')
+        populate(conn)
+        sins.clear()
+        temp_hotels_data.clear()
+    elif data_mode == 'example':
+        print('Creating schema from example file')
+        with conn:
+            with conn.cursor() as curs:
+                curs.execute(open("hotel_db_example.sql", "r").read())
+    elif data_mode == 'empty':
+        print('Creating empty schema and tables')
+        table_creation(conn)
+    else:
+        raise Exception('Invalid data mode')
     print('Done.')
 
 
-def setup_if_missing(conn):
+def setup_if_missing(conn, data_mode):
     results = get_results("SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'hotel'", conn,
                           jsonify=False)
     if len(results) == 0:
         print("Schema is empty! Generating...")
-        setup(conn)
+        setup(conn, data_mode)

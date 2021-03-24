@@ -33,10 +33,12 @@ def main():
             password=config['password'])
 
         print('Connected to db')
+
+        data_mode = config['data-mode']
         if config['reset-db']:
-            setup_db.setup(conn)
+            setup_db.setup(conn, data_mode)
         else:
-            setup_db.setup_if_missing(conn)
+            setup_db.setup_if_missing(conn, data_mode)
     except psycopg2.DatabaseError as e:
         print('Error connecting to db')
         raise e

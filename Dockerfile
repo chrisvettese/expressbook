@@ -1,10 +1,8 @@
 FROM python:3.9 AS backend
 RUN mkdir /app
 RUN mkdir /app/hotel_booking_server
-RUN mkdir /pgadmin4
-COPY servers.json /pgadmin4
 WORKDIR /app
-COPY pyproject.toml poetry.lock config.yml ./
+COPY pyproject.toml poetry.lock config.yml hotel_db_example.sql ./
 COPY requirements.txt ./
 ENV PYTHONPATH=${PYTHONPATH}:${PWD}
 RUN pip3 install -r requirements.txt
