@@ -109,11 +109,14 @@ def add_routes(app, conn):
     @cross_origin()
     def update_employee(hid, eid):
         data = request.json
-        if 'manager_sin' not in data:
-            raise BadRequestError(message="Missing required body field 'manager_sin'")
+        if 'status' in data or 'hotel_id' in data or 'salary' in data or 'job_title' in data:
+            if 'manager_sin' not in data:
+                raise BadRequestError(message="Body field 'manager_sin' is required to update status and hotel_id")
 
-        manager_sin = data['manager_sin']
-        verify_manager(manager_sin, hid, conn)
+            manager_sin = data['manager_sin']
+            verify_manager(manager_sin, hid, conn)
+            if manager_sin == eid:
+                raise BadRequestError(message='Manager cannot change themself - please contact the db administrator')
 
         query = ''
         if 'status' in data:
@@ -122,15 +125,19 @@ def add_routes(app, conn):
 
         if 'hotel_id' in data:
             query += '''UPDATE hotel.employee e SET hotel_id = {} WHERE employee_sin = \'{}\';'''.format(hid, eid)
-        if 'employee_address' in data:
+        if 'employee_address' in data and len(data['employee_address']) > 0:
             query += '''UPDATE hotel.employee e SET employee_address = '{}' WHERE employee_sin = \'{}\';''' \
                 .format(hid, eid)
-        if 'employee_name' in data:
+        if 'employee_name' in data and len(data['employee_name']) > 0:
             query += '''UPDATE hotel.employee e SET employee_name = '{}' WHERE employee_sin = \'{}\';'''.format(hid,
                                                                                                                 eid)
         if 'salary' in data:
+            try:
+                float(data['salary'])
+            except ValueError:
+                raise BadRequestError(message='Invalid salary - Must be a decimal number')
             query += '''UPDATE hotel.employee e SET salary = '{}' WHERE employee_sin = \'{}\';'''.format(hid, eid)
-        if 'job_title' in data:
+        if 'job_title' in data and len(data['job_title']) > 0:
             query += '''UPDATE hotel.employee e SET job_title = '{}' WHERE employee_sin = \'{}\';'''.format(hid, eid)
 
         try:
