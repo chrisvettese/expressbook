@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import psycopg2
 
 from hotel_booking_server import hotel_data
-from hotel_booking_server.routes import get_results
+from hotel_booking_server.routes.setup_routes import get_results
 
 sins = set()
 # Given brand_index and hotel_index, return array of [employee[], type_ID[], hotel_id]

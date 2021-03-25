@@ -10,9 +10,10 @@ from flask import Flask
 from flask_cors import CORS
 
 from hotel_booking_server import setup_db, routes
-from hotel_booking_server.BadRequestError import BadRequestError
-from hotel_booking_server.ResourceConflictError import ResourceConflictError
-from hotel_booking_server.ResourceNotFoundError import ResourceNotFoundError
+from hotel_booking_server.errors.BadRequestError import BadRequestError
+from hotel_booking_server.errors.ResourceConflictError import ResourceConflictError
+from hotel_booking_server.errors.ResourceNotFoundError import ResourceNotFoundError
+from hotel_booking_server.routes import setup_routes
 
 
 def main():
@@ -55,7 +56,7 @@ def main():
         response.status_code = error.status_code
         return response
 
-    routes.add_routes(app, conn)
+    setup_routes.add_routes(app, conn)
 
     def exit_handler():
         print('Shutting down')
