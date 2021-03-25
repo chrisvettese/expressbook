@@ -5,13 +5,12 @@ import {
     GridList,
     GridListTile,
     makeStyles,
-    Paper, Radio, RadioGroup, Snackbar,
+    Paper, Radio, RadioGroup,
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {Severity, TitleBarCustomer} from "./index";
+import {HotelAlert, Severity, TitleBarCustomer} from "./index";
 import {useLocation} from "react-router-dom";
-import {Alert} from "@material-ui/lab";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -263,10 +262,6 @@ export default function Reservations() {
 
     const titleMessage = location.state.isCustomer ? 'My Reservations - ' + location.state.customerName : 'Customer Reservations - ' + location.state.customerName;
 
-    function closeAlert() {
-        setAlertOpen(false);
-    }
-
     function setReservationRadioState(event: React.ChangeEvent<HTMLInputElement>) {
         const value = parseInt(event.target.value);
         setRadioState(value);
@@ -289,11 +284,8 @@ export default function Reservations() {
                                   setEditButtonToDisable={setEditButtonToDisable} setAlertMessage={setAlertMessage}
                                   setAlertStatus={setAlertStatus} setAlertOpen={setAlertOpen}
                                   customerSIN={location.state.customerSIN} setReservations={setReservations}/>
-            <Snackbar open={alertOpen} autoHideDuration={6000} onClose={closeAlert}>
-                <Alert onClose={closeAlert} severity={alertStatus}>
-                    {alertMessage}
-                </Alert>
-            </Snackbar>
+            <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
+                        alertMessage={alertMessage}/>
         </div>
     )
 }

@@ -49,7 +49,7 @@ services:
       - pgadmin:/root/.pgadmin
       - ./servers.json:/pgadmin4/servers.json
     ports:
-      - "1235:80"
+      - 127.0.0.1:1235:80
     networks:
       - postgres
     depends_on:

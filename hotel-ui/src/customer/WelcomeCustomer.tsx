@@ -1,6 +1,6 @@
 import {Button, makeStyles, Paper, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBarCustomer} from "../index";
+import {HotelAlert, Severity, TitleBarCustomer} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
 import {EditCustomerProfileDialog} from "./dialogs/EditCustomerProfileDialog";
 
@@ -65,11 +65,18 @@ export default function WelcomeCustomer() {
     const classes = useStyles();
     const location = useLocation<{ customerSIN: string, customerName: string, customerAddress: string, customerEmail: string, customerPhone: string }>();
     const history = useHistory();
-    const [disableHotelButton, setDisableHotelButton]:  [boolean, any] = useState(false);
+    const [disableHotelButton, setDisableHotelButton]: [boolean, any] = useState(false);
     const [disableReservationButton, setDisableReservationButton]: [boolean, any] = useState(false);
-    const [openDialog, setOpenDialog]: [boolean, any] = useState(false);
+    const [dialogOpen, setDialogOpen]: [boolean, any] = useState(false);
 
-    const welcomeMessage: string = "Welcome, " + location.state.customerName;
+    const [alertOpen, setAlertOpen] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
+    const [alertStatus, setAlertStatus]: [Severity, any] = useState("success");
+
+    const [customerName, setCustomerName]: [string, any] = useState(location.state.customerName);
+    const [customerAddress, setCustomerAddress]: [string, any] = useState(location.state.customerAddress);
+    const [customerEmail, setCustomerEmail]: [string, any] = useState(location.state.customerEmail);
+    const [customerPhone, setCustomerPhone]: [string, any] = useState(location.state.customerPhone);
 
     async function goToBrandPage() {
         setDisableHotelButton(true);
@@ -82,10 +89,10 @@ export default function WelcomeCustomer() {
             response = await response.json();
             history.push('/ui/customer/brands', {
                 customerSIN: location.state.customerSIN,
-                customerAddress: location.state.customerAddress,
-                customerName: location.state.customerName,
-                customerEmail: location.state.customerEmail,
-                customerPhone: location.state.customerPhone,
+                customerAddress: customerAddress,
+                customerName: customerName,
+                customerEmail: customerEmail,
+                customerPhone: customerPhone,
                 response: response
             });
         } catch (error) {
@@ -115,24 +122,20 @@ export default function WelcomeCustomer() {
         }
     }
 
-    function openEditDialog() {
-        setOpenDialog(true);
-    }
-
     return (
         <>
             <TitleBarCustomer/>
-            <Typography className={classes.centreTitle}>{welcomeMessage}</Typography>
+            <Typography className={classes.centreTitle}>{"Welcome, " + customerName}</Typography>
             <Typography className={classes.centre}>Your profile:</Typography>
             <div className={classes.paperContainer}>
                 <Paper elevation={3} className={classes.paper}>
-                    <Typography className={classes.inPaper}>Address: {location.state.customerAddress}</Typography>
-                    <Typography className={classes.inPaper}>Email: {location.state.customerEmail}</Typography>
-                    <Typography className={classes.inPaper}>Phone number: {location.state.customerPhone}</Typography>
+                    <Typography className={classes.inPaper}>Address: {customerAddress}</Typography>
+                    <Typography className={classes.inPaper}>Email: {customerEmail}</Typography>
+                    <Typography className={classes.inPaper}>Phone number: {customerPhone}</Typography>
                 </Paper>
             </div>
             <div className={classes.buttonCentre}>
-                <Button variant="contained" onClick={() => openEditDialog()}>Edit Profile</Button>
+                <Button variant="contained" onClick={() => setDialogOpen(true)}>Edit Profile</Button>
             </div>
             <div className={classes.buttonCentre}>
                 <Button variant="contained" className={classes.buttonSpacing} onClick={() => goToBrandPage()}
@@ -140,7 +143,15 @@ export default function WelcomeCustomer() {
                 <Button variant="contained" onClick={() => goToReservationsPage()} disabled={disableReservationButton}>My
                     Reservations</Button>
             </div>
-            <EditCustomerProfileDialog openDialog={openDialog} setOpenDialog={setOpenDialog} classes={classes}/>
+            <EditCustomerProfileDialog dialogOpen={dialogOpen} setDialogOpen={setDialogOpen} classes={classes}
+                                       customerSIN={location.state.customerSIN} setAlertMessage={setAlertMessage}
+                                       setAlertStatus={setAlertStatus} setAlertOpen={setAlertOpen}
+                                       customerName={customerName} customerAddress={customerAddress}
+                                       customerPhone={customerPhone} customerEmail={customerEmail}
+                                       setCustomerName={setCustomerName} setCustomerAddress={setCustomerAddress}
+                                       setCustomerPhone={setCustomerPhone} setCustomerEmail={setCustomerEmail}/>
+            <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
+                        alertMessage={alertMessage}/>
         </>
     )
 }

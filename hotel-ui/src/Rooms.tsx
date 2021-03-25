@@ -5,12 +5,12 @@ import {
     GridList,
     GridListTile,
     makeStyles,
-    Paper, Snackbar, TextField, Tooltip,
+    Paper, TextField, Tooltip,
     TooltipProps,
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {Severity, TitleBarCustomer} from "./index";
+import {HotelAlert, Severity, TitleBarCustomer} from "./index";
 import {useLocation} from "react-router-dom";
 import {
     MuiPickersUtilsProvider,
@@ -18,7 +18,6 @@ import {
 } from '@material-ui/pickers';
 import DateFnsUtils from "@date-io/date-fns";
 import {MaterialUiPickersDate} from "@material-ui/pickers/typings/date";
-import {Alert} from "@material-ui/lab";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -293,13 +292,13 @@ export default function Rooms() {
         setDisableBookRoomButton(true);
         let body: string = "";
         if (location.state.employeeSIN === undefined) {
-            body =JSON.stringify({
+            body = JSON.stringify({
                 type_id: typeID,
                 check_in: checkInDateToBook,
                 check_out: checkOutDateToBook
             });
         } else {
-            body =JSON.stringify({
+            body = JSON.stringify({
                 type_id: typeID,
                 check_in: checkInDateToBook,
                 check_out: checkOutDateToBook,
@@ -333,10 +332,6 @@ export default function Rooms() {
         setAlertMessage(message);
         setAlertStatus(status);
         setAlertOpen(true);
-    }
-
-    function closeAlert() {
-        setAlertOpen(false);
     }
 
     async function checkAvailability() {
@@ -577,11 +572,8 @@ export default function Rooms() {
                                 classes={classes} location={location} checkInDateToBook={checkInDateToBook}
                                 bookRoom={bookRoom} checkOutDateToBook={checkOutDateToBook}
                                 disableBookRoomButton={disableBookRoomButton}/>
-            <Snackbar open={alertOpen} autoHideDuration={6000} onClose={closeAlert}>
-                <Alert onClose={closeAlert} severity={alertStatus}>
-                    {alertMessage}
-                </Alert>
-            </Snackbar>
+            <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
+                        alertMessage={alertMessage}/>
         </div>
     )
 }

@@ -1,6 +1,6 @@
 import {Button, makeStyles, TextField, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBarCustomer} from "../index";
+import {sinRegex, TitleBarCustomer} from "../index";
 import {useHistory} from 'react-router-dom';
 
 
@@ -42,7 +42,6 @@ export default function SignInCustomer() {
 
     const [SIN, setSIN] = useState("");
     const [disableSignIn, setDisableSignIn] = useState(false);
-    const sinRegex: RegExp = /^[0-9]{3}-[0-9]{3}-[0-9]{3}$/;
 
     function validateSIN(): boolean {
         return !sinRegex.test(SIN) && SIN.length !== 0;

@@ -1,6 +1,6 @@
 import {Button, makeStyles, TextField, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBarCustomer} from "../index";
+import {phoneRegex, TitleBarCustomer} from "../index";
 import {useHistory, useLocation} from 'react-router-dom';
 
 const useStyles = makeStyles(() => ({
@@ -48,7 +48,7 @@ export default function Name() {
                 emailError = true;
             }
         }
-        const phoneError: boolean = !(/^(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?$/).test(phoneNumber);
+        const phoneError: boolean = !(phoneRegex).test(phoneNumber);
 
         setNameError(nameError);
         setAddressError(addressError);
@@ -93,7 +93,7 @@ export default function Name() {
                         customerPhone: phoneNumber
                     })
                 }
-            } catch(error) {
+            } catch (error) {
                 console.error('Error:', error);
                 setDisableUseButton(false);
             }

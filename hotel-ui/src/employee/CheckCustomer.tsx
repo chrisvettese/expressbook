@@ -5,13 +5,12 @@ import {
     GridList,
     GridListTile,
     makeStyles,
-    Paper, Snackbar, TextField,
+    Paper, TextField,
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {Severity, TitleBarCustomer} from "../index";
+import {HotelAlert, openAlert, Severity, TitleBarCustomer} from "../index";
 import {useLocation} from "react-router-dom";
-import {Alert} from "@material-ui/lab";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -203,12 +202,6 @@ async function patchReservation(action: string, setEditButtonToDisable: any, res
     setEditButtonToDisable(-1);
 }
 
-function openAlert(message: string, status: string, setAlertMessage: any, setAlertStatus: any, setAlertOpen: any) {
-    setAlertMessage(message);
-    setAlertStatus(status);
-    setAlertOpen(true);
-}
-
 export default function CheckCustomer() {
     const classes = useStyles();
     const location = useLocation<{
@@ -229,10 +222,6 @@ export default function CheckCustomer() {
     const dateWords = new Date().toDateString();
     const subTitle = location.state.checkIn ? 'For ' + dateWords : 'Customers currently renting rooms'
 
-    function closeAlert() {
-        setAlertOpen(false);
-    }
-
     return (
         <div className={classes.root}>
             <TitleBarCustomer/>
@@ -248,11 +237,8 @@ export default function CheckCustomer() {
                                   setEditButtonToDisable={setEditButtonToDisable} setAlertMessage={setAlertMessage}
                                   setAlertStatus={setAlertStatus} setAlertOpen={setAlertOpen} searchSIN={searchSIN}
                                   setReservations={setReservations} isCheckIn={location.state.checkIn}/>
-            <Snackbar open={alertOpen} autoHideDuration={6000} onClose={closeAlert}>
-                <Alert onClose={closeAlert} severity={alertStatus}>
-                    {alertMessage}
-                </Alert>
-            </Snackbar>
+            <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
+                        alertMessage={alertMessage}/>
         </div>
     )
 }

@@ -5,13 +5,12 @@ import {
     GridList,
     GridListTile, InputAdornment,
     makeStyles,
-    Paper, Snackbar, TextField,
+    Paper, TextField,
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {GetEmployeeResponse, Severity, TitleBarEmployee} from "../index";
+import {GetEmployeeResponse, HotelAlert, Severity, TitleBarEmployee} from "../index";
 import {useLocation} from "react-router-dom";
-import {Alert} from "@material-ui/lab";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -417,10 +416,6 @@ export default function ManageEmployee() {
         setAlertOpen(true);
     }
 
-    function closeAlert() {
-        setAlertOpen(false);
-    }
-
     async function deleteEmployee(emp: Employee, index: number) {
         let newStates = [...buttonStates]
         newStates[index] = true;
@@ -502,11 +497,8 @@ export default function ManageEmployee() {
             <CreateEmployee dialogOpen={dialogOpen} setDialogOpen={setDialogOpen} classes={classes}
                             openAlert={openAlert} hotelID={location.state.hotelID} employees={employees}
                             managerSIN={location.state.managerSIN} setEmployees={setEmployees}/>
-            <Snackbar open={alertOpen} autoHideDuration={6000} onClose={closeAlert}>
-                <Alert onClose={closeAlert} severity={alertStatus}>
-                    {alertMessage}
-                </Alert>
-            </Snackbar>
+            <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
+                        alertMessage={alertMessage}/>
         </div>
     )
 }

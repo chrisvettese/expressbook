@@ -5,14 +5,13 @@ import {
     Grid,
     GridList,
     makeStyles,
-    Paper, Snackbar,
+    Paper,
     TextField,
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {Severity, TitleBarEmployee} from "../index";
+import {HotelAlert, Severity, TitleBarEmployee} from "../index";
 import {useHistory, useLocation,} from "react-router-dom";
-import {Alert} from "@material-ui/lab";
 
 const useStyles = makeStyles(() => ({
     centreTitle: {
@@ -246,10 +245,6 @@ export default function ManageCustomer() {
         return !sinRegex.test(SIN) && SIN.length !== 0;
     }
 
-    function closeAlert() {
-        setAlertOpen(false);
-    }
-
     function keyPressed(e: React.KeyboardEvent<HTMLDivElement>) {
         if (e.key === 'Enter' && sinRegex.test(SIN)) {
             findCustomer();
@@ -406,11 +401,8 @@ export default function ManageCustomer() {
                                   customerAddress={customerAddress} setCustomerAddress={setCustomerAddress}
                                   customerEmail={customerEmail} setCustomerEmail={setCustomerEmail}
                                   customerPhone={customerPhone} setCustomerPhone={setCustomerPhone}/>
-            <Snackbar open={alertOpen} autoHideDuration={6000} onClose={closeAlert}>
-                <Alert onClose={closeAlert} severity={alertStatus}>
-                    {alertMessage}
-                </Alert>
-            </Snackbar>
+            <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
+                        alertMessage={alertMessage}/>
         </>
     )
 }

@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import SignInEmployee from "./employee/SignInEmployee";
 import SignInCustomer from "./customer/SignInCustomer";
-import {AppBar, makeStyles, Typography} from "@material-ui/core";
+import {AppBar, makeStyles, Snackbar, Typography} from "@material-ui/core";
 import Name from "./customer/Name";
 import WelcomeCustomer from "./customer/WelcomeCustomer";
 import HotelBrand from "./customer/HotelBrand";
@@ -18,6 +18,7 @@ import WelcomeEmployee from "./employee/WelcomeEmployee";
 import CheckCustomer from "./employee/CheckCustomer";
 import ManageCustomer from "./employee/ManageCustomer";
 import ManageEmployee from "./employee/ManageEmployee";
+import {Alert} from "@material-ui/lab";
 
 require('dotenv').config()
 
@@ -58,6 +59,30 @@ export function TitleBarEmployee() {
     return <AppBar position="static">
         <Typography className={classes.title}>ExpressBook Employee Portal</Typography>
     </AppBar>
+}
+
+export function openAlert(message: string, status: string, setAlertMessage: any, setAlertStatus: any, setAlertOpen: any) {
+    setAlertMessage(message);
+    setAlertStatus(status);
+    setAlertOpen(true);
+}
+
+export const phoneRegex: RegExp = /^(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?$/;
+export const sinRegex: RegExp = /^[0-9]{3}-[0-9]{3}-[0-9]{3}$/;
+
+interface AlertType {
+    alertOpen: boolean;
+    closeAlert: any;
+    alertStatus: Severity;
+    alertMessage: string
+}
+
+export function HotelAlert({alertOpen, closeAlert, alertStatus, alertMessage}: AlertType) {
+    return <Snackbar open={alertOpen} autoHideDuration={6000} onClose={closeAlert}>
+        <Alert onClose={closeAlert} severity={alertStatus}>
+            {alertMessage}
+        </Alert>
+    </Snackbar>
 }
 
 ReactDOM.render(
