@@ -1,3 +1,5 @@
 /.idea/
 /hotel_booking_server/__pycache__/
+/hotel_booking_server/errors/__pycache__/
+/hotel_booking_server/routes/__pycache__/
 /tests/__pycache__/
