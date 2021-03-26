@@ -212,7 +212,7 @@ export default function WelcomeEmployee() {
             </div>
             <br/><br/>
             <div className={classes.paperContainer}>
-                <Button variant="contained" disabled={checkInDisabled} onClick={() => setDialogOpen(true)}>
+                <Button variant="contained" onClick={() => setDialogOpen(true)}>
                     Edit Profile
                 </Button>
             </div>

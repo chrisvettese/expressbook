@@ -58,7 +58,7 @@ CREATE FUNCTION hotel.correct_status_hotel(h_id integer) RETURNS void
                     UPDATE hotel.room_booking SET status_ID = 3 WHERE hotel_ID = h_ID
                     AND status_id = 2 AND CURRENT_DATE > check_out_day;
                     UPDATE hotel.room_booking SET status_ID = 4 WHERE hotel_ID = h_ID
-                    AND status_id = 1 AND CURRENT_DATE > check_out_day;
+                    AND status_id = 1 AND CURRENT_DATE >= check_out_day;
                     UPDATE hotel.room_booking SET status_ID = 1 WHERE hotel_ID = h_ID
                     AND status_id = 2 AND CURRENT_DATE < check_in_day;
                     END;

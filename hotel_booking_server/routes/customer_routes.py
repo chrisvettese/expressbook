@@ -214,10 +214,10 @@ def add_routes(app, conn):
         d = result['check_in_day']
 
         if not (current_status == 1 and status == 'Cancelled') and not (current_status == 2 and status == 'Archived') \
-                and not (current_status == 1 and status == 'Renting' and d == datetime.today().strftime('%Y-%m-%d')):
+                and not (current_status == 1 and status == 'Renting' and d <= datetime.today().strftime('%Y-%m-%d')):
             raise BadRequestError(
-                message='Invalid status transition. Booked rooms can be cancelled, and rented rooms can be archived.'
-                    .format(cid))
+                message='Invalid status transition. Booked rooms can be cancelled/rented, '
+                        'and rented rooms can be archived.')
 
         if 'employee_sin' in data:
             validate_sin(data['employee_sin'])

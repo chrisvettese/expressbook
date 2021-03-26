@@ -354,7 +354,7 @@ UPDATE hotel.room_booking
 SET status_ID = 4
 WHERE hotel_ID = h_ID
   AND status_id = 1
-  AND CURRENT_DATE > check_out_day;
+  AND CURRENT_DATE >= check_out_day;
 UPDATE hotel.room_booking
 SET status_ID = 1
 WHERE hotel_ID = h_ID
