@@ -113,7 +113,7 @@ const CreateEmployee = ({
     const [jobHelper, setJobHelper]: [string, any] = useState('');
 
     const [disableCheck, setDisableCheck]: [boolean, any] = useState(false);
-    const [disableCreateEmployee, setDisableCreateEmployee]: [boolean, any] = useState(false);
+    const [disableCreateEmployee, setDisableCreateEmployee]: [boolean, any] = useState(true);
 
     const [showInfo, setShowInfo]: [boolean, any] = useState(false);
 
@@ -162,22 +162,29 @@ const CreateEmployee = ({
             setSINError(true);
             setDisableCheck(false);
             setShowInfo(false);
+            setSINHelper("");
+            setEmployeeName("");
+            setEmployeeJobTitle("");
+            setEmployeeSalary("");
+            setEmployeeAddress("");
             return;
         }
 
         try {
             let response = await fetch(process.env.REACT_APP_SERVER_URL + "/employees/" + employeeSIN);
             if (response.status === 404) {
+                if (!setShowInfo) {
+                    setSINHelper("");
+                    setEmployeeName("");
+                    setEmployeeJobTitle("");
+                    setEmployeeSalary("");
+                    setEmployeeAddress("");
+                }
                 setShowInfo(true);
                 setSINError(false);
                 setDisableCheck(false);
                 setShowInfo(true);
                 setDisableCreateEmployee(false);
-                setSINHelper("");
-                setEmployeeName("");
-                setEmployeeJobTitle("");
-                setEmployeeSalary("");
-                setEmployeeAddress("");
                 setIsNewSIN(true);
                 openAlert("Employee SIN validated", "success")
             } else if (response.status === 200) {
@@ -363,9 +370,7 @@ const CreateEmployee = ({
                     color="primary">
                 Create Profile
             </Button>
-            <Button onClick={() => {
-                setDialogOpen(false);
-            }} variant="contained" color="secondary">
+            <Button onClick={() => closeDialog()} variant="contained" color="secondary">
                 Cancel
             </Button>
         </DialogActions>
