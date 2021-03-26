@@ -111,7 +111,7 @@ export default function WelcomeCustomer() {
             }
             response = await response.json();
             history.push('/ui/customer/reservations', {
-                customerName: location.state.customerName,
+                customerName: customerName,
                 customerSIN: location.state.customerSIN,
                 response: response,
                 isCustomer: true

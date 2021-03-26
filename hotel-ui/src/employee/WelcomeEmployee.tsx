@@ -1,7 +1,8 @@
 import {Box, Button, makeStyles, Paper, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBarEmployee} from "../index";
+import {HotelAlert, Severity, TitleBarEmployee} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
+import {EditEmployeeProfileDialog} from "./dialogs/EditEmployeeProfileDialog";
 
 const useStyles = makeStyles(() => ({
     centre: {
@@ -55,6 +56,21 @@ const useStyles = makeStyles(() => ({
     },
     topGrid: {
         maxWidth: '45em'
+    },
+    dialogTitle: {
+        fontSize: "1.8em",
+        display: 'flex',
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center'
+    },
+    dialogAddress: {
+        marginLeft: "0.5em",
+        marginRight: "0.5em",
+        display: 'flex',
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center'
     }
 }));
 
@@ -78,6 +94,14 @@ export default function WelcomeEmployee() {
     const [checkInDisabled, setCheckInDisabled]: [boolean, any] = useState(false);
     const [checkOutDisabled, setCheckOutDisabled]: [boolean, any] = useState(false);
     const [manageEmployeeDisabled, setManageEmployeeDisabled]: [boolean, any] = useState(false);
+
+    const [alertOpen, setAlertOpen] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
+    const [alertStatus, setAlertStatus]: [Severity, any] = useState("success");
+    const [dialogOpen, setDialogOpen]: [boolean, any] = useState(false);
+
+    const [employeeName, setEmployeeName]: [string, any] = useState(location.state.employeeName);
+    const [employeeAddress, setEmployeeAddress]: [string, any] = useState(location.state.employeeAddress);
 
     const welcomeMessage = location.state.brandName + ", " + location.state.hotelAddress
 
@@ -104,7 +128,7 @@ export default function WelcomeEmployee() {
     function manageCustomer() {
         history.push('/ui/employee/managecustomer', {
             employeeSIN: location.state.employeeSIN,
-            employeeName: location.state.employeeName,
+            employeeName: employeeName,
             jobTitle: location.state.jobTitle,
             hotelID: location.state.hotelID,
             brandName: location.state.brandName,
@@ -139,7 +163,8 @@ export default function WelcomeEmployee() {
                     <Typography className={classes.centre}>Manager Actions:</Typography>
                     <br/>
                     <div className={classes.paperContainer}>
-                        <Button variant="contained" color='primary' disabled={manageEmployeeDisabled} onClick={manageEmployee}>
+                        <Button variant="contained" color='primary' disabled={manageEmployeeDisabled}
+                                onClick={manageEmployee}>
                             Manage Employees
                         </Button>
                     </div>
@@ -179,11 +204,17 @@ export default function WelcomeEmployee() {
             <Typography className={classes.centre}>Your profile:</Typography>
             <div className={classes.paperContainer}>
                 <Paper elevation={3} className={classes.paper}>
-                    <Typography className={classes.inPaper}>Name: {location.state.employeeName}</Typography>
-                    <Typography className={classes.inPaper}>Address: {location.state.employeeAddress}</Typography>
+                    <Typography className={classes.inPaper}>Name: {employeeName}</Typography>
+                    <Typography className={classes.inPaper}>Address: {employeeAddress}</Typography>
                     <Typography className={classes.inPaper}>Job title: {location.state.jobTitle}</Typography>
                     <Typography className={classes.inPaper}>Salary: ${location.state.salary}</Typography>
                 </Paper>
+            </div>
+            <br/><br/>
+            <div className={classes.paperContainer}>
+                <Button variant="contained" disabled={checkInDisabled} onClick={() => setDialogOpen(true)}>
+                    Edit Profile
+                </Button>
             </div>
             <div className={classes.paperContainer}>
                 <Box display="flex" flexDirection="row" p={1} m={1}>
@@ -209,6 +240,14 @@ export default function WelcomeEmployee() {
             </div>
             <br/>
             <ManagerActions/>
+            <EditEmployeeProfileDialog dialogOpen={dialogOpen} setDialogOpen={setDialogOpen} classes={classes}
+                                       employeeSIN={location.state.employeeSIN} setAlertMessage={setAlertMessage}
+                                       setAlertStatus={setAlertStatus} setAlertOpen={setAlertOpen}
+                                       hotelID={location.state.hotelID}
+                                       employeeName={employeeName} employeeAddress={employeeAddress}
+                                       setEmployeeName={setEmployeeName} setEmployeeAddress={setEmployeeAddress}/>
+            <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
+                        alertMessage={alertMessage}/>
         </>
     )
 }
