@@ -127,18 +127,20 @@ def add_routes(app, conn):
             query += '''UPDATE hotel.employee e SET hotel_id = {} WHERE employee_sin = \'{}\';'''.format(hid, eid)
         if 'employee_address' in data and len(data['employee_address']) > 0:
             query += '''UPDATE hotel.employee e SET employee_address = '{}' WHERE employee_sin = \'{}\';''' \
-                .format(hid, eid)
+                .format(data['employee_address'], eid)
         if 'employee_name' in data and len(data['employee_name']) > 0:
-            query += '''UPDATE hotel.employee e SET employee_name = '{}' WHERE employee_sin = \'{}\';'''.format(hid,
-                                                                                                                eid)
+            query += '''UPDATE hotel.employee e SET employee_name = '{}' WHERE employee_sin = \'{}\';'''\
+                .format(data['employee_name'], eid)
         if 'salary' in data:
             try:
                 float(data['salary'])
             except ValueError:
                 raise BadRequestError(message='Invalid salary - Must be a decimal number')
-            query += '''UPDATE hotel.employee e SET salary = '{}' WHERE employee_sin = \'{}\';'''.format(hid, eid)
+            query += '''UPDATE hotel.employee e SET salary = '{}' WHERE employee_sin = \'{}\';'''\
+                .format(data['salary'], eid)
         if 'job_title' in data and len(data['job_title']) > 0:
-            query += '''UPDATE hotel.employee e SET job_title = '{}' WHERE employee_sin = \'{}\';'''.format(hid, eid)
+            query += '''UPDATE hotel.employee e SET job_title = '{}' WHERE employee_sin = \'{}\';'''\
+                .format(data['job_title'], eid)
 
         try:
             if query != '':

@@ -1,0 +1,364 @@
+{
+	"info": {
+		"_postman_id": "acfcfe51-7e92-4184-8a72-9843c3ca7117",
+		"name": "Hotel Booking App",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "/customers/{id}",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/customers/{{customer-sin}}",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"customers",
+						"{{customer-sin}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/customers/{id}",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"customer_name\": \"Chris\",\r\n    \"customer_email\": \"chris.vettese2@gmail.com\",\r\n    \"customer_phone\": \"(416)-700-7221\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{server}}/customers/{{customer-sin}}",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"customers",
+						"{{customer-sin}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/customers/{id}/reservations",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/customers/{{customer-sin}}/reservations",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"customers",
+						"{{customer-sin}}",
+						"reservations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/customers/{id}/reservations/{id} Copy",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"status\": \"Archived\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{server}}/customers/{{customer-sin}}/reservations/{{reservation-id}}",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"customers",
+						"{{customer-sin}}",
+						"reservations",
+						"{{reservation-id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/customers/{id}/reservations",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"check_in\": \"2021-03-20\",\r\n    \"check_out\": \"2021-03-29\",\r\n    \"type_id\": 4,\r\n    \"employee_sin\": \"{{employee-sin}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{server}}/customers/{{customer-sin}}/reservations",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"customers",
+						"{{customer-sin}}",
+						"reservations"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/customers",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"customer_sin\": \"111-111-111\",\r\n    \"customer_name\": \"Chris Vettese\",\r\n    \"customer_address\": \"394 Nelson St\",\r\n    \"customer_email\": \"chris.vettese2@gmail.com\",\r\n    \"customer_phone\": \"1 (123) 456-7890\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{server}}/customers",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"customers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/brands",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/brands",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"brands"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/brands/{id}/hotels",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/brands/{{brand-id}}/hotels",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"brands",
+						"{{brand-id}}",
+						"hotels"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/hotels/{id}/rooms",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/hotels/{{hotel-id}}/rooms",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"hotels",
+						"{{hotel-id}}",
+						"rooms"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/hotels/{id}/rooms/availability",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/hotels/{{hotel-id}}/rooms/availability?check-in=2021-03-15&check-out=2021-03-21&people=8",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"hotels",
+						"{{hotel-id}}",
+						"rooms",
+						"availability"
+					],
+					"query": [
+						{
+							"key": "check-in",
+							"value": "2021-03-15"
+						},
+						{
+							"key": "check-out",
+							"value": "2021-03-21"
+						},
+						{
+							"key": "people",
+							"value": "8"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/hotels/{id}/reservations",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/hotels/{{hotel-id}}/reservations?action=check-in",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"hotels",
+						"{{hotel-id}}",
+						"reservations"
+					],
+					"query": [
+						{
+							"key": "action",
+							"value": "check-in"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/hotels/{id}/employees",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"employee_sin\": \"474-946-325\",\r\n    \"manager_sin\": \"395-585-128\",\r\n    \"name\": \"Test Name\",\r\n    \"address\": \"Test Address\",\r\n    \"salary\": \"80000.00\",\r\n    \"job_title\": \"Front Desk Supervisor\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{server}}/hotels/{{hotel-id}}/employees",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"hotels",
+						"{{hotel-id}}",
+						"employees"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/hotels/{id}/employees/{id}",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"manager_sin\": \"781-514-976\",\r\n    \"employee_name\": \"Bob\",\r\n    \"salary\": \"123.56t\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{server}}/hotels/{{hotel-id}}/employees/{{employee-sin}}",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"hotels",
+						"{{hotel-id}}",
+						"employees",
+						"{{employee-sin}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/hotels/{id}/employees",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/hotels/{{hotel-id}}/employees",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"hotels",
+						"{{hotel-id}}",
+						"employees"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/employees/{id}",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/employees/{{employee-sin}}",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"employees",
+						"{{employee-sin}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
