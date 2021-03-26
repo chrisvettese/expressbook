@@ -1,4 +1,6 @@
 FROM python:3.9 AS backend
+ENV TIMEZONE America/Toronto
+RUN ln -snf /usr/share/zoneinfo/$TIMEZONE /etc/localtime && echo $TIMEZONE > /etc/timezone
 RUN mkdir /app
 RUN mkdir /app/hotel_booking_server
 WORKDIR /app
