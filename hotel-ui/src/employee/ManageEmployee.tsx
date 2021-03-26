@@ -422,12 +422,13 @@ export default function ManageEmployee() {
         setButtonStates(newStates);
         try {
             let response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/employees/" + emp.employee_sin, {
-                method: 'DELETE',
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    manager_sin: location.state.managerSIN
+                    manager_sin: location.state.managerSIN,
+                    status: 'quit'
                 })
             })
             if (response.status !== 204) {
