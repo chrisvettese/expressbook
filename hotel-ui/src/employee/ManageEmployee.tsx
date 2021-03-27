@@ -125,10 +125,20 @@ const CreateEmployee = ({
 
     const [isNewSIN, setIsNewSIN]: [boolean, any] = useState(false);
 
+    function AdditionalMessage() {
+        if (isNewSIN) {
+            return <Typography>Please enter details for new employee:</Typography>
+        } else {
+            return <Typography>Please confirm details for new employee:</Typography>
+        }
+    }
+
     function AdditionalInfo() {
         if (showInfo) {
             return (
                 <>
+                    <AdditionalMessage/>
+                    <br/>
                     <TextField label="Name" variant="outlined" value={employeeName} error={nameError}
                                helperText={nameHelper}
                                onChange={event => setEmployeeName(event.currentTarget.value)}/>
@@ -359,9 +369,7 @@ const CreateEmployee = ({
             <br/>
             <Button variant='contained' disabled={disableCheck} onClick={validateEmployeeSIN}>Check SIN</Button>
             <br/>
-            {
-                AdditionalInfo()
-            }
+            <AdditionalInfo/>
         </div>
         <DialogActions>
             <Button disabled={disableCreateEmployee}
