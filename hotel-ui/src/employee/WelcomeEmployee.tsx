@@ -2,7 +2,7 @@ import {Box, Button, makeStyles, Paper, Typography} from "@material-ui/core";
 import React, {useState} from "react";
 import {HotelAlert, Severity, TitleBarEmployee} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
-import {EditEmployeeProfileDialog} from "./dialogs/EditEmployeeProfileDialog";
+import {EditEmployeeProfileDialog} from "./employeeDialogs/EditEmployeeProfileDialog";
 
 const useStyles = makeStyles(() => ({
     centre: {

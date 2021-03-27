@@ -18,6 +18,7 @@ import {
 } from '@material-ui/pickers';
 import DateFnsUtils from "@date-io/date-fns";
 import {MaterialUiPickersDate} from "@material-ui/pickers/typings/date";
+import {ConfirmationDialog} from "./sharedDialogs/ConfirmationDialog";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -161,80 +162,6 @@ interface AvailableRoom {
     type_id: number;
     occupancy: number;
 }
-
-function EmployeeInfo({location, classes}: any) {
-    if (location.state.employeeName !== undefined) {
-        return (
-            <>
-                <Divider/>
-                <Typography align="center" className={classes.dialogHeader}>Employee Info</Typography>
-                <Divider/>
-                <div className={classes.dialogDiv}>
-                    <Typography>{location.state.employeeName}</Typography>
-                    <Typography>{location.state.jobTitle}</Typography>
-                </div>
-                <br/>
-            </>
-        )
-    }
-    return <></>
-}
-
-const ConfirmationDialog = ({
-                                dialogOpen,
-                                setDialogOpen,
-                                roomToBook,
-                                classes,
-                                location,
-                                checkInDateToBook,
-                                checkOutDateToBook,
-                                disableBookRoomButton,
-                                bookRoom
-                            }: any) => {
-
-    return <Dialog onClose={() => setDialogOpen(false)} aria-labelledby="simple-dialog-title" open={dialogOpen}>
-        <DialogTitle id="dialog-title" className={classes.dialogTitle}>
-            <Typography className={classes.dialogTitle}>Confirm Room Booking</Typography>
-        </DialogTitle>
-        <div className={classes.dialogAddress}>
-            <Typography align="center">{location.state.address}</Typography>
-        </div>
-        <br/>
-        <EmployeeInfo location={location} classes={classes}/>
-        <Divider/>
-        <Typography align="center" className={classes.dialogHeader}>Customer Info</Typography>
-        <Divider/>
-        <div className={classes.dialogDiv}>
-            <Typography>{location.state.customerName}</Typography>
-            <Typography>{location.state.customerAddress}</Typography>
-            <Typography>{location.state.customerEmail}</Typography>
-            <Typography>{location.state.customerPhone}</Typography>
-        </div>
-        <br/>
-        <Divider/>
-        <Typography align="center" className={classes.dialogHeader}>Room Details</Typography>
-        <Divider/>
-        <div className={classes.dialogDiv}>
-            <Typography>Room type: {roomToBook.title}</Typography>
-            <Typography>{checkInDateToBook} to {checkOutDateToBook}</Typography>
-            <Typography>Amenities: {roomToBook.amenities.join(', ')}</Typography>
-            <Typography>View: {roomToBook.view}</Typography>
-            <Typography>
-                Extendable: {roomToBook.is_extendable ? "Yes" : "No"}
-            </Typography>
-        </div>
-        <br/>
-        <DialogActions>
-            <Button disabled={disableBookRoomButton} onClick={() => bookRoom(roomToBook.type_id)} variant="contained"
-                    color="primary">
-                Book Room
-            </Button>
-            <Button onClick={() => setDialogOpen(false)} variant="contained" color="secondary">
-                Cancel
-            </Button>
-        </DialogActions>
-    </Dialog>
-};
 
 export default function Rooms() {
     const classes = useStyles();
