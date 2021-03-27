@@ -2,13 +2,74 @@ import React, {useState} from "react";
 import {Button, Dialog, DialogActions, DialogTitle, InputAdornment, TextField, Typography} from "@material-ui/core";
 import {GetEmployeeResponse} from "../../index";
 
+interface AMessage {
+    isNewSIN: boolean;
+}
+
+interface AInfo {
+    isNewSIN: boolean;
+    classes: any;
+    showInfo: boolean;
+    nameHelper: string;
+    addressHelper: string;
+    salaryHelper: string;
+    jobHelper: string;
+    setEmployeeName: any;
+    setEmployeeAddress: any;
+    setEmployeeSalary: any;
+    setEmployeeJobTitle: any;
+    nameError: boolean;
+    addressError: boolean;
+    salaryError: boolean;
+    jobError: boolean;
+    employeeName: string;
+    employeeAddress: string;
+    employeeSalary: string;
+    employeeJobTitle: string;
+}
+
+function AdditionalMessage({isNewSIN}: AMessage) {
+    if (isNewSIN) {
+        return <Typography style={{marginBottom: '1em'}}>Please enter details for new employee:</Typography>
+    } else {
+        return <Typography style={{marginBottom: '1em'}}>Please confirm details for new employee:</Typography>
+    }
+}
+
+function AdditionalInfo(aInfo: AInfo) {
+    if (aInfo.showInfo) {
+        return (
+            <>
+                <AdditionalMessage isNewSIN={aInfo.isNewSIN}/>
+                <TextField label="Name" variant="outlined" value={aInfo.employeeName} error={aInfo.nameError}
+                           helperText={aInfo.nameHelper} className={aInfo.classes.dialogGap}
+                           onChange={event => aInfo.setEmployeeName(event.currentTarget.value)}/>
+                <TextField label="Address" variant="outlined" value={aInfo.employeeAddress} error={aInfo.addressError}
+                           helperText={aInfo.addressHelper} className={aInfo.classes.dialogGap}
+                           onChange={event => aInfo.setEmployeeAddress(event.currentTarget.value)}/>
+                <TextField label="Salary" variant="outlined" value={aInfo.employeeSalary} error={aInfo.salaryError}
+                           helperText={aInfo.salaryHelper} type="number" className={aInfo.classes.dialogGap}
+                           onChange={event => aInfo.setEmployeeSalary(event.currentTarget.value)}
+                           InputProps={{
+                               startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                           }}/>
+                <TextField label="Job Title" variant="outlined" value={aInfo.employeeJobTitle} error={aInfo.jobError}
+                           helperText={aInfo.jobHelper} className={aInfo.classes.dialogGap}
+                           onChange={event => aInfo.setEmployeeJobTitle(event.currentTarget.value)}/>
+            </>
+        )
+    } else {
+        return <></>
+    }
+}
+
 export const CreateEmployeeDialog = ({
-                            dialogOpen, setDialogOpen,
-                            classes,
-                            openAlert,
-                            hotelID, managerSIN,
-                            employees, setEmployees
-                        }: any) => {
+                                         dialogOpen, setDialogOpen,
+                                         classes,
+                                         openAlert,
+                                         hotelID, managerSIN,
+                                         employees, setEmployees
+                                     }: any) => {
 
     const sinRegex: RegExp = /^[0-9]{3}-[0-9]{3}-[0-9]{3}$/;
 
@@ -37,54 +98,15 @@ export const CreateEmployeeDialog = ({
 
     const [isNewSIN, setIsNewSIN]: [boolean, any] = useState(false);
 
-    function AdditionalMessage() {
-        if (isNewSIN) {
-            return <Typography>Please enter details for new employee:</Typography>
-        } else {
-            return <Typography>Please confirm details for new employee:</Typography>
-        }
-    }
-
-    function AdditionalInfo() {
-        if (showInfo) {
-            return (
-                <>
-                    <AdditionalMessage/>
-                    <br/>
-                    <TextField label="Name" variant="outlined" value={employeeName} error={nameError}
-                               helperText={nameHelper}
-                               onChange={event => setEmployeeName(event.currentTarget.value)}/>
-                    <br/>
-                    <TextField label="Address" variant="outlined" value={employeeAddress} error={addressError}
-                               helperText={addressHelper}
-                               onChange={event => setEmployeeAddress(event.currentTarget.value)}/>
-                    <br/>
-                    <TextField label="Salary" variant="outlined" value={employeeSalary} error={salaryError}
-                               helperText={salaryHelper} type="number"
-                               onChange={event => setEmployeeSalary(event.currentTarget.value)}
-                               InputProps={{
-                                   startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                               }}/>
-                    <br/>
-                    <TextField label="Job Title" variant="outlined" value={employeeJobTitle} error={jobError}
-                               helperText={jobHelper}
-                               onChange={event => setEmployeeJobTitle(event.currentTarget.value)}/>
-                    <br/>
-                </>
-            )
-        } else {
-            return <></>
-        }
-    }
-
     async function validateEmployeeSIN() {
         setDisableCheck(true);
         if (!sinRegex.test(employeeSIN) || employeeSIN.length === 0) {
+            console.log("test")
+            console.log(sinHelper)
             setSINHelper("Must enter valid SIN");
             setSINError(true);
             setDisableCheck(false);
             setShowInfo(false);
-            setSINHelper("");
             setEmployeeName("");
             setEmployeeJobTitle("");
             setEmployeeSalary("");
@@ -272,16 +294,22 @@ export const CreateEmployeeDialog = ({
         </DialogTitle>
         <div className={classes.dialogAddress}>
             <TextField label="Employee SIN" variant="outlined" value={employeeSIN} error={sinError}
-                       helperText={sinHelper}
+                       helperText={sinHelper} className={classes.dialogGap}
                        onChange={event => {
                            setEmployeeSIN(event.currentTarget.value);
                            setDisableCreateEmployee(true);
                            setShowInfo(false);
                        }}/>
-            <br/>
-            <Button variant='contained' disabled={disableCheck} onClick={validateEmployeeSIN}>Check SIN</Button>
-            <br/>
-            <AdditionalInfo/>
+            <Button variant='contained' disabled={disableCheck} onClick={validateEmployeeSIN}
+                    className={classes.dialogGap}>Check SIN</Button>
+            <AdditionalInfo addressError={addressError} addressHelper={addressHelper} classes={classes}
+                            employeeAddress={employeeAddress} employeeJobTitle={employeeJobTitle}
+                            employeeName={employeeName} employeeSalary={employeeSalary} isNewSIN={isNewSIN}
+                            jobError={jobError} jobHelper={jobHelper} nameError={nameError} nameHelper={nameHelper}
+                            salaryError={salaryError} salaryHelper={salaryHelper}
+                            setEmployeeAddress={setEmployeeAddress} setEmployeeJobTitle={setEmployeeJobTitle}
+                            setEmployeeName={setEmployeeName} setEmployeeSalary={setEmployeeSalary}
+                            showInfo={showInfo}/>
         </div>
         <DialogActions>
             <Button disabled={disableCreateEmployee}

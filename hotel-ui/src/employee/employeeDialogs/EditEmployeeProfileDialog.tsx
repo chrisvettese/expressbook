@@ -75,16 +75,13 @@ export const EditEmployeeProfileDialog = ({
                 <Typography className={classes.dialogTitle}>Edit Profile</Typography>
             </DialogTitle>
             <div className={classes.dialogAddress}>
-                <Typography align="center">Employee SIN: {employeeSIN}</Typography>
-                <br/>
+                <Typography align="center" className={classes.dialogGap}>Employee SIN: {employeeSIN}</Typography>
                 <TextField label="Name" variant="outlined" value={name} error={nameError}
-                           helperText={nameError ? "Must provide name" : ""}
+                           helperText={nameError ? "Must provide name" : ""} className={classes.dialogGap}
                            onChange={event => setName(event.currentTarget.value)}/>
-                <br/>
                 <TextField label="Address" variant="outlined" value={address} error={addressError}
-                           helperText={addressError ? "Must provide address" : ""}
+                           helperText={addressError ? "Must provide address" : ""} className={classes.dialogGap}
                            onChange={event => setAddress(event.currentTarget.value)}/>
-                <br/>
             </div>
             <DialogActions>
                 <Button disabled={disableSave}

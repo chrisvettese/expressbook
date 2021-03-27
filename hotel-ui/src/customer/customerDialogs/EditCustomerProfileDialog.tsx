@@ -99,24 +99,19 @@ export const EditCustomerProfileDialog = ({
                 <Typography className={classes.dialogTitle}>Edit Profile</Typography>
             </DialogTitle>
             <div className={classes.dialogAddress}>
-                <Typography align="center">Customer SIN: {customerSIN}</Typography>
-                <br/>
+                <Typography align="center" className={classes.dialogGap}>Customer SIN: {customerSIN}</Typography>
                 <TextField label="Name" variant="outlined" value={name} error={nameError}
-                           helperText={nameError ? "Must provide name" : ""}
+                           helperText={nameError ? "Must provide name" : ""} className={classes.dialogGap}
                            onChange={event => setName(event.currentTarget.value)}/>
-                <br/>
                 <TextField label="Address" variant="outlined" value={address} error={addressError}
-                           helperText={addressError ? "Must provide address" : ""}
+                           helperText={addressError ? "Must provide address" : ""} className={classes.dialogGap}
                            onChange={event => setAddress(event.currentTarget.value)}/>
-                <br/>
                 <TextField label="Email" variant="outlined" value={email} error={emailError}
-                           helperText={emailError ? "Must provide valid email" : ""}
+                           helperText={emailError ? "Must provide valid email" : ""} className={classes.dialogGap}
                            onChange={event => setEmail(event.currentTarget.value)}/>
-                <br/>
                 <TextField label="Phone Number" variant="outlined" value={phone} error={phoneError}
-                           helperText={phoneError ? "Must provide valid phone number" : ""}
+                           helperText={phoneError ? "Must provide valid phone number" : ""} className={classes.dialogGap}
                            onChange={event => setPhone(event.currentTarget.value)}/>
-                <br/>
             </div>
             <DialogActions>
                 <Button disabled={disableSave}

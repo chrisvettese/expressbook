@@ -63,6 +63,9 @@ const useStyles = makeStyles(() => ({
         alignItems: 'center',
         flexDirection: 'column',
         justifyContent: 'center'
+    },
+    dialogGap: {
+        marginBottom: '2em'
     }
 }));
 

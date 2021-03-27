@@ -1,15 +1,15 @@
 import {
-    Button, Dialog, DialogActions, DialogTitle,
+    Button,
     Divider,
     Grid,
     GridList,
-    GridListTile, InputAdornment,
+    GridListTile,
     makeStyles,
-    Paper, TextField,
+    Paper,
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {GetEmployeeResponse, HotelAlert, Severity, TitleBarEmployee} from "../index";
+import {HotelAlert, Severity, TitleBarEmployee} from "../index";
 import {useLocation} from "react-router-dom";
 import {CreateEmployeeDialog} from "./employeeDialogs/CreateEmployeeDialog";
 
@@ -88,6 +88,9 @@ const useStyles = makeStyles(theme => ({
         alignItems: 'center',
         flexDirection: 'column',
         justifyContent: 'center'
+    },
+    dialogGap: {
+        marginBottom: '2em'
     }
 }));
 

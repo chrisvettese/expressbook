@@ -94,24 +94,19 @@ export const CreateCustomerDialog = ({
             <Typography className={classes.dialogTitle}>Create Customer Profile</Typography>
         </DialogTitle>
         <div className={classes.dialogAddress}>
-            <Typography align="center">Customer SIN: {customerSIN}</Typography>
-            <br/>
+            <Typography align="center" className={classes.dialogGap}>Customer SIN: {customerSIN}</Typography>
             <TextField label="Customer Name" variant="outlined" value={customerName} error={nameError}
-                       helperText={nameError ? "Must provide name" : ""}
+                       helperText={nameError ? "Must provide name" : ""} className={classes.dialogGap}
                        onChange={event => setCustomerName(event.currentTarget.value)}/>
-            <br/>
             <TextField label="Customer Address" variant="outlined" value={customerAddress} error={addressError}
-                       helperText={addressError ? "Must provide address" : ""}
+                       helperText={addressError ? "Must provide address" : ""} className={classes.dialogGap}
                        onChange={event => setCustomerAddress(event.currentTarget.value)}/>
-            <br/>
             <TextField label="Customer Email" variant="outlined" value={customerEmail} error={emailError}
-                       helperText={emailError ? "Must provide valid email" : ""}
+                       helperText={emailError ? "Must provide valid email" : ""} className={classes.dialogGap}
                        onChange={event => setCustomerEmail(event.currentTarget.value)}/>
-            <br/>
             <TextField label="Customer Phone Number" variant="outlined" value={customerPhone} error={phoneError}
-                       helperText={phoneError ? "Must provide valid phone number" : ""}
+                       helperText={phoneError ? "Must provide valid phone number" : ""} className={classes.dialogGap}
                        onChange={event => setCustomerPhone(event.currentTarget.value)}/>
-            <br/>
         </div>
         <DialogActions>
             <Button disabled={disableCreateCustomer}
