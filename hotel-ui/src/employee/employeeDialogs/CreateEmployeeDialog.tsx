@@ -101,8 +101,6 @@ export const CreateEmployeeDialog = ({
     async function validateEmployeeSIN() {
         setDisableCheck(true);
         if (!sinRegex.test(employeeSIN) || employeeSIN.length === 0) {
-            console.log("test")
-            console.log(sinHelper)
             setSINHelper("Must enter valid SIN");
             setSINError(true);
             setDisableCheck(false);
@@ -190,8 +188,6 @@ export const CreateEmployeeDialog = ({
         }
 
         const fixedESalary: string = parseFloat(employeeSalary).toFixed(2)
-
-        console.log(isNewSIN)
         if (isNewSIN) {
             try {
                 let response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + hotelID + "/employees", {

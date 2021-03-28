@@ -47,6 +47,14 @@ export interface GetEmployeeResponse {
     status: EmployeeStatus;
 }
 
+export interface Employee {
+    employee_sin: string;
+    employee_name: string;
+    employee_address: string;
+    salary: string;
+    job_title: string;
+}
+
 export function TitleBarCustomer() {
     const classes = useTitleStyles();
     return <AppBar position="static">

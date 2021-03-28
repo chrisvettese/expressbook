@@ -9,9 +9,10 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {HotelAlert, Severity, TitleBarEmployee} from "../index";
+import {Employee, HotelAlert, Severity, TitleBarEmployee} from "../index";
 import {useLocation} from "react-router-dom";
 import {CreateEmployeeDialog} from "./employeeDialogs/CreateEmployeeDialog";
+import {EditEmployeeDialog} from "./employeeDialogs/EditEmployeeDialog";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -94,14 +95,6 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-interface Employee {
-    employee_sin: string;
-    employee_name: string;
-    employee_address: string;
-    salary: string;
-    job_title: string;
-}
-
 interface State {
     response: any;
     checkIn: boolean;
@@ -130,7 +123,13 @@ export default function ManageEmployee() {
     const [alertOpen, setAlertOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
     const [alertStatus, setAlertStatus]: [Severity, any] = useState("success");
-    const [dialogOpen, setDialogOpen]: [boolean, any] = useState(false);
+    const [newDialogOpen, setNewDialogOpen]: [boolean, any] = useState(false);
+    const [editDialogOpen, setEditDialogOpen]: [boolean, any] = useState(false);
+    const [indexToEdit, setIndexToEdit]: [number, any] = useState(-1);
+
+    //For edit profile
+    const [employeeSalary, setEmployeeSalary]: [string, any] = useState('');
+    const [employeeJobTitle, setEmployeeJobTitle]: [string, any] = useState('');
 
     function openAlert(message: string, status: Severity) {
         setAlertMessage(message);
@@ -176,6 +175,13 @@ export default function ManageEmployee() {
         }
     }
 
+    function editEmployee(index: number) {
+        setIndexToEdit(index);
+        setEmployeeSalary(employees[index].salary);
+        setEmployeeJobTitle(employees[index].job_title);
+        setEditDialogOpen(true);
+    }
+
     return (
         <div className={classes.root}>
             <TitleBarEmployee/>
@@ -184,7 +190,7 @@ export default function ManageEmployee() {
                 className={classes.subTitle}>{location.state.brandName + ", " + location.state.hotelAddress}
             </Typography>
             <div className={classes.subTitle}>
-                <Button variant='contained' onClick={() => setDialogOpen(true)}>New Employee</Button>
+                <Button variant='contained' onClick={() => setNewDialogOpen(true)}>New Employee</Button>
             </div>
             <GridList cols={1} cellHeight={185} className={classes.grid}>
                 {
@@ -203,6 +209,11 @@ export default function ManageEmployee() {
                                         <Divider orientation="vertical" flexItem className={classes.divider}/>
                                         <Grid item xs={2}>
                                             <Grid className={classes.priceDiv}>
+                                                <Button variant='contained' style={{marginBottom: '1.5em'}}
+                                                        disabled={buttonStates[index]}
+                                                        onClick={() => editEmployee(index)}>
+                                                    Edit Profile
+                                                </Button>
                                                 <Button variant='contained' color='secondary'
                                                         disabled={buttonStates[index]}
                                                         onClick={() => deleteEmployee(emp, index)}>
@@ -217,9 +228,14 @@ export default function ManageEmployee() {
                     })
                 }
             </GridList>
-            <CreateEmployeeDialog dialogOpen={dialogOpen} setDialogOpen={setDialogOpen} classes={classes}
-                            openAlert={openAlert} hotelID={location.state.hotelID} employees={employees}
-                            managerSIN={location.state.managerSIN} setEmployees={setEmployees}/>
+            <CreateEmployeeDialog dialogOpen={newDialogOpen} setDialogOpen={setNewDialogOpen} classes={classes}
+                                  openAlert={openAlert} hotelID={location.state.hotelID} employees={employees}
+                                  managerSIN={location.state.managerSIN} setEmployees={setEmployees}/>
+            <EditEmployeeDialog dialogOpen={editDialogOpen} setDialogOpen={setEditDialogOpen} classes={classes}
+                                openAlert={openAlert} hotelID={location.state.hotelID} employeeSalary={employeeSalary}
+                                managerSIN={location.state.managerSIN} setEmployeeSalary={setEmployeeSalary}
+                                employees={employees} setEmployees={setEmployees} eIndex={indexToEdit}
+                                employeeJobTitle={employeeJobTitle} setEmployeeJobTitle={setEmployeeJobTitle}/>
             <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
                         alertMessage={alertMessage}/>
         </div>
