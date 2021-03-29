@@ -60,6 +60,9 @@ create table hotel.employee_status
 alter table hotel.employee_status
     owner to postgres;
 
+insert into hotel.employee_status (status_id, status) values (1, 'hired');
+insert into hotel.employee_status (status_id, status) values (2, 'quit');
+
 create table hotel.employee
 (
     employee_sin     varchar(11)        not null
@@ -70,6 +73,7 @@ create table hotel.employee
             references hotel.hotel
             on delete cascade,
     employee_name    varchar(255)       not null,
+    employee_email   varchar(255) not null unique,
     employee_address varchar(255)       not null,
     salary           varchar(15)        not null,
     job_title        varchar(255)       not null,
@@ -88,7 +92,7 @@ create table hotel.customer
             primary key,
     customer_name    varchar(255) not null,
     customer_address varchar(255) not null,
-    customer_email   varchar(255) not null,
+    customer_email   varchar(255) not null unique,
     customer_phone   varchar(20)  not null
 );
 
@@ -105,6 +109,11 @@ create table hotel.view_type
 
 alter table hotel.view_type
     owner to postgres;
+
+insert into hotel.view_type (view_id, view) values (1, 'Mountain');
+insert into hotel.view_type (view_id, view) values (2, 'Lake');
+insert into hotel.view_type (view_id, view) values (3, 'City');
+insert into hotel.view_type (view_id, view) values (4, 'None');
 
 create table hotel.hotel_room_type
 (
@@ -140,6 +149,11 @@ create table hotel.booking_status
 
 alter table hotel.booking_status
     owner to postgres;
+
+insert into hotel.booking_status (status_id, value) values (1, 'Booked');
+insert into hotel.booking_status (status_id, value) values (2, 'Renting');
+insert into hotel.booking_status (status_id, value) values (3, 'Archived');
+insert into hotel.booking_status (status_id, value) values (4, 'Cancelled');
 
 create table hotel.room_booking
 (

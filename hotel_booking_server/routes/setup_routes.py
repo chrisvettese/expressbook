@@ -1,7 +1,7 @@
 import json
 import re
 
-from flask import Response
+from flask import Response, request
 from flask_cors import cross_origin
 
 from hotel_booking_server.errors.BadRequestError import BadRequestError
@@ -35,11 +35,31 @@ def add_routes(app, conn):
             raise ResourceNotFoundError(message='Brand ID={} not found'.format(bid))
         return Response(response, status=200, mimetype='application/json')
 
+    @app.route('/employees')
+    @cross_origin()
+    def get_all_employees():
+        email = request.args.get('email')
+        if email is None or len(email) == 0:
+            extra_query = ' LIMIT 10'
+        else:
+            if '\'' in email:
+                raise BadRequestError(message='Invalid email: remove \' character')
+            extra_query = ' WHERE employee_email = \'{}\''.format(email)
+
+        query = '''SELECT e.employee_sin, e.employee_email, s.status, e.employee_name, e.employee_address, e.salary, e.job_title,
+                   b.name AS brand_name, h.brand_id, h.hotel_id, h.physical_address AS hotel_address
+                   FROM hotel.employee e
+                   JOIN hotel.hotel h ON h.hotel_id = e.hotel_id
+                   JOIN hotel.hotel_brand b ON b.brand_id = h.brand_id
+                   JOIN hotel.employee_status s ON s.status_id = e.status_id''' + extra_query
+        results = get_results(query, conn)
+        return Response(results, status=200, mimetype='application/json')
+
     @app.route('/employees/<eid>')
     @cross_origin()
     def get_employee(eid):
         validate_sin(eid)
-        query = '''SELECT e.employee_sin, s.status, e.employee_name, e.employee_address, e.salary, e.job_title,
+        query = '''SELECT e.employee_sin, e.employee_email, s.status, e.employee_name, e.employee_address, e.salary, e.job_title,
                    b.name AS brand_name, h.brand_id, h.hotel_id, h.physical_address AS hotel_address
                    FROM hotel.employee e
                    JOIN hotel.hotel h ON h.hotel_id = e.hotel_id

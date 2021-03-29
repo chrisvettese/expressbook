@@ -11,9 +11,13 @@ sins = set()
 # Given brand_index and hotel_index, return array of [employee[], type_ID[], hotel_id]
 temp_hotels_data = [[], [], [], [], [], []]
 current_type_id = 1
+email_id = 0
+test = 0
 
 
 def populate(conn):
+    global email_id
+
     with conn:
         with conn.cursor() as curs:
             hotel_id = 0
@@ -38,10 +42,7 @@ def populate(conn):
                 rand_brand = random.randrange(0, len(hotel_data.hotel_brands))
                 hotel = hotel_data.hotels[rand_brand][random.randrange(0, len(hotel_data.hotel_brands[rand_brand]))]
                 customer_sin = new_sin()
-                customer_name = random.choice(hotel_data.names)
-                customer_name_parts = customer_name.lower().split(' ')
-                customer_email = customer_name_parts[0] + '.' + customer_name_parts[1] + '@' + random.choice(
-                    hotel_data.email_providers)
+                (customer_name, customer_email) = random_name_email()
                 customer_phone = '{} ({}{}{}) {}{}{}-{}{}{}{}'.format(1, random.randint(1, 9), random.randint(0, 9),
                                                                       random.randint(0, 9), random.randint(0, 9),
                                                                       random.randint(0, 9), random.randint(0, 9),
@@ -105,25 +106,29 @@ def generate_room_bookings(conn, curs, customer_sin):
 
 
 def populate_hotel(brand_index, hotel_index, curs, hotel_id):
+    global email_id
+
     hotel = hotel_data.hotels[brand_index][hotel_index]
     employee_sins = []
     type_ids = []
 
+    (name, email) = random_name_email()
+
     # general manager must be inserted first to satisfy trigger constraint
     curs.execute('INSERT INTO hotel.employee(employee_SIN, hotel_ID, employee_name, employee_address, salary,'
-                 'job_title)'
-                 "VALUES ('{}', '{}', '{}', '{}', '{}', '{}')"
-                 .format(new_sin(), hotel_id, random.choice(hotel_data.names), generate_address(hotel[0]),
-                         random_salary(), 'Manager'))
+                 'job_title, employee_email)'
+                 "VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}')"
+                 .format(new_sin(), hotel_id, name, generate_address(hotel[0]), random_salary(), 'Manager', email))
 
     for k in range(random.randint(5, 20)):
         e_sin = new_sin()
         employee_sins.append(e_sin)
+        (name, email) = random_name_email()
         curs.execute('INSERT INTO hotel.employee(employee_SIN, hotel_ID, employee_name, employee_address, salary,'
-                     'job_title)'
-                     "VALUES ('{}', '{}', '{}', '{}', '{}', '{}')"
-                     .format(e_sin, hotel_id, random.choice(hotel_data.names), generate_address(hotel[0]),
-                             random_salary(), random.choice(hotel_data.job_titles)))
+                     'job_title, employee_email)'
+                     "VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}')"
+                     .format(e_sin, hotel_id, name, generate_address(hotel[0]),
+                             random_salary(), random.choice(hotel_data.job_titles), email))
     num_rooms = hotel[1]
 
     global current_type_id
@@ -208,6 +213,15 @@ def setup(conn, data_mode):
     else:
         raise Exception('Invalid data mode')
     print('Done.')
+
+
+def random_name_email():
+    global email_id
+    name = random.choice(hotel_data.names)
+    email = name.lower().split(' ')
+    email = email[0] + '.' + email[1] + str(email_id) + '@' + random.choice(hotel_data.email_providers)
+    email_id += 1
+    return name, email
 
 
 def create_empty(conn):

@@ -14,6 +14,21 @@ def add_routes(app, conn):
     from hotel_booking_server.routes.setup_routes import get_customer_by_id, validate_sin, validate_email, \
         validate_phone, execute, get_results
 
+    @app.route('/customers')
+    @cross_origin()
+    def get_all_customers():
+        email = request.args.get('email')
+        if email is None or len(email) == 0:
+            extra_query = 'LIMIT 20'
+        else:
+            if '\'' in email:
+                raise BadRequestError(message='Invalid email: remove \' character')
+            extra_query = 'WHERE customer_email = \'{}\''.format(email)
+
+        query = 'SELECT * FROM hotel.customer ' + extra_query
+        results = get_results(query, conn)
+        return Response(results, status=200, mimetype='application/json')
+
     @app.route('/customers/<cid>')
     @cross_origin()
     def get_customer(cid):
