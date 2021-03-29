@@ -9,8 +9,9 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {HotelAlert, openAlert, Severity, TitleBarCustomer} from "../index";
+import {HotelAlert, openAlert, Reservation, Severity, TitleBarCustomer} from "../index";
 import {useLocation} from "react-router-dom";
+import {CheckInData, GetPaymentDialog} from "./employeeDialogs/GetPaymentDialog";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -77,22 +78,32 @@ const useStyles = makeStyles(theme => ({
         justifyContent: 'center',
         marginBottom: '1em',
         marginTop: '1em'
+    },
+    dialogTitle: {
+        fontSize: "1.8em",
+        display: 'flex',
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center'
+    },
+    dialogAddress: {
+        marginLeft: "0.5em",
+        marginRight: "0.5em",
+        display: 'flex',
+        alignItems: 'center',
+        flexDirection: 'column',
+        justifyContent: 'center'
+    },
+    dialogGap: {
+        marginBottom: '2em',
+        marginLeft: '1em',
+        marginRight: '1em'
+    },
+    formControl: {
+        minWidth: '14em',
+        marginBottom: '1em'
     }
 }));
-
-interface Reservation {
-    booking_id: number;
-    date_of_registration: string;
-    check_in_day: string;
-    check_out_day: string;
-    title: string;
-    is_extendable: boolean;
-    amenities: string[];
-    view: string;
-    price: string;
-    customer_sin: string;
-    customer_name: string;
-}
 
 const GenerateReservations = ({
                                   classes,
@@ -105,7 +116,9 @@ const GenerateReservations = ({
                                   setReservations,
                                   isCheckIn,
                                   searchSIN,
-                                  employeeSIN
+                                  employeeSIN,
+                                  setShowGetPayment,
+                                  setCheckInData
                               }: any) => {
 
     const filteredReservations = reservations.filter((reservation: Reservation) => reservation.customer_sin.includes(searchSIN));
@@ -155,7 +168,7 @@ const GenerateReservations = ({
                                         <Typography className={classes.hotelTitle}>${totalPrice}</Typography>
                                         <br/>
                                         <Button variant='contained'
-                                                onClick={() => patchReservation(isCheckIn ? 'Renting' : 'Archived', setEditButtonToDisable, reservations, reservation, setAlertMessage, setAlertStatus, setAlertOpen, setReservations, index, employeeSIN)}
+                                                onClick={() => patchReservation(isCheckIn ? 'Renting' : 'Archived', setEditButtonToDisable, reservations, reservation, setAlertMessage, setAlertStatus, setAlertOpen, setReservations, index, employeeSIN, isCheckIn, setShowGetPayment, setCheckInData)}
                                                 disabled={editButtonToDisable === reservation.booking_id}>
                                             {isCheckIn ? "Check In" : "Check Out"}
                                         </Button>
@@ -170,7 +183,23 @@ const GenerateReservations = ({
     </GridList>
 }
 
-async function patchReservation(action: string, setEditButtonToDisable: any, reservations: Reservation[], reservation: Reservation, setAlertMessage: any, setAlertStatus: any, setAlertOpen: any, setReservations: any, index: number, employeeSIN: string) {
+export async function patchReservation(action: string, setEditButtonToDisable: any, reservations: Reservation[], reservation: Reservation, setAlertMessage: any, setAlertStatus: any, setAlertOpen: any, setReservations: any, index: number, employeeSIN: string, useDialog: boolean, setShowGetPayment: any, setCheckInData: any) {
+    if (useDialog) {
+        setCheckInData({
+            setEditButtonToDisable: setEditButtonToDisable,
+            reservations: reservations,
+            reservation: reservation,
+            setAlertMessage: setAlertMessage,
+            setAlertStatus: setAlertStatus,
+            setAlertOpen: setAlertOpen,
+            setReservations: setReservations,
+            index: index,
+            employeeSIN: employeeSIN
+        })
+        setShowGetPayment(true);
+        return;
+    }
+
     setEditButtonToDisable(reservation.booking_id);
     try {
         let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + reservation.customer_sin + "/reservations/" + reservation.booking_id, {
@@ -212,12 +241,37 @@ export default function CheckCustomer() {
 
     location.state.response.sort((r1: Reservation, r2: Reservation) => (r1.check_in_day > r2.check_in_day) ? 1 : -1);
 
-    const [alertOpen, setAlertOpen] = useState(false);
-    const [alertMessage, setAlertMessage] = useState("");
+    const [alertOpen, setAlertOpen]: [boolean, any] = useState(false);
+    const [alertMessage, setAlertMessage]: [string, any] = useState("");
     const [alertStatus, setAlertStatus]: [Severity, any] = useState("success");
     const [editButtonToDisable, setEditButtonToDisable]: [number, any] = useState(-1);
     const [reservations, setReservations]: [Reservation[], any] = useState([...location.state.response]);
     const [searchSIN, setSearchSIN]: [string, any] = useState("");
+    const [showGetPayment, setShowGetPayment]: [boolean, any] = useState(false);
+
+    const [checkInData, setCheckInData]: [CheckInData, any] = useState({
+        setEditButtonToDisable: setEditButtonToDisable,
+        reservations: reservations,
+        reservation: {
+            amenities: [],
+            booking_id: 0,
+            check_in_day: '',
+            check_out_day: '',
+            customer_name: '',
+            customer_sin: '',
+            date_of_registration: '',
+            is_extendable: false,
+            price: '',
+            title: '',
+            view: ''
+        },
+        setAlertMessage: setAlertMessage,
+        setAlertStatus: setAlertStatus,
+        setAlertOpen: setAlertOpen,
+        setReservations: setReservations,
+        index: 0,
+        employeeSIN: location.state.employeeSIN
+    });
 
     const dateWords = new Date().toDateString();
     const subTitle = location.state.checkIn ? 'For ' + dateWords : 'Customers currently renting rooms'
@@ -236,7 +290,11 @@ export default function CheckCustomer() {
                                   editButtonToDisable={editButtonToDisable} employeeSIN={location.state.employeeSIN}
                                   setEditButtonToDisable={setEditButtonToDisable} setAlertMessage={setAlertMessage}
                                   setAlertStatus={setAlertStatus} setAlertOpen={setAlertOpen} searchSIN={searchSIN}
-                                  setReservations={setReservations} isCheckIn={location.state.checkIn}/>
+                                  setReservations={setReservations} isCheckIn={location.state.checkIn}
+                                  setShowGetPayment={setShowGetPayment} setCheckInData={setCheckInData}/>
+            <GetPaymentDialog checkInData={checkInData} classes={classes} dialogOpen={showGetPayment}
+                              setDialogOpen={setShowGetPayment} setAlertMessage={setAlertMessage}
+                              setAlertOpen={setAlertOpen} setAlertStatus={setAlertStatus}/>
             <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
                         alertMessage={alertMessage}/>
         </div>

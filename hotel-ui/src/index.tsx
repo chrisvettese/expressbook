@@ -55,6 +55,20 @@ export interface Employee {
     job_title: string;
 }
 
+export interface Reservation {
+    booking_id: number;
+    date_of_registration: string;
+    check_in_day: string;
+    check_out_day: string;
+    title: string;
+    is_extendable: boolean;
+    amenities: string[];
+    view: string;
+    price: string;
+    customer_sin: string;
+    customer_name: string;
+}
+
 export function TitleBarCustomer() {
     const classes = useTitleStyles();
     return <AppBar position="static">
