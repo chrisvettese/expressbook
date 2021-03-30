@@ -3,7 +3,7 @@ import {
     Button,
     Dialog,
     DialogActions,
-    DialogTitle, FormControl, FormHelperText, Grid,
+    DialogTitle, FormControl, FormHelperText,
     InputLabel,
     MenuItem,
     Select,

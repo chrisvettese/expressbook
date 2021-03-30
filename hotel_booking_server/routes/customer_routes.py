@@ -114,7 +114,11 @@ def add_routes(app, conn):
                                           'customer_email, customer_phone')
         query += 'WHERE customer_sin = \'' + cid + "'"
 
-        execute(query, conn)
+        try:
+            execute(query, conn)
+        except psycopg2.DatabaseError:
+            raise ResourceConflictError(message='Email address already exists')
+
         return Response(status=204, mimetype='application/json')
 
     @app.route('/customers/<cid>/reservations')

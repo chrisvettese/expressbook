@@ -1,6 +1,6 @@
 import {Button, makeStyles, TextField, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {phoneRegex, TitleBarCustomer} from "../index";
+import {phoneRegex, sinRegex, TitleBarCustomer} from "../index";
 import {useHistory, useLocation} from 'react-router-dom';
 
 const useStyles = makeStyles(() => ({
@@ -26,36 +26,36 @@ const useStyles = makeStyles(() => ({
 
 export default function Name() {
     const classes = useStyles();
-    const location = useLocation<{ customerSIN: string }>();
+    const location = useLocation<{ customerEmail: string }>();
     const history = useHistory();
     const [name, setName] = useState("");
     const [address, setAddress] = useState("");
-    const [email, setEmail] = useState("");
+    const [SIN, setSIN] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
     const [nameError, setNameError]: [boolean, any] = useState(false);
     const [addressError, setAddressError]: [boolean, any] = useState(false);
-    const [emailError, setEmailError]: [boolean, any] = useState(false);
     const [phoneError, setPhoneError]: [boolean, any] = useState(false);
     const [disableUseButton, setDisableUseButton]: [boolean, any] = useState(false);
+
+    const [trySubmit, setTrySubmit]: [boolean, any] = useState(false);
+
+    function validateSIN(): boolean {
+        return !sinRegex.test(SIN) && (SIN.length !== 0 || (trySubmit && SIN.length === 0));
+    }
 
     async function submitInfo() {
         const nameError: boolean = name.length === 0;
         const addressError: boolean = address.length === 0;
-        let emailError: boolean = email.includes(' ') || email.indexOf('@') < 1
-        if (!emailError) {
-            const index: number = email.indexOf('.', email.indexOf('@'))
-            if (index < 3 || index === email.length - 1) {
-                emailError = true;
-            }
-        }
         const phoneError: boolean = !(phoneRegex).test(phoneNumber);
+        const sinError: boolean = !sinRegex.test(SIN);
 
         setNameError(nameError);
         setAddressError(addressError);
-        setEmailError(emailError);
         setPhoneError(phoneError);
 
-        if (nameError || addressError || emailError || phoneError) {
+        setTrySubmit(true);
+
+        if (nameError || addressError || sinError || phoneError) {
             return;
         }
 
@@ -77,19 +77,19 @@ export default function Name() {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        customer_sin: location.state.customerSIN,
+                        customer_sin: SIN,
                         customer_name: name,
                         customer_address: address,
-                        customer_email: email,
+                        customer_email: location.state.customerEmail,
                         customer_phone: phoneNumber
                     })
                 })
                 if (response.status === 201) {
                     history.push('/ui/customer/welcome', {
-                        customerSIN: location.state.customerSIN,
+                        customerSIN: SIN,
                         customerName: name,
                         customerAddress: address,
-                        customerEmail: email,
+                        customerEmail: location.state.customerEmail,
                         customerPhone: phoneNumber
                     })
                 }
@@ -112,14 +112,14 @@ export default function Name() {
                            onChange={event => setName(event.currentTarget.value)}/>
             </div>
             <div className={classes.textField}>
+                <TextField error={validateSIN()} helperText={validateSIN() ? "SIN must have format XXX-XXX-XXX" : ""}
+                           onChange={event => setSIN(event.currentTarget.value)}
+                           id="outlined-basic" label="Social Insurance Number" variant="outlined" value={SIN}/>
+            </div>
+            <div className={classes.textField}>
                 <TextField label="Address" variant="outlined" value={address} error={addressError}
                            helperText={addressError ? "Must provide address" : ""}
                            onChange={event => setAddress(event.currentTarget.value)}/>
-            </div>
-            <div className={classes.textField}>
-                <TextField label="Email" variant="outlined" value={email} error={emailError}
-                           helperText={emailError ? "Must provide valid email" : ""}
-                           onChange={event => setEmail(event.currentTarget.value)}/>
             </div>
             <div className={classes.textField}>
                 <TextField label="Phone Number" variant="outlined" value={phoneNumber} error={phoneError}

@@ -25,6 +25,8 @@ export const EditCustomerProfileDialog = ({
     const [phone, setPhone]: [string, any] = useState(customerPhone);
     const [email, setEmail]: [string, any] = useState(customerEmail);
 
+    const [emailHelper, setEmailHelper]: [string, any] = useState('');
+
     const [disableSave, setDisableSave]: [boolean, any] = useState(false);
 
     async function updateCustomer() {
@@ -45,6 +47,12 @@ export const EditCustomerProfileDialog = ({
         setAddressError(isAddressError);
         setEmailError(isEmailError);
         setPhoneError(isPhoneError);
+
+        if (isEmailError) {
+            setEmailHelper('Must provide valid email');
+        } else {
+            setEmailHelper('');
+        }
 
         if (isNameError || isAddressError || isEmailError || isPhoneError) {
             setDisableSave(false);
@@ -71,6 +79,9 @@ export const EditCustomerProfileDialog = ({
                 setCustomerName(name);
                 openAlert('Profile updated', 'success', setAlertMessage, setAlertStatus, setAlertOpen);
                 setDialogOpen(false);
+            } else if (response.status === 409) {
+                setEmailHelper('An account with this email address already exists');
+                setEmailError(true);
             } else {
                 openAlert('Error: Unable to update profile', 'error', setAlertMessage, setAlertStatus, setAlertOpen);
             }
@@ -107,7 +118,7 @@ export const EditCustomerProfileDialog = ({
                            helperText={addressError ? "Must provide address" : ""} className={classes.dialogGap}
                            onChange={event => setAddress(event.currentTarget.value)}/>
                 <TextField label="Email" variant="outlined" value={email} error={emailError}
-                           helperText={emailError ? "Must provide valid email" : ""} className={classes.dialogGap}
+                           helperText={emailHelper} className={classes.dialogGap}
                            onChange={event => setEmail(event.currentTarget.value)}/>
                 <TextField label="Phone Number" variant="outlined" value={phone} error={phoneError}
                            helperText={phoneError ? "Must provide valid phone number" : ""} className={classes.dialogGap}

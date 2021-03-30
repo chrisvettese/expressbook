@@ -11,26 +11,44 @@ export const EditEmployeeProfileDialog = ({
                                               setAlertOpen,
                                               employeeName, setEmployeeName,
                                               employeeAddress, setEmployeeAddress,
+                                              employeeEmail, setEmployeeEmail
                                           }: any) => {
 
     const [nameError, setNameError]: [boolean, any] = useState(false);
+    const [emailError, setEmailError]: [boolean, any] = useState(false);
     const [addressError, setAddressError]: [boolean, any] = useState(false);
 
     const [name, setName]: [string, any] = useState(employeeName);
+    const [email, setEmail]: [string, any] = useState(employeeEmail);
     const [address, setAddress]: [string, any] = useState(employeeAddress);
 
+    const [emailHelper, setEmailHelper]: [string, any] = useState('');
     const [disableSave, setDisableSave]: [boolean, any] = useState(false);
 
     async function updateEmployee() {
         setDisableSave(true);
 
         const isNameError: boolean = name.length === 0;
+        let isEmailError: boolean = email.includes(' ') || email.indexOf('@') < 1
+        if (!isEmailError) {
+            const index: number = email.indexOf('.', email.indexOf('@'))
+            if (index < 3 || index === email.length - 1) {
+                isEmailError = true;
+            }
+        }
         const isAddressError: boolean = address.length === 0;
 
         setNameError(isNameError);
+        setEmailError(isEmailError);
         setAddressError(isAddressError);
 
-        if (isNameError || isAddressError) {
+        if (isEmailError) {
+            setEmailHelper('Must provide valid email');
+        } else {
+            setEmailHelper('');
+        }
+
+        if (isNameError || isAddressError || isEmailError) {
             setDisableSave(false);
             return;
         }
@@ -43,14 +61,19 @@ export const EditEmployeeProfileDialog = ({
                 },
                 body: JSON.stringify({
                     employee_name: name,
+                    employee_email: email,
                     employee_address: address,
                 })
             })
             if (response.status === 204) {
                 setEmployeeAddress(address);
+                setEmployeeEmail(email);
                 setEmployeeName(name);
                 openAlert('Profile updated', 'success', setAlertMessage, setAlertStatus, setAlertOpen);
                 setDialogOpen(false);
+            } else if (response.status === 409) {
+                setEmailHelper('An account with this email address already exists');
+                setEmailError(true);
             } else {
                 openAlert('Error: Unable to update profile', 'error', setAlertMessage, setAlertStatus, setAlertOpen);
             }
@@ -65,8 +88,10 @@ export const EditEmployeeProfileDialog = ({
         setDialogOpen(false);
         setName(employeeName);
         setAddress(employeeAddress);
+        setEmail(employeeEmail);
         setNameError(false);
         setAddressError(false);
+        setEmailHelper('');
     }
 
     return (
@@ -79,6 +104,9 @@ export const EditEmployeeProfileDialog = ({
                 <TextField label="Name" variant="outlined" value={name} error={nameError}
                            helperText={nameError ? "Must provide name" : ""} className={classes.dialogGap}
                            onChange={event => setName(event.currentTarget.value)}/>
+                <TextField label="Email" variant="outlined" value={email} error={emailError}
+                           helperText={emailHelper} className={classes.dialogGap}
+                           onChange={event => setEmail(event.currentTarget.value)}/>
                 <TextField label="Address" variant="outlined" value={address} error={addressError}
                            helperText={addressError ? "Must provide address" : ""} className={classes.dialogGap}
                            onChange={event => setAddress(event.currentTarget.value)}/>

@@ -38,6 +38,7 @@ export interface GetEmployeeResponse {
     employee_sin: string;
     employee_name: string;
     employee_address: string;
+    employee_email: string;
     salary: string;
     job_title: string;
     brand_name: string;
@@ -49,6 +50,7 @@ export interface GetEmployeeResponse {
 
 export interface Employee {
     employee_sin: string;
+    employee_email: string;
     employee_name: string;
     employee_address: string;
     salary: string;

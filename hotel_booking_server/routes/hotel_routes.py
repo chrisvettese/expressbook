@@ -77,6 +77,8 @@ def add_routes(app, conn):
             raise BadRequestError(message="Missing required body field 'employee_sin'")
         if 'manager_sin' not in data:
             raise BadRequestError(message="Missing required body field 'manager_sin'")
+        if 'email' not in data:
+            raise BadRequestError(message="Missing required body field 'email'")
         if 'name' not in data:
             raise BadRequestError(message="Missing required body field 'name'")
         if 'address' not in data:
@@ -89,19 +91,22 @@ def add_routes(app, conn):
         employee_sin = data['employee_sin']
         manager_sin = data['manager_sin']
         name = data['name']
+        email = data['email']
         address = data['address']
         salary = data['salary']
         job_title = data['job_title']
 
         verify_manager(manager_sin, hid, conn)
 
-        query = """INSERT INTO hotel.employee(employee_sin, employee_name, employee_address, salary, job_title,
-                   hotel_ID) VALUES ('{}', '{}', '{}', '{}', '{}', '{}')""" \
-            .format(employee_sin, name, address, salary, job_title, hid)
+        query = """INSERT INTO hotel.employee(employee_sin, employee_name, employee_email, employee_address, salary, job_title,
+                   hotel_ID) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}')""" \
+            .format(employee_sin, name, email, address, salary, job_title, hid)
 
         try:
             execute(query, conn)
-        except psycopg2.DatabaseError:
+        except psycopg2.DatabaseError as e:
+            if 'duplicate key value violates unique constraint "employee_employee_email_key"' in str(e):
+                raise ResourceConflictError(message='Unable to add employee - email already in use')
             raise ResourceConflictError(message='Employee already exists')
         return Response(status=201, mimetype='application/json')
 
@@ -131,6 +136,10 @@ def add_routes(app, conn):
         if 'employee_name' in data and len(data['employee_name']) > 0:
             query += '''UPDATE hotel.employee e SET employee_name = '{}' WHERE employee_sin = \'{}\';'''\
                 .format(data['employee_name'], eid)
+        if 'employee_email' in data and len(data['employee_email']) > 0:
+            print('employee email UPDATING')
+            query += '''UPDATE hotel.employee e SET employee_email = '{}' WHERE employee_sin = \'{}\';''' \
+                .format(data['employee_email'], eid)
         if 'salary' in data:
             try:
                 float(data['salary'])
@@ -145,14 +154,18 @@ def add_routes(app, conn):
         try:
             if query != '':
                 execute(query, conn)
-        except psycopg2.DatabaseError:
+        except psycopg2.DatabaseError as e:
+            if 'null value in column "status_id" of relation "employee" violates not-null constraint' in str(e):
+                raise BadRequestError(message='Unable to delete employee - invalid status')
+            if 'duplicate key value violates unique constraint "employee_employee_email_key"' in str(e):
+                raise ResourceConflictError(message='Unable to update employee - email already in use')
             raise ResourceConflictError(message='Unable to delete employee')
         return Response(status=204, mimetype='application/json')
 
     @app.route('/hotels/<hid>/employees')
     @cross_origin()
     def get_employees_by_hotel(hid):
-        query = '''SELECT e.employee_sin, e.employee_name, e.employee_address, e.salary, e.job_title
+        query = '''SELECT e.employee_sin, e.employee_email, e.employee_name, e.employee_address, e.salary, e.job_title
                    FROM hotel.employee e WHERE e.status_id = 1 AND e.hotel_id = {}'''.format(hid)
         response = get_results(query, conn)
         if response == '[]':

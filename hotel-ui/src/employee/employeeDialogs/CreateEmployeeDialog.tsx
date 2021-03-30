@@ -1,38 +1,42 @@
 import React, {useState} from "react";
 import {Button, Dialog, DialogActions, DialogTitle, InputAdornment, TextField, Typography} from "@material-ui/core";
-import {GetEmployeeResponse} from "../../index";
+import {GetEmployeeResponse, sinRegex} from "../../index";
 
 interface AMessage {
-    isNewSIN: boolean;
+    isNewEmail: boolean;
 }
 
 interface AInfo {
-    isNewSIN: boolean;
+    isNewEmail: boolean;
     classes: any;
     showInfo: boolean;
+    sinHelper: string;
     nameHelper: string;
     addressHelper: string;
     salaryHelper: string;
     jobHelper: string;
+    setEmployeeSIN: any;
     setEmployeeName: any;
     setEmployeeAddress: any;
     setEmployeeSalary: any;
     setEmployeeJobTitle: any;
+    sinError: boolean;
     nameError: boolean;
     addressError: boolean;
     salaryError: boolean;
     jobError: boolean;
+    employeeSIN: string;
     employeeName: string;
     employeeAddress: string;
     employeeSalary: string;
     employeeJobTitle: string;
 }
 
-function AdditionalMessage({isNewSIN}: AMessage) {
-    if (isNewSIN) {
+function AdditionalMessage({isNewEmail}: AMessage) {
+    if (isNewEmail) {
         return <Typography style={{marginBottom: '1em'}}>Please enter details for new employee:</Typography>
     } else {
-        return <Typography style={{marginBottom: '1em'}}>Please confirm details for new employee:</Typography>
+        return <Typography style={{marginBottom: '1em'}}>Please confirm details for employee:</Typography>
     }
 }
 
@@ -40,10 +44,13 @@ function AdditionalInfo(aInfo: AInfo) {
     if (aInfo.showInfo) {
         return (
             <>
-                <AdditionalMessage isNewSIN={aInfo.isNewSIN}/>
+                <AdditionalMessage isNewEmail={aInfo.isNewEmail}/>
                 <TextField label="Name" variant="outlined" value={aInfo.employeeName} error={aInfo.nameError}
                            helperText={aInfo.nameHelper} className={aInfo.classes.dialogGap}
                            onChange={event => aInfo.setEmployeeName(event.currentTarget.value)}/>
+                <TextField label="Employee SIN" variant="outlined" value={aInfo.employeeSIN} error={aInfo.sinError}
+                           helperText={aInfo.sinHelper} className={aInfo.classes.dialogGap}
+                           onChange={event => aInfo.setEmployeeSIN(event.currentTarget.value)}/>
                 <TextField label="Address" variant="outlined" value={aInfo.employeeAddress} error={aInfo.addressError}
                            helperText={aInfo.addressHelper} className={aInfo.classes.dialogGap}
                            onChange={event => aInfo.setEmployeeAddress(event.currentTarget.value)}/>
@@ -70,15 +77,14 @@ export const CreateEmployeeDialog = ({
                                          hotelID, managerSIN,
                                          employees, setEmployees
                                      }: any) => {
-
-    const sinRegex: RegExp = /^[0-9]{3}-[0-9]{3}-[0-9]{3}$/;
-
+    const [emailError, setEmailError]: [boolean, any] = useState(false);
     const [sinError, setSINError]: [boolean, any] = useState(false);
     const [nameError, setNameError]: [boolean, any] = useState(false);
     const [addressError, setAddressError]: [boolean, any] = useState(false);
     const [salaryError, setSalaryError]: [boolean, any] = useState(false);
     const [jobError, setJobError]: [boolean, any] = useState(false);
 
+    const [emailHelper, setEmailHelper]: [string, any] = useState('');
     const [sinHelper, setSINHelper]: [string, any] = useState('');
     const [nameHelper, setNameHelper]: [string, any] = useState('');
     const [addressHelper, setAddressHelper]: [string, any] = useState('');
@@ -90,63 +96,79 @@ export const CreateEmployeeDialog = ({
 
     const [showInfo, setShowInfo]: [boolean, any] = useState(false);
 
+    const [employeeEmail, setEmployeeEmail]: [string, any] = useState("");
     const [employeeSIN, setEmployeeSIN]: [string, any] = useState("");
     const [employeeName, setEmployeeName]: [string, any] = useState("");
     const [employeeAddress, setEmployeeAddress]: [string, any] = useState("");
     const [employeeSalary, setEmployeeSalary]: [string, any] = useState("");
     const [employeeJobTitle, setEmployeeJobTitle]: [string, any] = useState("");
 
-    const [isNewSIN, setIsNewSIN]: [boolean, any] = useState(false);
+    const [isNewEmail, setIsNewEmail]: [boolean, any] = useState(false);
 
-    async function validateEmployeeSIN() {
+    async function validateEmployeeEmail() {
         setDisableCheck(true);
-        if (!sinRegex.test(employeeSIN) || employeeSIN.length === 0) {
-            setSINHelper("Must enter valid SIN");
-            setSINError(true);
+
+        let isEmailError: boolean = employeeEmail.includes(' ') || employeeEmail.indexOf('@') < 1
+        if (!isEmailError) {
+            const index: number = employeeEmail.indexOf('.', employeeEmail.indexOf('@'))
+            if (index < 3 || index === employeeEmail.length - 1) {
+                isEmailError = true;
+            }
+        }
+        setEmailError(isEmailError);
+
+        if (isEmailError) {
+            setEmailHelper("Must enter valid email");
             setDisableCheck(false);
             setShowInfo(false);
+            setEmployeeSIN("");
             setEmployeeName("");
             setEmployeeJobTitle("");
             setEmployeeSalary("");
             setEmployeeAddress("");
             return;
+        } else {
+            setEmailHelper("");
         }
 
         try {
-            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/employees/" + employeeSIN);
-            if (response.status === 404) {
-                if (!setShowInfo) {
-                    setSINHelper("");
-                    setEmployeeName("");
-                    setEmployeeJobTitle("");
-                    setEmployeeSalary("");
-                    setEmployeeAddress("");
-                }
-                setShowInfo(true);
-                setSINError(false);
-                setDisableCheck(false);
-                setShowInfo(true);
-                setDisableCreateEmployee(false);
-                setIsNewSIN(true);
-                openAlert("Employee SIN validated", "success")
-            } else if (response.status === 200) {
-                const employeeResponse: GetEmployeeResponse = await response.json();
-                if (employeeResponse.status === 'hired') {
-                    setSINHelper("Invalid SIN. Employee already exists!");
-                    setSINError(true);
-                } else {
-                    setIsNewSIN(false);
+            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/employees?email=" + employeeEmail);
+            if (response.status === 200) {
+                const employeeResponse: GetEmployeeResponse[] = await response.json();
+                if (employeeResponse.length === 0) {
+                    if (!setShowInfo) {
+                        setEmailHelper("");
+                        setEmployeeName("");
+                        setEmployeeJobTitle("");
+                        setEmployeeSalary("");
+                        setEmployeeAddress("");
+                    }
+                    setShowInfo(true);
                     setSINError(false);
                     setDisableCheck(false);
-                    setSINHelper("");
-                    setDisableCreateEmployee(false);
-                    //Show additional info filled out
-                    setEmployeeAddress(employeeResponse.employee_address);
-                    setEmployeeName(employeeResponse.employee_name);
-                    setEmployeeJobTitle(employeeResponse.job_title);
-                    setEmployeeSalary(employeeResponse.salary);
                     setShowInfo(true);
-                    openAlert('Existing profile found', 'success');
+                    setDisableCreateEmployee(false);
+                    setIsNewEmail(true);
+                    openAlert("Employee SIN validated", "success")
+                } else {
+                    if (employeeResponse[0].status === 'hired') {
+                        setEmailHelper("Invalid email. Employee with email already exists!");
+                        setEmailError(true);
+                    } else {
+                        setIsNewEmail(false);
+                        setSINError(false);
+                        setDisableCheck(false);
+                        setSINHelper("");
+                        setDisableCreateEmployee(false);
+                        //Show additional info filled out
+                        setEmployeeAddress(employeeResponse[0].employee_address);
+                        setEmployeeName(employeeResponse[0].employee_name);
+                        setEmployeeJobTitle(employeeResponse[0].job_title);
+                        setEmployeeSalary(employeeResponse[0].salary);
+                        setEmployeeSIN(employeeResponse[0].employee_sin);
+                        setShowInfo(true);
+                        openAlert('Existing profile found', 'success');
+                    }
                 }
             } else {
                 openAlert('Unable to verify SIN', 'error');
@@ -164,11 +186,13 @@ export const CreateEmployeeDialog = ({
         const validateAddress = employeeAddress.length > 0 && employeeAddress.length < 255;
         const validateSalary = !Number.isNaN(employeeSalary) && parseFloat(employeeSalary) > 0;
         const validateJobTitle = employeeJobTitle.length > 0;
+        const validateEmployeeSIN = sinRegex.test(employeeSIN);
 
         setNameError(!validateName);
         setAddressError(!validateAddress);
         setSalaryError(!validateSalary);
         setJobError(!validateJobTitle);
+        setSINError(!validateEmployeeSIN);
 
         if (!validateName) {
             setNameHelper('Must enter valid name for employee')
@@ -179,6 +203,9 @@ export const CreateEmployeeDialog = ({
         if (!validateSalary) {
             setSalaryHelper('Must enter valid salary for employee')
         }
+        if (!validateEmployeeSIN) {
+            setSINHelper('Must enter employee SIN in format XXX-XXX-XXX')
+        }
         if (!validateJobTitle) {
             setJobHelper('Must enter valid job title for employee')
         }
@@ -188,7 +215,7 @@ export const CreateEmployeeDialog = ({
         }
 
         const fixedESalary: string = parseFloat(employeeSalary).toFixed(2)
-        if (isNewSIN) {
+        if (isNewEmail) {
             try {
                 let response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + hotelID + "/employees", {
                     method: 'POST',
@@ -197,6 +224,7 @@ export const CreateEmployeeDialog = ({
                     },
                     body: JSON.stringify({
                         employee_sin: employeeSIN,
+                        email: employeeEmail,
                         manager_sin: managerSIN,
                         name: employeeName,
                         address: employeeAddress,
@@ -216,6 +244,9 @@ export const CreateEmployeeDialog = ({
                     });
                     setEmployees(newEmployees);
                     closeDialog();
+                } else if (response.status === 409) {
+                    setSINError(true);
+                    setSINHelper("Employee with SIN already exists");
                 } else {
                     openAlert('Error: Unable to add employee', 'error');
                 }
@@ -265,17 +296,20 @@ export const CreateEmployeeDialog = ({
     function closeDialog() {
         setDialogOpen(false);
         setSINError(false);
+        setEmailError(false);
         setNameError(false);
         setAddressError(false);
         setSalaryError(false);
         setJobError(false);
         setDisableCheck(false);
+        setEmailHelper("");
         setSINHelper("");
         setNameHelper("");
         setAddressHelper("");
         setJobHelper("");
         setSalaryHelper("");
         setEmployeeSIN("");
+        setEmployeeEmail("");
         setEmployeeAddress("");
         setEmployeeSalary("");
         setEmployeeJobTitle("");
@@ -289,23 +323,29 @@ export const CreateEmployeeDialog = ({
             <Typography className={classes.dialogTitle}>Add New Employee</Typography>
         </DialogTitle>
         <div className={classes.dialogAddress}>
-            <TextField label="Employee SIN" variant="outlined" value={employeeSIN} error={sinError}
-                       helperText={sinHelper} className={classes.dialogGap}
+            <TextField label="Employee Email" variant="outlined" value={employeeEmail} error={emailError}
+                       helperText={emailHelper} className={classes.dialogGap}
                        onChange={event => {
-                           setEmployeeSIN(event.currentTarget.value);
+                           setEmployeeEmail(event.currentTarget.value);
                            setDisableCreateEmployee(true);
                            setShowInfo(false);
+                           setEmployeeName("");
+                           setEmployeeSIN("");
+                           setEmployeeAddress("");
+                           setEmployeeSalary("");
+                           setEmployeeJobTitle("");
                        }}/>
-            <Button variant='contained' disabled={disableCheck} onClick={validateEmployeeSIN}
-                    className={classes.dialogGap}>Check SIN</Button>
+            <Button variant='contained' disabled={disableCheck} onClick={validateEmployeeEmail}
+                    className={classes.dialogGap}>Check Email</Button>
             <AdditionalInfo addressError={addressError} addressHelper={addressHelper} classes={classes}
                             employeeAddress={employeeAddress} employeeJobTitle={employeeJobTitle}
-                            employeeName={employeeName} employeeSalary={employeeSalary} isNewSIN={isNewSIN}
+                            employeeName={employeeName} employeeSalary={employeeSalary} isNewEmail={isNewEmail}
                             jobError={jobError} jobHelper={jobHelper} nameError={nameError} nameHelper={nameHelper}
                             salaryError={salaryError} salaryHelper={salaryHelper}
                             setEmployeeAddress={setEmployeeAddress} setEmployeeJobTitle={setEmployeeJobTitle}
                             setEmployeeName={setEmployeeName} setEmployeeSalary={setEmployeeSalary}
-                            showInfo={showInfo}/>
+                            showInfo={showInfo} employeeSIN={employeeSIN} setEmployeeSIN={setEmployeeSIN}
+                            sinError={sinError} sinHelper={sinHelper}/>
         </div>
         <DialogActions>
             <Button disabled={disableCreateEmployee}

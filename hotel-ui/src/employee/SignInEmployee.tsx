@@ -1,6 +1,6 @@
 import {Button, makeStyles, TextField, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {GetEmployeeResponse, sinRegex, TitleBarEmployee} from "../index";
+import {GetEmployeeResponse, TitleBarEmployee} from "../index";
 import {useHistory} from 'react-router-dom';
 
 
@@ -32,37 +32,49 @@ export default function SignInEmployee() {
     const classes = useStyles();
     const history = useHistory();
 
-    const [SIN, setSIN] = useState("");
-    const [disableSignIn, setDisableSignIn] = useState(false);
-    const [error, setError] = useState("");
+    const [email, setEmail]: [string, any] = useState("");
+    const [emailError, setEmailError]: [boolean, any] = useState(false);
+    const [disableSignIn, setDisableSignIn]: [boolean, any] = useState(false);
 
-    function validateSIN(): boolean {
-        return !sinRegex.test(SIN) && SIN.length !== 0;
-    }
+    const [error, setError]: [string, any] = useState('');
 
     function keyPressed(e: React.KeyboardEvent<HTMLDivElement>) {
-        if (e.key === 'Enter' && sinRegex.test(SIN)) {
+        if (e.key === 'Enter') {
             checkEmployee();
         }
     }
 
     function checkEmployee() {
         setDisableSignIn(true);
-        fetch(process.env.REACT_APP_SERVER_URL + "/employees/" + SIN)
+        let emailError: boolean = email.includes(' ') || email.indexOf('@') < 1
+        if (!emailError) {
+            const index: number = email.indexOf('.', email.indexOf('@'))
+            if (index < 3 || index === email.length - 1) {
+                emailError = true;
+            }
+        }
+        setEmailError(emailError);
+        if (emailError) {
+            setDisableSignIn(false);
+            return;
+        }
+
+        fetch(process.env.REACT_APP_SERVER_URL + "/employees?email=" + email)
             .then(response => {
                 if (response.status === 200) {
-                    response.json().then((response: GetEmployeeResponse) => {
-                        if (response.status === 'hired') {
+                    response.json().then((response: GetEmployeeResponse[]) => {
+                        if (response.length === 1 && response[0].status === 'hired') {
                             history.push('/ui/employee/welcome', {
-                                employeeSIN: response.employee_sin,
-                                employeeName: response.employee_name,
-                                employeeAddress: response.employee_address,
-                                salary: response.salary,
-                                jobTitle: response.job_title,
-                                brandName: response.brand_name,
-                                brandID: response.brand_id,
-                                hotelID: response.hotel_id,
-                                hotelAddress: response.hotel_address
+                                employeeSIN: response[0].employee_sin,
+                                employeeName: response[0].employee_name,
+                                employeeAddress: response[0].employee_address,
+                                employeeEmail: response[0].employee_email,
+                                salary: response[0].salary,
+                                jobTitle: response[0].job_title,
+                                brandName: response[0].brand_name,
+                                brandID: response[0].brand_id,
+                                hotelID: response[0].hotel_id,
+                                hotelAddress: response[0].hotel_address
                             })
                         } else {
                             setError("Unable to sign in. Please contact the hotel manager or database admin if you think this is a problem.")
@@ -89,14 +101,12 @@ export default function SignInEmployee() {
                 <Typography>Please sign in to access the hotel management system:</Typography>
             </div>
             <div className={classes.sinCentre}>
-                <TextField error={validateSIN()} helperText={validateSIN() ? "SIN must have format XXX-XXX-XXX" : ""}
-                           onChange={event => setSIN(event.currentTarget.value)}
-                           onKeyPress={e => keyPressed(e)}
-                           id="outlined-basic" label="Social Insurance Number" variant="outlined" value={SIN}/>
+                <TextField label="Email Address" variant="outlined" value={email} error={emailError}
+                           helperText={emailError ? "Must provide valid email" : ""} onKeyPress={e => keyPressed(e)}
+                           onChange={event => setEmail(event.currentTarget.value)}/>
             </div>
             <div className={classes.buttonCentre}>
-                <Button variant="contained" onClick={() => checkEmployee()}
-                        disabled={!sinRegex.test(SIN) || disableSignIn}>Sign In</Button>
+                <Button variant="contained" onClick={() => checkEmployee()} disabled={disableSignIn}>Sign In</Button>
             </div>
             <div className={classes.sinCentre}>
                 <Typography style={{color: "red"}}>{error}</Typography>

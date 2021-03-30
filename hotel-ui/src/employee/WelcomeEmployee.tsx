@@ -79,6 +79,7 @@ const useStyles = makeStyles(() => ({
 
 interface Employee {
     employeeSIN: string;
+    employeeEmail: string;
     employeeName: string;
     employeeAddress: string;
     salary: string;
@@ -104,6 +105,7 @@ export default function WelcomeEmployee() {
     const [dialogOpen, setDialogOpen]: [boolean, any] = useState(false);
 
     const [employeeName, setEmployeeName]: [string, any] = useState(location.state.employeeName);
+    const [employeeEmail, setEmployeeEmail]: [string, any] = useState(location.state.employeeEmail);
     const [employeeAddress, setEmployeeAddress]: [string, any] = useState(location.state.employeeAddress);
 
     const welcomeMessage = location.state.brandName + ", " + location.state.hotelAddress
@@ -208,6 +210,7 @@ export default function WelcomeEmployee() {
             <div className={classes.paperContainer}>
                 <Paper elevation={3} className={classes.paper}>
                     <Typography className={classes.inPaper}>Name: {employeeName}</Typography>
+                    <Typography className={classes.inPaper}>Email: {employeeEmail}</Typography>
                     <Typography className={classes.inPaper}>Address: {employeeAddress}</Typography>
                     <Typography className={classes.inPaper}>Job title: {location.state.jobTitle}</Typography>
                     <Typography className={classes.inPaper}>Salary: ${location.state.salary}</Typography>
@@ -248,6 +251,7 @@ export default function WelcomeEmployee() {
                                        setAlertStatus={setAlertStatus} setAlertOpen={setAlertOpen}
                                        hotelID={location.state.hotelID}
                                        employeeName={employeeName} employeeAddress={employeeAddress}
+                                       employeeEmail={employeeEmail} setEmployeeEmail={setEmployeeEmail}
                                        setEmployeeName={setEmployeeName} setEmployeeAddress={setEmployeeAddress}/>
             <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
                         alertMessage={alertMessage}/>

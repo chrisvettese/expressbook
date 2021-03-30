@@ -192,7 +192,7 @@ export default function ManageEmployee() {
             <div className={classes.subTitle}>
                 <Button variant='contained' onClick={() => setNewDialogOpen(true)}>New Employee</Button>
             </div>
-            <GridList cols={1} cellHeight={185} className={classes.grid}>
+            <GridList cols={1} cellHeight={210} className={classes.grid}>
                 {
                     employees.map((emp: Employee, index: number) => {
                         return (
@@ -202,6 +202,7 @@ export default function ManageEmployee() {
                                         <Grid className={classes.brandGrid}>
                                             <Typography className={classes.empName}>{emp.employee_name}</Typography>
                                             <Typography>{emp.job_title}</Typography>
+                                            <Typography>Email: {emp.employee_email}</Typography>
                                             <Typography>SIN: {emp.employee_sin}</Typography>
                                             <Typography>Address: {emp.employee_address}</Typography>
                                             <Typography>Salary: ${emp.salary}</Typography>

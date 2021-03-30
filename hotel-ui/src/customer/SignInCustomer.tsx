@@ -1,6 +1,6 @@
 import {Button, makeStyles, TextField, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {sinRegex, TitleBarCustomer} from "../index";
+import {TitleBarCustomer} from "../index";
 import {useHistory} from 'react-router-dom';
 
 
@@ -40,35 +40,48 @@ export default function SignInCustomer() {
     const classes = useStyles();
     const history = useHistory();
 
-    const [SIN, setSIN] = useState("");
-    const [disableSignIn, setDisableSignIn] = useState(false);
-
-    function validateSIN(): boolean {
-        return !sinRegex.test(SIN) && SIN.length !== 0;
-    }
+    const [email, setEmail]: [string, any] = useState("");
+    const [emailError, setEmailError]: [boolean, any] = useState(false);
+    const [disableSignIn, setDisableSignIn]: [boolean, any] = useState(false);
 
     function keyPressed(e: React.KeyboardEvent<HTMLDivElement>) {
-        if (e.key === 'Enter' && sinRegex.test(SIN)) {
+        if (e.key === 'Enter') {
             checkCustomer();
         }
     }
 
     function checkCustomer() {
         setDisableSignIn(true);
-        fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + SIN)
+        let emailError: boolean = email.includes(' ') || email.indexOf('@') < 1
+        if (!emailError) {
+            const index: number = email.indexOf('.', email.indexOf('@'))
+            if (index < 3 || index === email.length - 1) {
+                emailError = true;
+            }
+        }
+        setEmailError(emailError);
+        if (emailError) {
+            setDisableSignIn(false);
+            return;
+        }
+        fetch(process.env.REACT_APP_SERVER_URL + "/customers?email=" + email)
             .then(response => {
-                if (response.status === 404) {
-                    history.push('/ui/customer/name', {customerSIN: SIN})
-                } else {
-                    response.json().then((response: CustomerResponse) => {
-                        history.push('/ui/customer/welcome', {
-                            customerSIN: response.customer_sin,
-                            customerName: response.customer_name,
-                            customerAddress: response.customer_address,
-                            customerEmail: response.customer_email,
-                            customerPhone: response.customer_phone
-                        })
+                if (response.status === 200) {
+                    response.json().then((response: CustomerResponse[]) => {
+                        if (response.length === 0) {
+                            history.push('/ui/customer/name', {customerEmail: email});
+                        } else {
+                            history.push('/ui/customer/welcome', {
+                                customerSIN: response[0].customer_sin,
+                                customerName: response[0].customer_name,
+                                customerAddress: response[0].customer_address,
+                                customerEmail: response[0].customer_email,
+                                customerPhone: response[0].customer_phone
+                            });
+                        }
                     })
+                } else {
+                    setDisableSignIn(false);
                 }
             }).catch(error => {
                 console.log('Error:', error);
@@ -82,17 +95,15 @@ export default function SignInCustomer() {
             <TitleBarCustomer/>
             <Typography className={classes.centreTitle}>Sign In</Typography>
             <div className={classes.sinCentre}>
-                <Typography>To begin searching destinations, enter your social insurance number:</Typography>
+                <Typography>To begin searching destinations, enter your email address:</Typography>
             </div>
             <div className={classes.sinCentre}>
-                <TextField error={validateSIN()} helperText={validateSIN() ? "SIN must have format XXX-XXX-XXX" : ""}
-                           onChange={event => setSIN(event.currentTarget.value)}
-                           onKeyPress={e => keyPressed(e)}
-                           id="outlined-basic" label="Social Insurance Number" variant="outlined" value={SIN}/>
+                <TextField label="Email Address" variant="outlined" value={email} error={emailError}
+                           helperText={emailError ? "Must provide valid email" : ""} onKeyPress={e => keyPressed(e)}
+                           onChange={event => setEmail(event.currentTarget.value)}/>
             </div>
             <div className={classes.buttonCentre}>
-                <Button variant="contained" onClick={() => checkCustomer()}
-                        disabled={!sinRegex.test(SIN) || disableSignIn}>Sign In</Button>
+                <Button variant="contained" onClick={() => checkCustomer()} disabled={disableSignIn}>Sign In</Button>
             </div>
         </>
     )
