@@ -6,6 +6,30 @@
 	},
 	"item": [
 		{
+			"name": "/customers",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/customers",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"customers"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "chris.vettese@gmail.com",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "/customers/{id}",
 			"request": {
 				"method": "GET",
@@ -30,7 +54,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"customer_name\": \"Chris\",\r\n    \"customer_email\": \"chris.vettese2@gmail.com\",\r\n    \"customer_phone\": \"(416)-700-7221\"\r\n}",
+					"raw": "{\r\n    \"customer_name\": \"Chris Vettese\",\r\n    \"customer_email\": \"gale.mumm414@yahoo.com\",\r\n    \"customer_phone\": \"(416)-700-7221\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -208,6 +232,35 @@
 			"response": []
 		},
 		{
+			"name": "/hotels/{id}/rooms/{id}",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"manager_sin\": \"445-848-528\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{server}}/hotels/{{hotel-id}}/rooms/{{room-id}}",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"hotels",
+						"{{hotel-id}}",
+						"rooms",
+						"{{room-id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "/hotels/{id}/rooms/availability",
 			"request": {
 				"method": "GET",
@@ -247,7 +300,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{server}}/hotels/{{hotel-id}}/reservations?action=check-in",
+					"raw": "{{server}}/hotels/{{hotel-id}}/reservations?action=check-out",
 					"host": [
 						"{{server}}"
 					],
@@ -259,7 +312,7 @@
 					"query": [
 						{
 							"key": "action",
-							"value": "check-in"
+							"value": "check-out"
 						}
 					]
 				}
@@ -273,7 +326,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"employee_sin\": \"474-946-325\",\r\n    \"manager_sin\": \"395-585-128\",\r\n    \"name\": \"Test Name\",\r\n    \"address\": \"Test Address\",\r\n    \"salary\": \"80000.00\",\r\n    \"job_title\": \"Front Desk Supervisor\"\r\n}",
+					"raw": "{\r\n    \"employee_sin\": \"386-674-371\",\r\n    \"manager_sin\": \"269-076-073\",\r\n    \"name\": \"Test Name\",\r\n    \"address\": \"Test Address\",\r\n    \"salary\": \"80000.00\",\r\n    \"job_title\": \"Front Desk Supervisor\",\r\n    \"email\": \"test@email.com\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -301,7 +354,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"manager_sin\": \"781-514-976\",\r\n    \"employee_name\": \"Bob\",\r\n    \"salary\": \"123.56t\"\r\n}",
+					"raw": "{\r\n    \"manager_sin\": \"269-076-073\",\r\n    \"status\": \"quit\",\r\n    \"salary\": \"12345.56\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -337,6 +390,29 @@
 						"hotels",
 						"{{hotel-id}}",
 						"employees"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "/employees",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{server}}/employees?email=chris.vettese2@gmail.com",
+					"host": [
+						"{{server}}"
+					],
+					"path": [
+						"employees"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "chris.vettese2@gmail.com"
+						}
 					]
 				}
 			},

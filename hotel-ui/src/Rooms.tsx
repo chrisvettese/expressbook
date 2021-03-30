@@ -77,7 +77,8 @@ const useStyles = makeStyles(theme => ({
         alignItems: 'center',
         flexDirection: 'column',
         justifyContent: 'center',
-        marginBottom: '2em'
+        marginBottom: '2em',
+        width: '100%'
     },
     divider: {
         marginLeft: '1em',
@@ -126,6 +127,14 @@ const useStyles = makeStyles(theme => ({
         alignItems: 'center',
         flexDirection: 'column',
         justifyContent: 'center'
+    },
+    centreSubTitle: {
+        paddingTop: '0.5em',
+        fontSize: '1.4em',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%'
     }
 }));
 
@@ -192,7 +201,19 @@ export default function Rooms() {
     const [roomData, setRoomData]: [Room[], any] = useState(location.state.response);
     const [numRooms, setNumRooms]: [number, any] = useState(location.state.response.length);
     const [dialogOpen, setDialogOpen]: [boolean, any] = useState(false);
-    const [roomToBook, setRoomToBook]: [Room, any] = useState(location.state.response[0]);
+    const [roomToBook, setRoomToBook]: [Room, any] = useState({
+        type_id: 0,
+        title: '',
+        price: '',
+        amenities: [''],
+        room_capacity: 0,
+        view: '',
+        is_extendable: false,
+        total_number_rooms: 0,
+        rooms_available: 0,
+        enabled: false,
+        tooltip: '',
+    });
     const [disableBookRoomButton, setDisableBookRoomButton]: [boolean, any] = useState(false);
     const [alertOpen, setAlertOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");

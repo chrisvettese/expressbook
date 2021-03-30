@@ -14,13 +14,41 @@ def add_routes(app, conn):
     @app.route('/hotels/<hid>/rooms')
     @cross_origin()
     def get_rooms_by_hotel(hid):
-        query = '''SELECT h.type_id, h.title, h.price, h.amenities, h.room_capacity, v.view, h.is_extendable,
-        h.total_number_rooms, h.rooms_available FROM hotel.hotel_room_type h JOIN hotel.view_type v 
-        ON v.view_ID = h.view_ID WHERE h.hotel_id = {}'''.format(hid)
+        query = '''SELECT * FROM hotel.hotel WHERE hotel_id = {}'''.format(hid)
         response = get_results(query, conn)
         if response == '[]':
             raise ResourceNotFoundError(message='Hotel ID={} not found'.format(hid))
+
+        query = '''SELECT h.type_id, h.title, h.price, h.amenities, h.room_capacity, v.view, h.is_extendable,
+        h.total_number_rooms, h.rooms_available FROM hotel.hotel_room_type h JOIN hotel.view_type v 
+        ON v.view_ID = h.view_ID WHERE h.hotel_id = {} AND h.deleted = false'''.format(hid)
+        response = get_results(query, conn)
+
         return Response(response, status=200, mimetype='application/json')
+
+    @app.route('/hotels/<hid>/rooms/<rid>', methods=['DELETE'])
+    @cross_origin()
+    def delete_room(hid, rid):
+        data = request.json
+        if 'manager_sin' not in data:
+            raise BadRequestError(message="Missing required body field 'manager_sin'")
+
+        manager_sin = data['manager_sin']
+        verify_manager(manager_sin, hid, conn)
+
+        query = '''SELECT COUNT(*) FROM hotel.hotel WHERE hotel_id = {}'''.format(hid)
+        response = get_results(query, conn, jsonify=False)
+        if response[0].get('count') == 0:
+            raise ResourceNotFoundError(message='Hotel ID={} not found'.format(hid))
+        query = '''SELECT COUNT(*) FROM hotel.hotel_room_type WHERE hotel_id = {} AND type_id = {} 
+            AND deleted = false'''.format(hid, rid)
+        response = get_results(query, conn, jsonify=False)
+        if response[0].get('count') == 0:
+            raise ResourceNotFoundError(message='Room ID={} not found at hotel'.format(rid))
+
+        query = '''UPDATE hotel.hotel_room_type SET deleted = true WHERE type_id = {}'''.format(rid)
+        execute(query, conn)
+        return Response(status=204, mimetype='application/json')
 
     @app.route('/hotels/<hid>/rooms/availability')
     @cross_origin()
@@ -134,7 +162,7 @@ def add_routes(app, conn):
             query += '''UPDATE hotel.employee e SET employee_address = '{}' WHERE employee_sin = \'{}\';''' \
                 .format(data['employee_address'], eid)
         if 'employee_name' in data and len(data['employee_name']) > 0:
-            query += '''UPDATE hotel.employee e SET employee_name = '{}' WHERE employee_sin = \'{}\';'''\
+            query += '''UPDATE hotel.employee e SET employee_name = '{}' WHERE employee_sin = \'{}\';''' \
                 .format(data['employee_name'], eid)
         if 'employee_email' in data and len(data['employee_email']) > 0:
             print('employee email UPDATING')
@@ -145,10 +173,10 @@ def add_routes(app, conn):
                 float(data['salary'])
             except ValueError:
                 raise BadRequestError(message='Invalid salary - Must be a decimal number')
-            query += '''UPDATE hotel.employee e SET salary = '{}' WHERE employee_sin = \'{}\';'''\
+            query += '''UPDATE hotel.employee e SET salary = '{}' WHERE employee_sin = \'{}\';''' \
                 .format(data['salary'], eid)
         if 'job_title' in data and len(data['job_title']) > 0:
-            query += '''UPDATE hotel.employee e SET job_title = '{}' WHERE employee_sin = \'{}\';'''\
+            query += '''UPDATE hotel.employee e SET job_title = '{}' WHERE employee_sin = \'{}\';''' \
                 .format(data['job_title'], eid)
 
         try:

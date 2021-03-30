@@ -31,10 +31,10 @@ def populate(conn):
                 for j in range(len(hotel_data.hotels[i])):
                     hotel_id += 1
                     hotel = hotel_data.hotels[i][j]
-                    curs.execute('INSERT INTO hotel.hotel(brand_ID, physical_address, number_of_rooms, star_category,'
+                    curs.execute('INSERT INTO hotel.hotel(brand_ID, physical_address, star_category,'
                                  'email_address, phone_number) '
-                                 "VALUES ('{}', '{}', '{}', '{}', '{}', '{}')"
-                                 .format(i + 1, hotel[0], hotel[1], hotel[2], hotel[3], hotel[4]))
+                                 "VALUES ('{}', '{}', '{}', '{}', '{}')"
+                                 .format(i + 1, hotel[0], hotel[2], hotel[3], hotel[4]))
 
                     populate_hotel(i, j, curs, hotel_id)
 

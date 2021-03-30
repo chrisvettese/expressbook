@@ -1,13 +1,22 @@
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
+SET
+statement_timeout = 0;
+SET
+lock_timeout = 0;
+SET
+idle_in_transaction_session_timeout = 0;
+SET
+client_encoding = 'UTF8';
+SET
+standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
+SET
+check_function_bodies = false;
+SET
+xmloption = content;
+SET
+client_min_messages = warning;
+SET
+row_security = off;
 
 DROP SCHEMA IF EXISTS hotel CASCADE;
 
@@ -38,7 +47,7 @@ create table hotel.hotel
             references hotel.hotel_brand
             on delete cascade,
     physical_address varchar(255) not null,
-    number_of_rooms  integer      not null,
+    number_of_rooms  integer      not null default 0,
     star_category    smallint     not null
         constraint hotel_star_category_check
             check ((star_category >= 1) AND (star_category <= 5)),
@@ -60,8 +69,10 @@ create table hotel.employee_status
 alter table hotel.employee_status
     owner to postgres;
 
-insert into hotel.employee_status (status_id, status) values (1, 'hired');
-insert into hotel.employee_status (status_id, status) values (2, 'quit');
+insert into hotel.employee_status (status_id, status)
+values (1, 'hired');
+insert into hotel.employee_status (status_id, status)
+values (2, 'quit');
 
 create table hotel.employee
 (
@@ -73,7 +84,7 @@ create table hotel.employee
             references hotel.hotel
             on delete cascade,
     employee_name    varchar(255)       not null,
-    employee_email   varchar(255) not null unique,
+    employee_email   varchar(255)       not null unique,
     employee_address varchar(255)       not null,
     salary           varchar(15)        not null,
     job_title        varchar(255)       not null,
@@ -110,10 +121,14 @@ create table hotel.view_type
 alter table hotel.view_type
     owner to postgres;
 
-insert into hotel.view_type (view_id, view) values (1, 'Mountain');
-insert into hotel.view_type (view_id, view) values (2, 'Lake');
-insert into hotel.view_type (view_id, view) values (3, 'City');
-insert into hotel.view_type (view_id, view) values (4, 'None');
+insert into hotel.view_type (view_id, view)
+values (1, 'Mountain');
+insert into hotel.view_type (view_id, view)
+values (2, 'Lake');
+insert into hotel.view_type (view_id, view)
+values (3, 'City');
+insert into hotel.view_type (view_id, view)
+values (4, 'None');
 
 create table hotel.hotel_room_type
 (
@@ -133,7 +148,8 @@ create table hotel.hotel_room_type
             references hotel.view_type,
     is_extendable      boolean,
     total_number_rooms smallint     not null,
-    rooms_available    smallint     not null
+    rooms_available    smallint     not null,
+    deleted            boolean      not null default false
 );
 
 alter table hotel.hotel_room_type
@@ -150,10 +166,14 @@ create table hotel.booking_status
 alter table hotel.booking_status
     owner to postgres;
 
-insert into hotel.booking_status (status_id, value) values (1, 'Booked');
-insert into hotel.booking_status (status_id, value) values (2, 'Renting');
-insert into hotel.booking_status (status_id, value) values (3, 'Archived');
-insert into hotel.booking_status (status_id, value) values (4, 'Cancelled');
+insert into hotel.booking_status (status_id, value)
+values (1, 'Booked');
+insert into hotel.booking_status (status_id, value)
+values (2, 'Renting');
+insert into hotel.booking_status (status_id, value)
+values (3, 'Archived');
+insert into hotel.booking_status (status_id, value)
+values (4, 'Cancelled');
 
 create table hotel.room_booking
 (
@@ -379,3 +399,45 @@ $$;
 
 alter function hotel.correct_status_hotel(integer) owner to postgres;
 
+create function hotel.increase_room_count() returns trigger
+    language plpgsql
+as
+$$
+BEGIN
+UPDATE hotel.hotel
+SET number_of_rooms = number_of_rooms + NEW.total_number_rooms
+WHERE hotel_id = NEW.hotel_id;
+RETURN NEW;
+END;
+$$;
+
+alter function hotel.increase_room_count() owner to postgres;
+
+create trigger increase_room_count
+    after insert
+    on hotel.hotel_room_type
+    for each row
+    execute procedure hotel.increase_room_count();
+
+create function hotel.decrease_room_count() returns trigger
+    language plpgsql
+as
+$$
+BEGIN
+    IF
+NEW.deleted = true AND OLD.deleted = false THEN
+UPDATE hotel.hotel
+SET number_of_rooms = number_of_rooms - OLD.total_number_rooms
+WHERE hotel_id = NEW.hotel_id;
+END IF;
+RETURN NEW;
+END;
+$$;
+
+alter function hotel.decrease_room_count() owner to postgres;
+
+create trigger decrease_room_count
+    after update
+    on hotel.hotel_room_type
+    for each row
+    execute procedure hotel.decrease_room_count();

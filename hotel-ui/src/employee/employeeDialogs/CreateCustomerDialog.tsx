@@ -1,5 +1,6 @@
 import React, {useState} from "react";
 import {Button, Dialog, DialogActions, DialogTitle, TextField, Typography} from "@material-ui/core";
+import {openAlert, phoneRegex} from "../../index";
 
 export const CreateCustomerDialog = ({
                                   dialogOpen, setDialogOpen,
@@ -36,7 +37,7 @@ export const CreateCustomerDialog = ({
                 isEmailError = true;
             }
         }
-        const isPhoneError: boolean = !(/^(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?$/).test(phoneNumber);
+        const isPhoneError: boolean = !phoneRegex.test(phoneNumber);
 
         setNameError(isNameError);
         setAddressError(isAddressError);
@@ -81,12 +82,6 @@ export const CreateCustomerDialog = ({
             openAlert('Error: Unable to created customer profile', 'error', setAlertMessage, setAlertStatus, setAlertOpen);
         }
         setDisableCreateCustomer(false);
-    }
-
-    function openAlert(message: string, status: string, setAlertMessage: any, setAlertStatus: any, setAlertOpen: any) {
-        setAlertMessage(message);
-        setAlertStatus(status);
-        setAlertOpen(true);
     }
 
     return <Dialog onClose={() => setDialogOpen(false)} aria-labelledby="simple-dialog-title" open={dialogOpen}>

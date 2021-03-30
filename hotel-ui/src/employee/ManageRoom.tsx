@@ -9,7 +9,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBarCustomer} from "../index";
+import {HotelAlert, openAlert, Severity, TitleBarCustomer} from "../index";
 import {useLocation} from "react-router-dom";
 
 const useStyles = makeStyles(theme => ({
@@ -18,7 +18,7 @@ const useStyles = makeStyles(theme => ({
         flexWrap: 'wrap',
         justifyContent: 'space-around',
         backgroundColor: theme.palette.background.paper,
-
+        width: '100%'
     },
     centreTitle: {
         paddingTop: '1em',
@@ -69,7 +69,8 @@ const useStyles = makeStyles(theme => ({
         alignItems: 'center',
         flexDirection: 'column',
         justifyContent: 'center',
-        marginBottom: '2em'
+        marginBottom: '2em',
+        width: '100%'
     },
     divider: {
         marginLeft: '1em',
@@ -131,12 +132,6 @@ interface Room {
     is_extendable: boolean;
     total_number_rooms: number;
     rooms_available: number;
-    disableDelete: boolean;
-}
-
-interface AvailableRoom {
-    type_id: number;
-    occupancy: number;
 }
 
 export default function ManageRoom() {
@@ -149,30 +144,71 @@ export default function ManageRoom() {
         employeeSIN: string,
     }>();
 
-    const roomArr = [...location.state.response];
-    roomArr.map(room => {
-        room.disableDelete = false;
-        return room;
-    })
+    const deleteDisabled: boolean[] = new Array(location.state.response.length)
+    for (let i = 0; i < deleteDisabled.length; i++) {
+        deleteDisabled[i] = false;
+    }
 
-    const [rooms, setRooms]: [Room[], any] = useState(roomArr);
+    const [rooms, setRooms]: [Room[], any] = useState(location.state.response);
+    const [disableDelete, setDisableDelete]: [boolean[], any] = useState(deleteDisabled);
+    const [alertOpen, setAlertOpen] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
+    const [alertStatus, setAlertStatus]: [Severity, any] = useState("success");
 
     function getRoomAvailabilityMessage(numAvailable: number, total: number): string {
         return numAvailable + '/' + total + ' rooms available';
     }
 
+    async function deleteRoom(index: number) {
+        let newDisableDelete = [...disableDelete];
+        newDisableDelete[index] = true;
+        setDisableDelete(newDisableDelete);
+
+        try {
+            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/rooms/" + rooms[index].type_id, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    manager_sin: location.state.employeeSIN,
+                })
+            })
+            if (response.status === 204) {
+                const newRooms = [...rooms];
+                newRooms.splice(index, 1);
+                setRooms(newRooms);
+                newDisableDelete = [...disableDelete];
+                newDisableDelete[index] = false;
+                setDisableDelete(newDisableDelete);
+                openAlert('Deleted room type', 'success', setAlertMessage, setAlertStatus, setAlertOpen);
+                return;
+            } else {
+                openAlert('Error: Unable to delete room type', 'error', setAlertMessage, setAlertStatus, setAlertOpen);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            openAlert('Error: Unable to delete room type', 'error', setAlertMessage, setAlertStatus, setAlertOpen);
+        }
+        newDisableDelete = [...disableDelete];
+        newDisableDelete[index] = false;
+        setDisableDelete(newDisableDelete);
+    }
+
     return (
         <div className={classes.root}>
             <TitleBarCustomer/>
-            <Typography className={classes.centreTitle}>{location.state.brandName}</Typography>
-            <Typography className={classes.centreTitleNoSpace}>{location.state.address}</Typography>
-            <Typography className={classes.smallerTitle}>{rooms.length} Room Types</Typography>
-            <Button variant='contained' style={{marginBottom: '1.5em'}}>New Room Type</Button>
+            <div className={classes.root}>
+                <Typography className={classes.centreTitle}>{location.state.brandName}</Typography>
+                <Typography className={classes.centreTitleNoSpace}>{location.state.address}</Typography>
+                <Typography className={classes.smallerTitle}>{rooms.length} Room Types</Typography>
+                <Button variant='contained' style={{marginBottom: '1.5em'}}>New Room Type</Button>
+            </div>
             <div className={classes.outsideGrid}>
                 <GridList cols={1} cellHeight={190} className={classes.grid}>
                     <div style={{height: '1em'}}/>
                     {
-                        rooms.map((room: Room) => {
+                        rooms.map((room: Room, index: number) => {
                             return (
                                 <GridListTile key={room.type_id} cols={1}>
                                     <Paper elevation={3} key={room.type_id} className={classes.brandPaper}>
@@ -195,7 +231,11 @@ export default function ManageRoom() {
                                                             className={classes.hotelTitle}>${room.price}/night</Typography>
                                                         <Typography>{getRoomAvailabilityMessage(room.rooms_available, room.total_number_rooms)}</Typography>
                                                         <Button variant='contained' color='secondary'
-                                                                style={{marginTop: '0.3em'}}>Delete</Button>
+                                                                style={{marginTop: '0.3em'}}
+                                                                disabled={disableDelete[index]}
+                                                                onClick={() => deleteRoom(index)}>
+                                                            Delete
+                                                        </Button>
                                                     </Grid>
                                                 </Grid>
                                             </Grid>
@@ -207,6 +247,8 @@ export default function ManageRoom() {
                     }
                 </GridList>
             </div>
+            <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
+                        alertMessage={alertMessage}/>
         </div>
     )
 }
