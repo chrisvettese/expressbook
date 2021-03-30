@@ -180,11 +180,6 @@ export default function Rooms() {
         jobTitle: string
     }>();
 
-    const buttonStateValues: boolean[] = []
-    for (let i = 0; i < location.state.response.length; i++) {
-        buttonStateValues.push(true)
-    }
-
     const [checkInDate, setCheckInDate]: [Date, any] = useState(new Date());
     const tomorrow: MaterialUiPickersDate = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1)

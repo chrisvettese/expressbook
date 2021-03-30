@@ -19,6 +19,7 @@ import CheckCustomer from "./employee/CheckCustomer";
 import ManageCustomer from "./employee/ManageCustomer";
 import ManageEmployee from "./employee/ManageEmployee";
 import {Alert} from "@material-ui/lab";
+import ManageRoom from "./employee/ManageRoom";
 
 require('dotenv').config()
 
@@ -121,6 +122,7 @@ ReactDOM.render(
                 <Route exact path="/ui/employee/reservations" component={Reservations}/>
                 <Route exact path="/ui/employee/rooms" component={Rooms}/>
                 <Route exact path="/ui/employee/manageemployee" component={ManageEmployee}/>
+                <Route exact path="/ui/employee/manageroom" component={ManageRoom}/>
                 <Route exact path="/ui/customer" component={SignInCustomer}/>
                 <Route exact path="/ui/customer/name" component={Name}/>
                 <Route exact path="/ui/customer/welcome" component={WelcomeCustomer}/>

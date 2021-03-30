@@ -98,6 +98,7 @@ export default function WelcomeEmployee() {
     const [checkInDisabled, setCheckInDisabled]: [boolean, any] = useState(false);
     const [checkOutDisabled, setCheckOutDisabled]: [boolean, any] = useState(false);
     const [manageEmployeeDisabled, setManageEmployeeDisabled]: [boolean, any] = useState(false);
+    const [manageRoomDisabled, setManageRoomDisabled]: [boolean, any] = useState(false);
 
     const [alertOpen, setAlertOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
@@ -173,6 +174,12 @@ export default function WelcomeEmployee() {
                             Manage Employees
                         </Button>
                     </div>
+                    <div className={classes.paperContainer} style={{marginTop: '2em'}}>
+                        <Button variant="contained" color='primary' disabled={manageRoomDisabled}
+                                onClick={manageRoom}>
+                            Manage Rooms
+                        </Button>
+                    </div>
                 </>
             )
         }
@@ -200,6 +207,28 @@ export default function WelcomeEmployee() {
             console.error('Error:', error);
             setManageEmployeeDisabled(false);
         }
+    }
+
+    async function manageRoom() {
+        setManageRoomDisabled(true);
+        try {
+            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/rooms");
+            if (response.status !== 200) {
+                setManageRoomDisabled(false);
+                return;
+            }
+            response = await response.json()
+            history.push('/ui/employee/manageroom', {
+                response: response,
+                brandName: location.state.brandName,
+                address: location.state.hotelAddress,
+                hotelID: location.state.hotelID,
+                employeeSIN: location.state.employeeSIN
+            });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+        setManageRoomDisabled(false);
     }
 
     return (

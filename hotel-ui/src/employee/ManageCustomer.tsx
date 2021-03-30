@@ -198,6 +198,7 @@ export default function ManageCustomer() {
         try {
             let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/rooms");
             if (response.status !== 200 || customerData === null || !("customer_name" in customerData)) {
+                setDisableCreate(false);
                 return;
             }
             response = await response.json()
