@@ -1,5 +1,5 @@
 import psycopg2
-from flask import Response, request
+from flask import Response, request, app
 from flask_cors import cross_origin
 import json
 from datetime import datetime
@@ -26,6 +26,71 @@ def add_routes(app, conn):
 
         return Response(response, status=200, mimetype='application/json')
 
+    @app.route('/hotels/<hid>/rooms', methods=['POST'])
+    @cross_origin()
+    def create_room(hid):
+        query = '''SELECT * FROM hotel.hotel WHERE hotel_id = {}'''.format(hid)
+        response = get_results(query, conn)
+        if response == '[]':
+            raise ResourceNotFoundError(message='Hotel ID={} not found'.format(hid))
+
+        data = request.json
+        if 'title' not in data:
+            raise BadRequestError(message="Missing required body field 'title'")
+        if 'price' not in data:
+            raise BadRequestError(message="Missing required body field 'price'")
+        if 'amenities' not in data:
+            raise BadRequestError(message="Missing required body field 'amenities'")
+        if 'room_capacity' not in data:
+            raise BadRequestError(message="Missing required body field 'price'")
+        if 'view' not in data:
+            raise BadRequestError(message="Missing required body field 'view'")
+        if 'is_extendable' not in data:
+            raise BadRequestError(message="Missing required body field 'is_extendable'")
+        if 'rooms' not in data:
+            raise BadRequestError(message="Missing required body field 'rooms'")
+
+        title = data['title']
+        price = data['price']
+        amenities = data['amenities']
+        room_capacity = data['room_capacity']
+        view = data['view']
+        is_extendable = data['is_extendable']
+        rooms = data['rooms']
+
+        if len(title) == 0:
+            raise BadRequestError(message='Length of \'title\' must be greater than 0')
+        try:
+            price = round(float(price), 2)
+        except ValueError:
+            raise BadRequestError(message="Invalid value of 'price'")
+        if price < 0:
+            raise BadRequestError(message="Invalid value of 'price'")
+        if type(amenities) != list:
+            raise BadRequestError(message="Invalid format of 'amenities': must be an array of strings")
+        if type(room_capacity) != int or room_capacity <= 0:
+            raise BadRequestError(message="Invalid value of 'room_capacity'")
+        if type(view) != str or len(view) == 0:
+            raise BadRequestError(message="Invalid value of 'view'")
+        view_id = '''SELECT view_id FROM hotel.view_type WHERE view = '{}\''''.format(view)
+        view_id = get_results(view_id, conn, jsonify=False)
+        if len(view_id) == 0:
+            raise BadRequestError(message="View='{}' not found".format(view))
+        view_id = view_id[0].get('view_id')
+
+        if type(is_extendable) != bool:
+            raise BadRequestError(message="Invalid value of 'is_extendable'")
+        if type(rooms) != int or rooms < 0:
+            raise BadRequestError(message="Invalid value of 'rooms'")
+
+        amenities = to_pg_array(amenities)
+
+        query = '''INSERT INTO hotel.hotel_room_type(hotel_id, title, price, amenities, room_capacity, view_id, is_extendable, 
+            total_number_rooms, rooms_available) VALUES ({}, '{}', '{}', '{}', {}, {}, {}, {}, {})''' \
+            .format(hid, title, price, amenities, room_capacity, view_id, is_extendable, rooms, rooms)
+        execute(query, conn)
+        return Response(status=201, mimetype='application/json')
+
     @app.route('/hotels/<hid>/rooms/<rid>', methods=['DELETE'])
     @cross_origin()
     def delete_room(hid, rid):
@@ -41,7 +106,7 @@ def add_routes(app, conn):
         if response[0].get('count') == 0:
             raise ResourceNotFoundError(message='Hotel ID={} not found'.format(hid))
         query = '''SELECT COUNT(*) FROM hotel.hotel_room_type WHERE hotel_id = {} AND type_id = {} 
-            AND deleted = false'''.format(hid, rid)
+                AND deleted = false'''.format(hid, rid)
         response = get_results(query, conn, jsonify=False)
         if response[0].get('count') == 0:
             raise ResourceNotFoundError(message='Room ID={} not found at hotel'.format(rid))
@@ -85,7 +150,7 @@ def add_routes(app, conn):
             raise BadRequestError(message='check-out must be later than check-in')
 
         query = '''SELECT t.type_id FROM hotel.hotel_room_type t
-                   WHERE t.hotel_ID = {} AND t.room_capacity >= {}'''.format(hid, people)
+                       WHERE t.hotel_ID = {} AND t.room_capacity >= {}'''.format(hid, people)
 
         response = get_results(query, conn, jsonify=False)
 
@@ -127,7 +192,7 @@ def add_routes(app, conn):
         verify_manager(manager_sin, hid, conn)
 
         query = """INSERT INTO hotel.employee(employee_sin, employee_name, employee_email, employee_address, salary, job_title,
-                   hotel_ID) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}')""" \
+                       hotel_ID) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', '{}')""" \
             .format(employee_sin, name, email, address, salary, job_title, hid)
 
         try:
@@ -154,7 +219,7 @@ def add_routes(app, conn):
         query = ''
         if 'status' in data:
             query += '''UPDATE hotel.employee e SET status_id = (SELECT status_id FROM hotel.employee_status s
-                    WHERE s.status = '{}') WHERE employee_sin = \'{}\';'''.format(data['status'], eid)
+                        WHERE s.status = '{}') WHERE employee_sin = \'{}\';'''.format(data['status'], eid)
 
         if 'hotel_id' in data:
             query += '''UPDATE hotel.employee e SET hotel_id = {} WHERE employee_sin = \'{}\';'''.format(hid, eid)
@@ -194,7 +259,7 @@ def add_routes(app, conn):
     @cross_origin()
     def get_employees_by_hotel(hid):
         query = '''SELECT e.employee_sin, e.employee_email, e.employee_name, e.employee_address, e.salary, e.job_title
-                   FROM hotel.employee e WHERE e.status_id = 1 AND e.hotel_id = {}'''.format(hid)
+                       FROM hotel.employee e WHERE e.status_id = 1 AND e.hotel_id = {}'''.format(hid)
         response = get_results(query, conn)
         if response == '[]':
             raise ResourceNotFoundError(message='Hotel ID={} not found'.format(hid))
@@ -218,27 +283,34 @@ def add_routes(app, conn):
 
         if action == 'check-in':
             query = '''SELECT b.booking_id, b.date_of_registration, b.check_in_day, b.check_out_day,
-                       t.title, t.is_extendable, t.amenities, v.view, t.price, c.customer_sin, c.customer_name,
-                       e.employee_name, e.job_title
-                       FROM hotel.room_booking b
-                       JOIN hotel.booking_status s ON s.status_ID = b.status_ID
-                       JOIN hotel.hotel_room_type t ON t.type_ID = b.type_ID
-                       JOIN hotel.view_type v ON v.view_ID = t.view_ID
-                       JOIN hotel.customer c ON b.customer_sin = c.customer_sin
-                       JOIN hotel.employee e ON b.employee_sin = e.employee_sin
-                       WHERE s.value = 'Booked' AND b.hotel_id = {} AND CURRENT_DATE >= b.check_in_day
-                       AND CURRENT_DATE < b.check_out_day
-                       '''.format(hid)
+                           t.title, t.is_extendable, t.amenities, v.view, t.price, c.customer_sin, c.customer_name,
+                           e.employee_name, e.job_title
+                           FROM hotel.room_booking b
+                           JOIN hotel.booking_status s ON s.status_ID = b.status_ID
+                           JOIN hotel.hotel_room_type t ON t.type_ID = b.type_ID
+                           JOIN hotel.view_type v ON v.view_ID = t.view_ID
+                           JOIN hotel.customer c ON b.customer_sin = c.customer_sin
+                           JOIN hotel.employee e ON b.employee_sin = e.employee_sin
+                           WHERE s.value = 'Booked' AND b.hotel_id = {} AND CURRENT_DATE >= b.check_in_day
+                           AND CURRENT_DATE < b.check_out_day
+                           '''.format(hid)
 
         else:
             query = '''SELECT b.booking_id, b.date_of_registration, b.check_in_day, b.check_out_day,
-                       t.title, t.is_extendable, t.amenities, v.view, t.price, c.customer_sin, c.customer_name
-                       FROM hotel.room_booking b
-                       JOIN hotel.booking_status s ON s.status_ID = b.status_ID
-                       JOIN hotel.hotel_room_type t ON t.type_ID = b.type_ID
-                       JOIN hotel.view_type v ON v.view_ID = t.view_ID
-                       JOIN hotel.customer c ON b.customer_sin = c.customer_sin
-                       WHERE b.hotel_id = {} AND s.value = 'Renting\''''.format(hid)
+                           t.title, t.is_extendable, t.amenities, v.view, t.price, c.customer_sin, c.customer_name
+                           FROM hotel.room_booking b
+                           JOIN hotel.booking_status s ON s.status_ID = b.status_ID
+                           JOIN hotel.hotel_room_type t ON t.type_ID = b.type_ID
+                           JOIN hotel.view_type v ON v.view_ID = t.view_ID
+                           JOIN hotel.customer c ON b.customer_sin = c.customer_sin
+                           WHERE b.hotel_id = {} AND s.value = 'Renting\''''.format(hid)
 
         response = get_results(query, conn)
         return Response(response, status=200, mimetype='application/json')
+
+
+def to_pg_array(arr):
+    arr = str(arr)
+    arr = '{' + arr[1:len(arr) - 1] + '}'
+    arr = arr.replace('\'', '"')
+    return arr
