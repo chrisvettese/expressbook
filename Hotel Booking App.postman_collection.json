@@ -219,7 +219,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"title\": \"Double\",\r\n    \"price\": \"123.45\",\r\n    \"amenities\": [\"Air Conditioning\", \"Kitchen\", \"Free Breakfast\"],\r\n    \"room_capacity\": 3,\r\n    \"view\": \"Mountain\",\r\n    \"is_extendable\": true,\r\n    \"rooms\": 3\r\n}",
+					"raw": "{\r\n    \"title\": \"Double\",\r\n    \"price\": \"123.45\",\r\n    \"amenities\": [\"Air Conditioning\", \"Kitchen\", \"Free Breakfast\"],\r\n    \"room_capacity\": 3,\r\n    \"view\": \"Mountain\",\r\n    \"is_extendable\": true,\r\n    \"rooms\": 3,\r\n    \"manager_sin\": \"059-023-617\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -470,13 +470,12 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{server}}/employees/{{employee-sin}}",
+					"raw": "{{server}}/views",
 					"host": [
 						"{{server}}"
 					],
 					"path": [
-						"employees",
-						"{{employee-sin}}"
+						"views"
 					]
 				}
 			},
