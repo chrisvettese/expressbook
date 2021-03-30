@@ -71,6 +71,13 @@ def add_routes(app, conn):
             raise ResourceNotFoundError(message='Employee SIN={} not found'.format(eid))
         return Response(json.dumps(response[0], default=str), status=200, mimetype='application/json')
 
+    @app.route('/views')
+    @cross_origin()
+    def get_views():
+        query = '''SELECT v.view FROM hotel.view_type v'''
+        response = get_results(query, conn)
+        return Response(response, status=200, mimetype='application/json')
+
 
 def execute(query, conn):
     print(query)

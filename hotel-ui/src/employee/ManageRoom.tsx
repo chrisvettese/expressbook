@@ -11,6 +11,7 @@ import {
 import React, {useState} from "react";
 import {HotelAlert, openAlert, Severity, TitleBarCustomer} from "../index";
 import {useLocation} from "react-router-dom";
+import {NewRoomDialog, View} from "./employeeDialogs/NewRoomDialog";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -119,10 +120,21 @@ const useStyles = makeStyles(theme => ({
         alignItems: 'center',
         flexDirection: 'column',
         justifyContent: 'center'
+    },
+    dialogGap: {
+        marginBottom: '2em',
+        marginLeft: '1em',
+        marginRight: '1em'
+    },
+    formControl: {
+        minWidth: '13em',
+        marginLeft: '1em',
+        marginRight: '1em',
+        marginBottom: '1em'
     }
 }));
 
-interface Room {
+export interface Room {
     type_id: number;
     title: string;
     price: string;
@@ -140,7 +152,7 @@ export default function ManageRoom() {
         address: string;
         response: Room[],
         brandName: string,
-        hotelID: string,
+        hotelID: number,
         employeeSIN: string,
     }>();
 
@@ -154,6 +166,9 @@ export default function ManageRoom() {
     const [alertOpen, setAlertOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
     const [alertStatus, setAlertStatus]: [Severity, any] = useState("success");
+    const [dialogOpen, setDialogOpen]: [boolean, any] = useState(false);
+    const [disableNewRoom, setDisableNewRoom]: [boolean, any] = useState(false);
+    const [views, setViews]: [View[], any] = useState([{view: ""}]);
 
     function getRoomAvailabilityMessage(numAvailable: number, total: number): string {
         return numAvailable + '/' + total + ' rooms available';
@@ -195,6 +210,25 @@ export default function ManageRoom() {
         setDisableDelete(newDisableDelete);
     }
 
+    async function newRoomDialog() {
+        setDisableNewRoom(true);
+        try {
+            let response = await fetch(process.env.REACT_APP_SERVER_URL + '/views');
+            if (response.status === 200) {
+                const views: View[] = await response.json();
+                views.reverse();
+                setViews(views);
+            } else {
+                openAlert('Error: Unable to open new room dialog', 'error', setAlertMessage, setAlertStatus, setAlertOpen);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            openAlert('Error: Unable to open new room dialog', 'error', setAlertMessage, setAlertStatus, setAlertOpen);
+        }
+        setDialogOpen(true);
+        setDisableNewRoom(false);
+    }
+
     return (
         <div className={classes.root}>
             <TitleBarCustomer/>
@@ -202,7 +236,10 @@ export default function ManageRoom() {
                 <Typography className={classes.centreTitle}>{location.state.brandName}</Typography>
                 <Typography className={classes.centreTitleNoSpace}>{location.state.address}</Typography>
                 <Typography className={classes.smallerTitle}>{rooms.length} Room Types</Typography>
-                <Button variant='contained' style={{marginBottom: '1.5em'}}>New Room Type</Button>
+                <Button variant='contained' disabled={disableNewRoom} style={{marginBottom: '1.5em'}}
+                        onClick={newRoomDialog}>
+                    New Room Type
+                </Button>
             </div>
             <div className={classes.outsideGrid}>
                 <GridList cols={1} cellHeight={190} className={classes.grid}>
@@ -247,6 +284,10 @@ export default function ManageRoom() {
                     }
                 </GridList>
             </div>
+            <NewRoomDialog dialogOpen={dialogOpen} setDialogOpen={setDialogOpen} classes={classes}
+                           managerSIN={location.state.employeeSIN} setAlertMessage={setAlertMessage}
+                           rooms={rooms} setRooms={setRooms} setAlertStatus={setAlertStatus} views={views}
+                           hotelID={location.state.hotelID} setAlertOpen={setAlertOpen}/>
             <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
                         alertMessage={alertMessage}/>
         </div>

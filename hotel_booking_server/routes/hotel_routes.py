@@ -35,6 +35,8 @@ def add_routes(app, conn):
             raise ResourceNotFoundError(message='Hotel ID={} not found'.format(hid))
 
         data = request.json
+        if 'manager_sin' not in data:
+            raise BadRequestError(message="Missing required body field 'manager_sin'")
         if 'title' not in data:
             raise BadRequestError(message="Missing required body field 'title'")
         if 'price' not in data:
@@ -49,6 +51,9 @@ def add_routes(app, conn):
             raise BadRequestError(message="Missing required body field 'is_extendable'")
         if 'rooms' not in data:
             raise BadRequestError(message="Missing required body field 'rooms'")
+
+        manager_sin = data['manager_sin']
+        verify_manager(manager_sin, hid, conn)
 
         title = data['title']
         price = data['price']
@@ -89,7 +94,11 @@ def add_routes(app, conn):
             total_number_rooms, rooms_available) VALUES ({}, '{}', '{}', '{}', {}, {}, {}, {}, {})''' \
             .format(hid, title, price, amenities, room_capacity, view_id, is_extendable, rooms, rooms)
         execute(query, conn)
-        return Response(status=201, mimetype='application/json')
+
+        query = '''SELECT MAX(type_id) FROM hotel.hotel_room_type WHERE hotel_id = {}'''.format(hid)
+        response = get_results(query, conn, jsonify=False)
+        response = {'type_id': response[0].get('max')}
+        return Response(json.dumps(response, default=str), status=201, mimetype='application/json')
 
     @app.route('/hotels/<hid>/rooms/<rid>', methods=['DELETE'])
     @cross_origin()

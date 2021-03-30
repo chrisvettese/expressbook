@@ -183,7 +183,7 @@ export default function Rooms() {
         customerPhone: string,
         response: Room[],
         brandName: string,
-        hotelID: string,
+        hotelID: number,
         employeeName: string,
         employeeSIN: string,
         jobTitle: string
