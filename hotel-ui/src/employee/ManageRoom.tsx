@@ -115,7 +115,6 @@ const useStyles = makeStyles(theme => ({
     dialogAddress: {
         marginLeft: "0.5em",
         marginRight: "0.5em",
-        fontStyle: "italic",
         display: 'flex',
         alignItems: 'center',
         flexDirection: 'column',

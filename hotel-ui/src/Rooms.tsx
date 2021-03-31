@@ -367,8 +367,7 @@ export default function Rooms() {
     function setCheckIn(date: MaterialUiPickersDate) {
         if (date !== null && checkOutDate !== null) {
             if (date.getTime() >= checkOutDate.getTime()) {
-                const checkOut: MaterialUiPickersDate = new Date();
-                checkOut.setMonth(date.getMonth())
+                const checkOut: MaterialUiPickersDate = new Date(date.getTime());
                 checkOut.setDate(date.getDate() + 1)
                 setCheckOutDate(checkOut);
             }
