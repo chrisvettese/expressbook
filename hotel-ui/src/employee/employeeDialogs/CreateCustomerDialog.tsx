@@ -1,11 +1,11 @@
 import React, {useState} from "react";
 import {Button, Dialog, DialogActions, DialogTitle, TextField, Typography} from "@material-ui/core";
-import {openAlert, phoneRegex} from "../../index";
+import {openAlert, phoneRegex, sinRegex} from "../../index";
 
 export const CreateCustomerDialog = ({
                                   dialogOpen, setDialogOpen,
                                   classes,
-                                  customerSIN,
+                                  customerSIN, setCustomerSIN,
                                   setAlertMessage,
                                   setAlertStatus,
                                   setAlertOpen,
@@ -13,38 +13,32 @@ export const CreateCustomerDialog = ({
                                   customerName, setCustomerName,
                                   customerAddress, setCustomerAddress,
                                   customerPhone, setCustomerPhone,
-                                  customerEmail, setCustomerEmail
+                                  customerEmail
                               }: any) => {
 
     const [nameError, setNameError]: [boolean, any] = useState(false);
     const [addressError, setAddressError]: [boolean, any] = useState(false);
-    const [emailError, setEmailError]: [boolean, any] = useState(false);
+    const [sinError, setSINError]: [boolean, any] = useState(false);
     const [phoneError, setPhoneError]: [boolean, any] = useState(false);
 
     const [disableCreateCustomer, setDisableCreateCustomer]: [boolean, any] = useState(false);
 
-    async function createCustomer(customerSIN: string, name: string, address: string, email: string,
+    async function createCustomer(sin: string, name: string, address: string, email: string,
                                   phoneNumber: string, setDisableCreateCustomer: any, setNameError: any,
-                                  setAddressError: any, setEmailError: any, setPhoneError: any,
+                                  setAddressError: any, setSINError: any, setPhoneError: any,
                                   setAlertMessage: any, setAlertStatus: any, setAlertOpen: any,
                                   setCustomerData: any, setDialogOpen: any) {
         const isNameError: boolean = name.length === 0;
         const isAddressError: boolean = address.length === 0;
-        let isEmailError: boolean = email.includes(' ') || email.indexOf('@') < 1
-        if (!isEmailError) {
-            const index: number = email.indexOf('.', email.indexOf('@'))
-            if (index < 3 || index === email.length - 1) {
-                isEmailError = true;
-            }
-        }
+        const isSINError: boolean = !sinRegex.test(sin);
         const isPhoneError: boolean = !phoneRegex.test(phoneNumber);
 
         setNameError(isNameError);
         setAddressError(isAddressError);
-        setEmailError(isEmailError);
+        setSINError(isSINError);
         setPhoneError(isPhoneError);
 
-        if (isNameError || isAddressError || isEmailError || isPhoneError) {
+        if (isNameError || isAddressError || isSINError || isPhoneError) {
             return;
         }
 
@@ -57,19 +51,19 @@ export const CreateCustomerDialog = ({
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    customer_sin: customerSIN,
+                    customer_sin: sin,
                     customer_name: name,
                     customer_address: address,
-                    customer_email: email,
+                    customer_email: customerEmail,
                     customer_phone: phoneNumber
                 })
             })
             if (response.status === 201) {
                 setCustomerData({
-                    customer_sin: customerSIN,
+                    customer_sin: sin,
                     customer_name: name,
                     customer_address: address,
-                    customer_email: email,
+                    customer_email: customerEmail,
                     customer_phone: phoneNumber
                 });
                 openAlert('Successfully created customer profile', 'success', setAlertMessage, setAlertStatus, setAlertOpen);
@@ -89,16 +83,16 @@ export const CreateCustomerDialog = ({
             <Typography className={classes.dialogTitle}>Create Customer Profile</Typography>
         </DialogTitle>
         <div className={classes.dialogAddress}>
-            <Typography align="center" className={classes.dialogGap}>Customer SIN: {customerSIN}</Typography>
+            <Typography align="center" className={classes.dialogGap}>Customer Email: {customerEmail}</Typography>
             <TextField label="Customer Name" variant="outlined" value={customerName} error={nameError}
                        helperText={nameError ? "Must provide name" : ""} className={classes.dialogGap}
                        onChange={event => setCustomerName(event.currentTarget.value)}/>
             <TextField label="Customer Address" variant="outlined" value={customerAddress} error={addressError}
                        helperText={addressError ? "Must provide address" : ""} className={classes.dialogGap}
                        onChange={event => setCustomerAddress(event.currentTarget.value)}/>
-            <TextField label="Customer Email" variant="outlined" value={customerEmail} error={emailError}
-                       helperText={emailError ? "Must provide valid email" : ""} className={classes.dialogGap}
-                       onChange={event => setCustomerEmail(event.currentTarget.value)}/>
+            <TextField label="Customer SIN" variant="outlined" value={customerSIN} error={sinError}
+                       helperText={sinError ? "Must provide valid SIN" : ""} className={classes.dialogGap}
+                       onChange={event => setCustomerSIN(event.currentTarget.value)}/>
             <TextField label="Customer Phone Number" variant="outlined" value={customerPhone} error={phoneError}
                        helperText={phoneError ? "Must provide valid phone number" : ""} className={classes.dialogGap}
                        onChange={event => setCustomerPhone(event.currentTarget.value)}/>
@@ -106,7 +100,7 @@ export const CreateCustomerDialog = ({
         <DialogActions>
             <Button disabled={disableCreateCustomer}
                     onClick={() => createCustomer(customerSIN, customerName, customerAddress, customerEmail, customerPhone,
-                        setDisableCreateCustomer, setNameError, setAddressError, setEmailError, setPhoneError,
+                        setDisableCreateCustomer, setNameError, setAddressError, setSINError, setPhoneError,
                         setAlertMessage, setAlertStatus, setAlertOpen, setCustomerData, setDialogOpen)}
                     variant="contained"
                     color="primary">

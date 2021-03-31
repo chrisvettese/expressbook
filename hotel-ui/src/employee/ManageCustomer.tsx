@@ -79,7 +79,6 @@ interface CustomerResponse {
 
 interface CustomerError {
     error: string;
-    message: string;
 }
 
 interface ManageCustomerState {
@@ -111,14 +110,24 @@ export default function ManageCustomer() {
     const [customerEmail, setCustomerEmail]: [string, any] = useState("");
     const [customerPhone, setCustomerPhone]: [string, any] = useState("");
 
-    const sinRegex: RegExp = /^[0-9]{3}-[0-9]{3}-[0-9]{3}$/;
+    function validateEmail(): boolean {
+        const emailError: boolean = isEmailError();
+        return emailError && customerEmail.length !== 0;
+    }
 
-    function validateSIN(): boolean {
-        return !sinRegex.test(SIN) && SIN.length !== 0;
+    function isEmailError(): boolean {
+        let emailError: boolean = customerEmail.includes(' ') || customerEmail.indexOf('@') < 1
+        if (!emailError) {
+            const index: number = customerEmail.indexOf('.', customerEmail.indexOf('@'))
+            if (index < 3 || index === customerEmail.length - 1) {
+                emailError = true;
+            }
+        }
+        return emailError;
     }
 
     function keyPressed(e: React.KeyboardEvent<HTMLDivElement>) {
-        if (e.key === 'Enter' && sinRegex.test(SIN)) {
+        if (e.key === 'Enter' && !isEmailError()) {
             findCustomer();
         }
     }
@@ -129,13 +138,13 @@ export default function ManageCustomer() {
         } else if (customerData.hasOwnProperty('error')) {
             return <>
                 <Typography className={classes.subTitle} align="center">Customer not found. Try searching a different
-                    social insurance number, or create a new customer profile:</Typography>
+                    email, or create a new customer profile:</Typography>
                 <br/>
                 <div className={classes.paperContainer}>
                     <Button variant="contained" onClick={() => {
                         setCustomerName("");
                         setCustomerAddress("");
-                        setCustomerEmail("");
+                        setSIN("");
                         setCustomerPhone("");
                         setDialogOpen(true);
                     }}>Create Customer Account</Button>
@@ -151,7 +160,7 @@ export default function ManageCustomer() {
                         <Typography
                             className={classes.inPaper}>Address: {"customer_address" in customerData ? customerData.customer_address : ''}</Typography>
                         <Typography
-                            className={classes.inPaper}>Email: {"customer_email" in customerData ? customerData.customer_email : ''}</Typography>
+                            className={classes.inPaper}>SIN: {"customer_sin" in customerData ? customerData.customer_sin : ''}</Typography>
                         <Typography className={classes.inPaper}>Phone
                             number: {"customer_phone" in customerData ? customerData.customer_phone : ''}</Typography>
                     </Paper>
@@ -224,15 +233,15 @@ export default function ManageCustomer() {
 
     function findCustomer() {
         setDisableFindCustomer(true);
-        fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + SIN)
+        fetch(process.env.REACT_APP_SERVER_URL + "/customers?email=" + customerEmail)
             .then(response => {
                 if (response.status === 200) {
-                    response.json().then((response: CustomerResponse) => {
-                        setCustomerData(response);
-                    })
-                } else if (response.status === 404) {
-                    response.json().then((response: CustomerError) => {
-                        setCustomerData(response);
+                    response.json().then((response: CustomerResponse[]) => {
+                        if (response.length === 0) {
+                            setCustomerData({error: "Not Found"});
+                        } else {
+                            setCustomerData(response[0]);
+                        }
                     })
                 } else {
                     console.error('Error: unable to get customer info');
@@ -250,18 +259,19 @@ export default function ManageCustomer() {
             <Typography className={classes.centreTitle}>Manage Customer</Typography>
             <GridList className={classes.gridParent}>
                 <Grid container item alignItems="center" xs={2} className={classes.dateGrid}>
-                    <Typography>Enter customer SIN:</Typography>
+                    <Typography>Enter customer email:</Typography>
                 </Grid>
                 <Grid container item alignItems="center" xs={2} className={classes.dateGrid}>
-                    <TextField error={validateSIN()}
-                               helperText={validateSIN() ? "SIN must have format XXX-XXX-XXX" : ""}
-                               onChange={event => setSIN(event.currentTarget.value)}
+                    <TextField error={validateEmail()}
+                               helperText={validateEmail() ? "Email must have valid format" : ""}
+                               onChange={event => setCustomerEmail(event.currentTarget.value)}
                                onKeyPress={e => keyPressed(e)}
-                               id="outlined-basic" label="Social Insurance Number" variant="outlined" value={SIN}/>
+                               id="outlined-basic" label="Email Address" variant="outlined"
+                               value={customerEmail}/>
                 </Grid>
                 <Grid container item alignItems="center" xs={2} className={classes.dateGrid}>
                     <Button variant="contained" onClick={() => findCustomer()}
-                            disabled={!sinRegex.test(SIN) || disableFindCustomer}>
+                            disabled={isEmailError() || disableFindCustomer}>
                         Find Customer
                     </Button>
                 </Grid>
@@ -272,7 +282,7 @@ export default function ManageCustomer() {
                                   setAlertOpen={setAlertOpen} setCustomerData={setCustomerData}
                                   customerName={customerName} setCustomerName={setCustomerName} customerSIN={SIN}
                                   customerAddress={customerAddress} setCustomerAddress={setCustomerAddress}
-                                  customerEmail={customerEmail} setCustomerEmail={setCustomerEmail}
+                                  customerEmail={customerEmail} setCustomerSIN={setSIN}
                                   customerPhone={customerPhone} setCustomerPhone={setCustomerPhone}/>
             <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
                         alertMessage={alertMessage}/>
