@@ -3,7 +3,7 @@ import {
     Button,
     Dialog,
     DialogActions,
-    DialogTitle, FormControl, InputLabel, MenuItem, Select,
+    DialogTitle, FormControl, InputAdornment, InputLabel, MenuItem, Select,
     TextField,
     Typography
 } from "@material-ui/core";
@@ -156,7 +156,10 @@ export const NewRoomDialog = (newRoom: NewRoom) => {
                            onChange={event => setTitle(event.currentTarget.value)}/>
                 <TextField label="Price (nightly)" variant="outlined" type="number" value={price} error={priceError}
                            helperText={priceError ? "Must enter valid room price" : ""} className={classes.dialogGap}
-                           onChange={event => setPrice(event.currentTarget.value)}/>
+                           onChange={event => setPrice(event.currentTarget.value)}
+                           InputProps={{
+                               startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                           }}/>
             </div>
             <div>
                 <TextField label="Max Room Capacity" variant="outlined" type="number" value={capacity}
