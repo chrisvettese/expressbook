@@ -8,9 +8,7 @@ from hotel_booking_server.errors.BadRequestError import BadRequestError
 from hotel_booking_server.errors.ResourceNotFoundError import ResourceNotFoundError
 from hotel_booking_server.routes import customer_routes, hotel_routes
 
-phone_regex = r'^(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([2-9]1[02-9]|' \
-              r'[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]' \
-              r'\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?$'
+phone_regex = r'''^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$'''
 
 sin_regex = '''^[0-9]{3}-[0-9]{3}-[0-9]{3}$'''
 
