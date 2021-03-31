@@ -149,7 +149,7 @@ export const CreateEmployeeDialog = ({
                     setShowInfo(true);
                     setDisableCreateEmployee(false);
                     setIsNewEmail(true);
-                    openAlert("Employee SIN validated", "success")
+                    openAlert("Employee email validated", "success")
                 } else {
                     if (employeeResponse[0].status === 'hired') {
                         setEmailHelper("Invalid email. Employee with email already exists!");
