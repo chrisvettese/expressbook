@@ -38,6 +38,12 @@ export const EditEmployeeDialog = ({
 
     const [disableUpdateEmployee, setDisableUpdateEmployee]: [boolean, any] = useState(false);
 
+    function keyPressed(e: React.KeyboardEvent<HTMLDivElement>) {
+        if (e.key === 'Enter') {
+            updateEmployee();
+        }
+    }
+
     if (employee === undefined) {
         return <></>
     }
@@ -109,12 +115,12 @@ export const EditEmployeeDialog = ({
         <div className={classes.dialogAddress}>
             <TextField label="Salary" variant="outlined" value={employeeSalary} error={salaryError}
                        helperText={salaryHelper} type="number" className={classes.dialogGap}
-                       onChange={event => setEmployeeSalary(event.currentTarget.value)}
+                       onChange={event => setEmployeeSalary(event.currentTarget.value)} onKeyPress={e => keyPressed(e)}
                        InputProps={{
                            startAdornment: <InputAdornment position="start">$</InputAdornment>,
                        }}/>
             <TextField label="Job Title" variant="outlined" value={employeeJobTitle} error={jobError}
-                       helperText={jobHelper} className={classes.dialogGap}
+                       helperText={jobHelper} className={classes.dialogGap} onKeyPress={e => keyPressed(e)}
                        onChange={event => setEmployeeJobTitle(event.currentTarget.value)}/>
         </div>
         <DialogActions>

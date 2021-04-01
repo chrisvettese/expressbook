@@ -3,25 +3,36 @@ import {Button, Dialog, DialogActions, DialogTitle, TextField, Typography} from 
 import {openAlert, phoneRegex, sinRegex} from "../../index";
 
 export const CreateCustomerDialog = ({
-                                  dialogOpen, setDialogOpen,
-                                  classes,
-                                  customerSIN, setCustomerSIN,
-                                  setAlertMessage,
-                                  setAlertStatus,
-                                  setAlertOpen,
-                                  setCustomerData,
-                                  customerName, setCustomerName,
-                                  customerAddress, setCustomerAddress,
-                                  customerPhone, setCustomerPhone,
-                                  customerEmail
-                              }: any) => {
+                                         dialogOpen, setDialogOpen,
+                                         classes,
+                                         customerSIN, setCustomerSIN,
+                                         setAlertMessage,
+                                         setAlertStatus,
+                                         setAlertOpen,
+                                         setCustomerData,
+                                         customerName, setCustomerName,
+                                         customerAddress, setCustomerAddress,
+                                         customerPhone, setCustomerPhone,
+                                         customerEmail
+                                     }: any) => {
 
     const [nameError, setNameError]: [boolean, any] = useState(false);
     const [addressError, setAddressError]: [boolean, any] = useState(false);
     const [sinError, setSINError]: [boolean, any] = useState(false);
     const [phoneError, setPhoneError]: [boolean, any] = useState(false);
 
+    const [sinHelper, setSINHelper]: [string, any] = useState("");
+
     const [disableCreateCustomer, setDisableCreateCustomer]: [boolean, any] = useState(false);
+
+    function keyPressed(e: React.KeyboardEvent<HTMLDivElement>) {
+        if (e.key === 'Enter') {
+            createCustomer(customerSIN, customerName, customerAddress, customerEmail, customerPhone,
+                setDisableCreateCustomer, setNameError, setAddressError, setSINError, setPhoneError,
+                setAlertMessage, setAlertStatus, setAlertOpen, setCustomerData, setDialogOpen).then(_ => {
+            });
+        }
+    }
 
     async function createCustomer(sin: string, name: string, address: string, email: string,
                                   phoneNumber: string, setDisableCreateCustomer: any, setNameError: any,
@@ -37,6 +48,12 @@ export const CreateCustomerDialog = ({
         setAddressError(isAddressError);
         setSINError(isSINError);
         setPhoneError(isPhoneError);
+
+        if (isSINError) {
+            setSINHelper("Must provide valid SIN");
+        } else {
+            setSINHelper("");
+        }
 
         if (isNameError || isAddressError || isSINError || isPhoneError) {
             return;
@@ -68,6 +85,9 @@ export const CreateCustomerDialog = ({
                 });
                 openAlert('Successfully created customer profile', 'success', setAlertMessage, setAlertStatus, setAlertOpen);
                 setDialogOpen(false);
+            } else if (response.status === 409) {
+                setSINError(true);
+                setSINHelper("Customer profile already exists with this SIN")
             } else {
                 openAlert('Error: Unable to created customer profile', 'error', setAlertMessage, setAlertStatus, setAlertOpen);
             }
@@ -85,15 +105,19 @@ export const CreateCustomerDialog = ({
         <div className={classes.dialogAddress}>
             <Typography align="center" className={classes.dialogGap}>Customer Email: {customerEmail}</Typography>
             <TextField label="Customer Name" variant="outlined" value={customerName} error={nameError}
+                       onKeyPress={e => keyPressed(e)}
                        helperText={nameError ? "Must provide name" : ""} className={classes.dialogGap}
                        onChange={event => setCustomerName(event.currentTarget.value)}/>
             <TextField label="Customer Address" variant="outlined" value={customerAddress} error={addressError}
+                       onKeyPress={e => keyPressed(e)}
                        helperText={addressError ? "Must provide address" : ""} className={classes.dialogGap}
                        onChange={event => setCustomerAddress(event.currentTarget.value)}/>
             <TextField label="Customer SIN" variant="outlined" value={customerSIN} error={sinError}
-                       helperText={sinError ? "Must provide valid SIN" : ""} className={classes.dialogGap}
+                       onKeyPress={e => keyPressed(e)}
+                       helperText={sinHelper} className={classes.dialogGap}
                        onChange={event => setCustomerSIN(event.currentTarget.value)}/>
             <TextField label="Customer Phone Number" variant="outlined" value={customerPhone} error={phoneError}
+                       onKeyPress={e => keyPressed(e)}
                        helperText={phoneError ? "Must provide valid phone number" : ""} className={classes.dialogGap}
                        onChange={event => setCustomerPhone(event.currentTarget.value)}/>
         </div>

@@ -1,6 +1,6 @@
 import {Box, Button, makeStyles, Paper, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {HotelAlert, Severity, TitleBarEmployee} from "../index";
+import {HotelAlert, Severity, TitleBar} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
 import {EditEmployeeProfileDialog} from "./employeeDialogs/EditEmployeeProfileDialog";
 
@@ -123,7 +123,8 @@ export default function WelcomeEmployee() {
             history.push('/ui/employee/checkin', {
                 response: response,
                 checkIn: true,
-                employeeSIN: location.state.employeeSIN
+                employeeSIN: location.state.employeeSIN,
+                employeeData: location.state
             });
         } catch (error) {
             console.error('Error:', error);
@@ -138,7 +139,8 @@ export default function WelcomeEmployee() {
             jobTitle: location.state.jobTitle,
             hotelID: location.state.hotelID,
             brandName: location.state.brandName,
-            address: location.state.hotelAddress
+            address: location.state.hotelAddress,
+            employeeData: location.state
         });
     }
 
@@ -154,7 +156,8 @@ export default function WelcomeEmployee() {
             history.push('/ui/employee/checkout', {
                 response: response,
                 checkOut: false,
-                employeeSIN: location.state.employeeSIN
+                employeeSIN: location.state.employeeSIN,
+                employeeData: location.state
             });
         } catch (error) {
             console.error('Error:', error);
@@ -201,7 +204,8 @@ export default function WelcomeEmployee() {
                 managerSIN: location.state.employeeSIN,
                 brandName: location.state.brandName,
                 hotelAddress: location.state.hotelAddress,
-                hotelID: location.state.hotelID
+                hotelID: location.state.hotelID,
+                employeeData: location.state
             });
         } catch (error) {
             console.error('Error:', error);
@@ -223,7 +227,8 @@ export default function WelcomeEmployee() {
                 brandName: location.state.brandName,
                 address: location.state.hotelAddress,
                 hotelID: location.state.hotelID,
-                employeeSIN: location.state.employeeSIN
+                employeeSIN: location.state.employeeSIN,
+                employeeData: location.state
             });
         } catch (error) {
             console.error('Error:', error);
@@ -233,7 +238,7 @@ export default function WelcomeEmployee() {
 
     return (
         <>
-            <TitleBarEmployee/>
+            <TitleBar history={history} userType='employee'/>
             <Typography className={classes.centreTitle}>{welcomeMessage}</Typography>
             <Typography className={classes.centre}>Your profile:</Typography>
             <div className={classes.paperContainer}>

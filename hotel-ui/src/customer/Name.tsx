@@ -1,6 +1,6 @@
 import {Button, makeStyles, TextField, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {phoneRegex, sinRegex, TitleBarCustomer} from "../index";
+import {BackButton, phoneRegex, sinRegex, TitleBar} from "../index";
 import {useHistory, useLocation} from 'react-router-dom';
 
 const useStyles = makeStyles(() => ({
@@ -100,9 +100,15 @@ export default function Name() {
         }
     }
 
+    function keyPressed(e: React.KeyboardEvent<HTMLDivElement>) {
+        if (e.key === 'Enter') {
+            submitInfo();
+        }
+    }
+
     return (
         <>
-            <TitleBarCustomer/>
+            <TitleBar history={history} userType='customer'/>
             <div className={classes.centre}>
                 <Typography>Welcome to ExpressBook. Please provide some information about yourself:</Typography>
             </div>
@@ -124,11 +130,13 @@ export default function Name() {
             <div className={classes.textField}>
                 <TextField label="Phone Number" variant="outlined" value={phoneNumber} error={phoneError}
                            helperText={phoneError ? "Must provide valid phone number" : ""}
+                           onKeyPress={e => keyPressed(e)}
                            onChange={event => setPhoneNumber(event.currentTarget.value)}/>
             </div>
             <div className={classes.buttonCentre}>
                 <Button variant="contained" onClick={() => submitInfo()} disabled={disableUseButton}>Sign In</Button>
             </div>
+            <BackButton message={'Back'} history={history} url={'/ui/customer'} state={{}}/>
         </>
     )
 }

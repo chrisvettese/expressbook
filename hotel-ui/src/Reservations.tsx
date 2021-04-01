@@ -9,8 +9,8 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {HotelAlert, Severity, TitleBarCustomer} from "./index";
-import {useLocation} from "react-router-dom";
+import {BackButton, HotelAlert, Severity, TitleBar} from "./index";
+import {useHistory, useLocation} from "react-router-dom";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -244,14 +244,27 @@ function openAlert(message: string, status: Severity, setAlertMessage: any, setA
 
 export default function Reservations() {
     const classes = useStyles();
+    const history = useHistory();
     const location = useLocation<{
         customerName: string;
         customerSIN: string;
         response: Reservation[];
         isCustomer: boolean;
+        customerAddress: string;
+        customerEmail: string;
+        customerPhone: string;
+        manageData: any;
     }>();
 
     location.state.response.sort((r1: Reservation, r2: Reservation) => (r1.check_in_day > r2.check_in_day) ? 1 : -1);
+
+    const customerState = {
+        customerSIN: location.state.customerSIN,
+        customerAddress: location.state.customerAddress,
+        customerName: location.state.customerName,
+        customerEmail: location.state.customerEmail,
+        customerPhone: location.state.customerPhone
+    };
 
     const [radioState, setRadioState] = useState(0);
     const [alertOpen, setAlertOpen] = useState(false);
@@ -269,7 +282,7 @@ export default function Reservations() {
 
     return (
         <div className={classes.root}>
-            <TitleBarCustomer/>
+            <TitleBar history={history} userType={location.state.isCustomer ? 'customer' : 'employee'}/>
             <Typography className={classes.centreTitle}>{titleMessage}</Typography>
             <RadioGroup className={classes.radioGroup} value={radioState} onChange={e => setReservationRadioState(e)}
                         row>
@@ -286,6 +299,10 @@ export default function Reservations() {
                                   customerSIN={location.state.customerSIN} setReservations={setReservations}/>
             <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
                         alertMessage={alertMessage}/>
+            <div style={{height: '3em', width: '100%'}}/>
+            <BackButton message={'Back'} history={history}
+                        url={location.state.isCustomer ? '/ui/customer/welcome' : '/ui/employee/managecustomer'}
+                        state={location.state.isCustomer ? customerState : location.state.manageData}/>
         </div>
     )
 }

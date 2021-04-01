@@ -9,7 +9,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBarCustomer} from "../index";
+import {BackButton, TitleBar} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
 import {Rating} from "@material-ui/lab";
 
@@ -19,7 +19,7 @@ const useStyles = makeStyles(theme => ({
         flexWrap: 'wrap',
         justifyContent: 'space-around',
         backgroundColor: theme.palette.background.paper,
-
+        height: '100%'
     },
     centreTitle: {
         paddingTop: '2em',
@@ -44,6 +44,11 @@ const useStyles = makeStyles(theme => ({
         fontWeight: 'bold',
         fontSize: '1.5em'
     },
+    gridParent: {
+        display: 'flex',
+        justifyContent: 'center',
+        width: '100%'
+    },
     grid: {
         boxShadow: '0 0 3pt 1pt gray',
         height: '38em',
@@ -63,7 +68,6 @@ const useStyles = makeStyles(theme => ({
         alignItems: 'center',
         flexDirection: 'column',
         justifyContent: 'center'
-
     }
 }));
 
@@ -76,7 +80,8 @@ export default function Hotel() {
         customerEmail: string,
         customerPhone: string,
         response: any,
-        brandName: string
+        brandName: string,
+        brandData: any
     }>();
     const history = useHistory();
 
@@ -85,6 +90,15 @@ export default function Hotel() {
         buttonStateValues.push(false)
     }
     const [buttonStates, setButtonStates] = useState(buttonStateValues);
+
+    const brandState = {
+        customerSIN: location.state.customerSIN,
+        customerName: location.state.customerName,
+        customerAddress: location.state.customerAddress,
+        customerEmail: location.state.customerEmail,
+        customerPhone: location.state.customerPhone,
+        response: location.state.brandData
+    }
 
     async function getRooms(index: number) {
         let newStates = [...buttonStates]
@@ -108,7 +122,9 @@ export default function Hotel() {
                 response: response,
                 brandName: location.state.brandName,
                 address: location.state.response[index].physical_address,
-                hotelID: location.state.response[index].hotel_id
+                hotelID: location.state.response[index].hotel_id,
+                brandData: location.state.brandData,
+                hotelData: location.state.response
             });
         } catch (error) {
             console.error('Error:', error);
@@ -120,45 +136,51 @@ export default function Hotel() {
 
     return (
         <div className={classes.root}>
-            <TitleBarCustomer/>
+            <TitleBar history={history} userType='customer'/>
             <Typography className={classes.centreTitle}>{location.state.brandName} Hotels</Typography>
-            <GridList cols={1} cellHeight={175} className={classes.grid}>
-                {
-                    location.state.response.map((hotel: {
-                        physical_address: string;
-                        email_address: string;
-                        phone_number: string;
-                        number_of_rooms: number;
-                        hotel_id: number;
-                        star_category: number;
-                    }, index: number) => {
-                        return (
-                            <GridListTile key={hotel.hotel_id} cols={1}>
-                                <Paper elevation={3} key={hotel.hotel_id} className={classes.brandPaper}>
-                                    <Grid container spacing={2} alignItems="center">
-                                        <Grid className={classes.hotelGrid}>
-                                            <Typography
-                                                className={classes.hotelTitle}>{hotel.physical_address}</Typography>
-                                            <Typography>Email: {hotel.email_address}</Typography>
-                                            <Typography>Phone: {hotel.phone_number}</Typography>
-                                            <Typography>Number of rooms: {hotel.number_of_rooms}</Typography>
-                                        </Grid>
-                                        <Divider orientation="vertical" flexItem className={classes.divider}/>
-                                        <Grid item xs={2}>
-                                            <Grid className={classes.priceDiv}>
-                                                <Rating value={hotel.star_category} readOnly/>
-                                                <br/><br/>
-                                                <Button variant='contained' onClick={() => getRooms(index)}
-                                                        disabled={buttonStates[index]}>View Details</Button>
+            <div className={classes.gridParent}>
+
+
+                <GridList cols={1} cellHeight={175} className={classes.grid}>
+                    {
+                        location.state.response.map((hotel: {
+                            physical_address: string;
+                            email_address: string;
+                            phone_number: string;
+                            number_of_rooms: number;
+                            hotel_id: number;
+                            star_category: number;
+                        }, index: number) => {
+                            return (
+                                <GridListTile key={hotel.hotel_id} cols={1}>
+                                    <Paper elevation={3} key={hotel.hotel_id} className={classes.brandPaper}>
+                                        <Grid container spacing={2} alignItems="center">
+                                            <Grid className={classes.hotelGrid}>
+                                                <Typography
+                                                    className={classes.hotelTitle}>{hotel.physical_address}</Typography>
+                                                <Typography>Email: {hotel.email_address}</Typography>
+                                                <Typography>Phone: {hotel.phone_number}</Typography>
+                                                <Typography>Number of rooms: {hotel.number_of_rooms}</Typography>
+                                            </Grid>
+                                            <Divider orientation="vertical" flexItem className={classes.divider}/>
+                                            <Grid item xs={2}>
+                                                <Grid className={classes.priceDiv}>
+                                                    <Rating value={hotel.star_category} readOnly/>
+                                                    <br/><br/>
+                                                    <Button variant='contained' onClick={() => getRooms(index)}
+                                                            disabled={buttonStates[index]}>View Details</Button>
+                                                </Grid>
                                             </Grid>
                                         </Grid>
-                                    </Grid>
-                                </Paper>
-                            </GridListTile>
-                        );
-                    })
-                }
-            </GridList>
+                                    </Paper>
+                                </GridListTile>
+                            );
+                        })
+                    }
+                </GridList>
+            </div>
+            <div style={{height: '3em', width: '100%'}}/>
+            <BackButton message={'Back'} history={history} url={'/ui/customer/brands'} state={brandState}/>
         </div>
     )
 }

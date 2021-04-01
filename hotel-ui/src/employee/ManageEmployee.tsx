@@ -9,8 +9,8 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {Employee, HotelAlert, Severity, TitleBarEmployee} from "../index";
-import {useLocation} from "react-router-dom";
+import {BackButton, Employee, HotelAlert, Severity, TitleBar} from "../index";
+import {useHistory, useLocation} from "react-router-dom";
 import {CreateEmployeeDialog} from "./employeeDialogs/CreateEmployeeDialog";
 import {EditEmployeeDialog} from "./employeeDialogs/EditEmployeeDialog";
 
@@ -23,13 +23,12 @@ const useStyles = makeStyles(theme => ({
 
     },
     centreTitle: {
-        paddingTop: '2em',
+        paddingTop: '1em',
         fontWeight: 'bold',
         fontSize: '2em',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: '1em',
         width: '100%'
     },
     subTitle: {
@@ -102,12 +101,14 @@ interface State {
     brandName: string;
     hotelAddress: string;
     hotelID: number;
+    employeeData: any;
 }
 
 
 export default function ManageEmployee() {
     const classes = useStyles();
     const location = useLocation<State>();
+    const history = useHistory();
 
     const buttonStateValues: boolean[] = []
     for (let i = 0; i < location.state.response.length; i++) {
@@ -184,7 +185,7 @@ export default function ManageEmployee() {
 
     return (
         <div className={classes.root}>
-            <TitleBarEmployee/>
+            <TitleBar history={history} userType='employee'/>
             <Typography className={classes.centreTitle}>Hotel Employees</Typography>
             <Typography
                 className={classes.subTitle}>{location.state.brandName + ", " + location.state.hotelAddress}
@@ -239,6 +240,8 @@ export default function ManageEmployee() {
                                 employeeJobTitle={employeeJobTitle} setEmployeeJobTitle={setEmployeeJobTitle}/>
             <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
                         alertMessage={alertMessage}/>
+            <div style={{height: '1.5em', width: '100%'}}/>
+            <BackButton message={'Back'} history={history} url={'/ui/employee/welcome'} state={location.state.employeeData}/>
         </div>
     )
 }

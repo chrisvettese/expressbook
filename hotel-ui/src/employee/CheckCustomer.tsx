@@ -9,8 +9,8 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {HotelAlert, openAlert, Reservation, Severity, TitleBarCustomer} from "../index";
-import {useLocation} from "react-router-dom";
+import {BackButton, HotelAlert, openAlert, Reservation, Severity, TitleBar} from "../index";
+import {useHistory, useLocation} from "react-router-dom";
 import {CheckInData, GetPaymentDialog} from "./employeeDialogs/GetPaymentDialog";
 
 const useStyles = makeStyles(theme => ({
@@ -19,10 +19,9 @@ const useStyles = makeStyles(theme => ({
         flexWrap: 'wrap',
         justifyContent: 'space-around',
         backgroundColor: theme.palette.background.paper,
-
     },
     centreTitle: {
-        paddingTop: '2em',
+        paddingTop: '1em',
         fontWeight: 'bold',
         fontSize: '2em',
         display: 'flex',
@@ -233,10 +232,13 @@ export async function patchReservation(action: string, setEditButtonToDisable: a
 
 export default function CheckCustomer() {
     const classes = useStyles();
+    const history = useHistory();
+
     const location = useLocation<{
         response: Reservation[];
         checkIn: boolean;
         employeeSIN: string;
+        employeeData: any;
     }>();
 
     location.state.response.sort((r1: Reservation, r2: Reservation) => (r1.check_in_day > r2.check_in_day) ? 1 : -1);
@@ -278,7 +280,7 @@ export default function CheckCustomer() {
 
     return (
         <div className={classes.root}>
-            <TitleBarCustomer/>
+            <TitleBar history={history} userType='employee'/>
             <Typography
                 className={classes.centreTitle}>Customer {location.state.checkIn ? 'Check In' : 'Check Out'}</Typography>
             <Typography className={classes.centreSubTitle}>{subTitle}</Typography>
@@ -297,6 +299,8 @@ export default function CheckCustomer() {
                               setAlertOpen={setAlertOpen} setAlertStatus={setAlertStatus}/>
             <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
                         alertMessage={alertMessage}/>
+            <div style={{height: '1.5em', width: '100%'}}/>
+            <BackButton message={'Back'} history={history} url={'/ui/employee/welcome'} state={location.state.employeeData}/>
         </div>
     )
 }

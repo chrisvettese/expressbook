@@ -1,6 +1,6 @@
 import {Button, makeStyles, Paper, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {HotelAlert, Severity, TitleBarCustomer} from "../index";
+import {HotelAlert, Severity, TitleBar} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
 import {EditCustomerProfileDialog} from "./customerDialogs/EditCustomerProfileDialog";
 
@@ -116,6 +116,9 @@ export default function WelcomeCustomer() {
             history.push('/ui/customer/reservations', {
                 customerName: customerName,
                 customerSIN: location.state.customerSIN,
+                customerEmail: location.state.customerEmail,
+                customerAddress: location.state.customerAddress,
+                customerPhone: location.state.customerPhone,
                 response: response,
                 isCustomer: true
             });
@@ -127,7 +130,7 @@ export default function WelcomeCustomer() {
 
     return (
         <>
-            <TitleBarCustomer/>
+            <TitleBar history={history} userType='customer'/>
             <Typography className={classes.centreTitle}>{"Welcome, " + customerName}</Typography>
             <Typography className={classes.centre}>Your profile:</Typography>
             <div className={classes.paperContainer}>

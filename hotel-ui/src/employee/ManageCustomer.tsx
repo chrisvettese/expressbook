@@ -8,11 +8,17 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {HotelAlert, Severity, TitleBarEmployee} from "../index";
+import {BackButton, HotelAlert, Severity, TitleBar} from "../index";
 import {useHistory, useLocation,} from "react-router-dom";
 import {CreateCustomerDialog} from "./employeeDialogs/CreateCustomerDialog";
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(theme => ({
+    root: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'space-around',
+        backgroundColor: theme.palette.background.paper,
+    },
     centreTitle: {
         paddingTop: '2em',
         fontWeight: 'bold',
@@ -88,6 +94,7 @@ interface ManageCustomerState {
     hotelID: number;
     brandName: string;
     address: string;
+    employeeData: any;
 }
 
 export default function ManageCustomer() {
@@ -136,7 +143,7 @@ export default function ManageCustomer() {
         if (customerData === null) {
             return <></>
         } else if (customerData.hasOwnProperty('error')) {
-            return <>
+            return <div style={{flexDirection: 'column'}}>
                 <Typography className={classes.subTitle} align="center">Customer not found. Try searching a different
                     email, or create a new customer profile:</Typography>
                 <br/>
@@ -149,10 +156,10 @@ export default function ManageCustomer() {
                         setDialogOpen(true);
                     }}>Create Customer Account</Button>
                 </div>
-            </>
+            </div>
         }
         return (
-            <>
+            <div style={{flexDirection: 'column'}}>
                 <Typography className={classes.subTitle}
                             align="center">Customer: {"customer_name" in customerData ? customerData.customer_name : ''}</Typography>
                 <div className={classes.paperContainer}>
@@ -175,7 +182,7 @@ export default function ManageCustomer() {
                     <Button variant="contained" disabled={disableCreate}
                             onClick={getRooms}>Create Booking for Customer</Button>
                 </div>
-            </>
+            </div>
         );
     }
 
@@ -193,7 +200,8 @@ export default function ManageCustomer() {
                     customerName: customerData.customer_name,
                     customerSIN: customerData.customer_sin,
                     response: response,
-                    isCustomer: false
+                    isCustomer: false,
+                    manageData: location.state
                 });
             } catch (error) {
                 console.error('Error:', error);
@@ -223,7 +231,8 @@ export default function ManageCustomer() {
                 hotelID: location.state.hotelID,
                 employeeName: location.state.employeeName,
                 jobTitle: location.state.jobTitle,
-                employeeSIN: location.state.employeeSIN
+                employeeSIN: location.state.employeeSIN,
+                manageData: location.state
             });
         } catch (error) {
             console.error('Error:', error);
@@ -254,8 +263,8 @@ export default function ManageCustomer() {
     }
 
     return (
-        <>
-            <TitleBarEmployee/>
+        <div className={classes.root}>
+            <TitleBar history={history} userType='employee'/>
             <Typography className={classes.centreTitle}>Manage Customer</Typography>
             <GridList className={classes.gridParent}>
                 <Grid container item alignItems="center" xs={2} className={classes.dateGrid}>
@@ -286,6 +295,8 @@ export default function ManageCustomer() {
                                   customerPhone={customerPhone} setCustomerPhone={setCustomerPhone}/>
             <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
                         alertMessage={alertMessage}/>
-        </>
+            <div style={{height: '16em', width: '100%'}}/>
+            <BackButton message={'Back'} history={history} url={'/ui/employee/welcome'} state={location.state.employeeData}/>
+        </div>
     )
 }

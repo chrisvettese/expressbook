@@ -104,6 +104,13 @@ export const EditCustomerProfileDialog = ({
         setEmailError(false);
     }
 
+    function keyPressed(e: React.KeyboardEvent<HTMLDivElement>) {
+        if (e.key === 'Enter') {
+            updateCustomer().then(_ => {
+            });
+        }
+    }
+
     return (
         <Dialog onClose={() => closeDialog()} aria-labelledby="simple-dialog-title" open={dialogOpen}>
             <DialogTitle id="dialog-title" className={classes.dialogTitle}>
@@ -113,15 +120,20 @@ export const EditCustomerProfileDialog = ({
                 <Typography align="center" className={classes.dialogGap}>Customer SIN: {customerSIN}</Typography>
                 <TextField label="Name" variant="outlined" value={name} error={nameError}
                            helperText={nameError ? "Must provide name" : ""} className={classes.dialogGap}
+                           onKeyPress={e => keyPressed(e)}
                            onChange={event => setName(event.currentTarget.value)}/>
                 <TextField label="Address" variant="outlined" value={address} error={addressError}
                            helperText={addressError ? "Must provide address" : ""} className={classes.dialogGap}
+                           onKeyPress={e => keyPressed(e)}
                            onChange={event => setAddress(event.currentTarget.value)}/>
                 <TextField label="Email" variant="outlined" value={email} error={emailError}
                            helperText={emailHelper} className={classes.dialogGap}
+                           onKeyPress={e => keyPressed(e)}
                            onChange={event => setEmail(event.currentTarget.value)}/>
                 <TextField label="Phone Number" variant="outlined" value={phone} error={phoneError}
-                           helperText={phoneError ? "Must provide valid phone number" : ""} className={classes.dialogGap}
+                           helperText={phoneError ? "Must provide valid phone number" : ""}
+                           className={classes.dialogGap}
+                           onKeyPress={e => keyPressed(e)}
                            onChange={event => setPhone(event.currentTarget.value)}/>
             </div>
             <DialogActions>

@@ -1,6 +1,6 @@
 import {Button, makeStyles, TextField, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBarCustomer} from "../index";
+import {TitleBar} from "../index";
 import {useHistory} from 'react-router-dom';
 
 
@@ -92,7 +92,7 @@ export default function SignInCustomer() {
 
     return (
         <>
-            <TitleBarCustomer/>
+            <TitleBar history={history} userType='customer'/>
             <Typography className={classes.centreTitle}>Sign In</Typography>
             <div className={classes.sinCentre}>
                 <Typography>To begin searching destinations, enter your email address:</Typography>

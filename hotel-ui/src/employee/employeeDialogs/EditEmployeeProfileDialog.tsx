@@ -25,6 +25,12 @@ export const EditEmployeeProfileDialog = ({
     const [emailHelper, setEmailHelper]: [string, any] = useState('');
     const [disableSave, setDisableSave]: [boolean, any] = useState(false);
 
+    function keyPressed(e: React.KeyboardEvent<HTMLDivElement>) {
+        if (e.key === 'Enter') {
+            updateEmployee();
+        }
+    }
+
     async function updateEmployee() {
         setDisableSave(true);
 
@@ -102,12 +108,15 @@ export const EditEmployeeProfileDialog = ({
             <div className={classes.dialogAddress}>
                 <Typography align="center" className={classes.dialogGap}>Employee SIN: {employeeSIN}</Typography>
                 <TextField label="Name" variant="outlined" value={name} error={nameError}
+                           onKeyPress={e => keyPressed(e)}
                            helperText={nameError ? "Must provide name" : ""} className={classes.dialogGap}
                            onChange={event => setName(event.currentTarget.value)}/>
                 <TextField label="Email" variant="outlined" value={email} error={emailError}
+                           onKeyPress={e => keyPressed(e)}
                            helperText={emailHelper} className={classes.dialogGap}
                            onChange={event => setEmail(event.currentTarget.value)}/>
                 <TextField label="Address" variant="outlined" value={address} error={addressError}
+                           onKeyPress={e => keyPressed(e)}
                            helperText={addressError ? "Must provide address" : ""} className={classes.dialogGap}
                            onChange={event => setAddress(event.currentTarget.value)}/>
             </div>

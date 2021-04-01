@@ -7,7 +7,7 @@ import {
 } from "react-router-dom";
 import SignInEmployee from "./employee/SignInEmployee";
 import SignInCustomer from "./customer/SignInCustomer";
-import {AppBar, makeStyles, Snackbar, Typography} from "@material-ui/core";
+import {AppBar, Button, makeStyles, Snackbar, Toolbar, Typography} from "@material-ui/core";
 import Name from "./customer/Name";
 import WelcomeCustomer from "./customer/WelcomeCustomer";
 import HotelBrand from "./customer/HotelBrand";
@@ -72,17 +72,28 @@ export interface Reservation {
     customer_name: string;
 }
 
-export function TitleBarCustomer() {
-    const classes = useTitleStyles();
-    return <AppBar position="static">
-        <Typography className={classes.title}>ExpressBook Customer Portal</Typography>
-    </AppBar>
+interface TitleType {
+    userType: string;
+    history: any;
 }
 
-export function TitleBarEmployee() {
+function SignOut({userType, history}: TitleType) {
+    if (window.location.pathname === '/ui/' + userType || window.location.pathname === '/ui/' + userType + '/name') {
+        return <></>
+    }
+    return <div style={{position: 'absolute', right: '1em'}}>
+        <Button color="inherit" onClick={() => history.push('/ui/' + userType)}>Sign Out</Button>
+    </div>
+}
+
+export function TitleBar({userType, history}: TitleType) {
     const classes = useTitleStyles();
+    const userTitle = userType.charAt(0).toUpperCase() + userType.slice(1);
     return <AppBar position="static">
-        <Typography className={classes.title}>ExpressBook Employee Portal</Typography>
+        <Toolbar>
+            <Typography className={classes.title}>ExpressBook {userTitle} Portal</Typography>
+            <SignOut userType={userType} history={history}/>
+        </Toolbar>
     </AppBar>
 }
 
@@ -102,12 +113,29 @@ interface AlertType {
     alertMessage: string
 }
 
+interface BackType {
+    message: string;
+    history: any;
+    url: string;
+    state: object;
+}
+
 export function HotelAlert({alertOpen, closeAlert, alertStatus, alertMessage}: AlertType) {
     return <Snackbar open={alertOpen} autoHideDuration={6000} onClose={closeAlert}>
         <Alert onClose={closeAlert} severity={alertStatus}>
             {alertMessage}
         </Alert>
     </Snackbar>
+}
+
+export function BackButton(backProps: BackType) {
+    return (
+        <div style={{bottom: '1em', left: '50%'}}>
+            <Button variant='contained' onClick={() => backProps.history.push(backProps.url, backProps.state)}>
+                {backProps.message}
+            </Button>
+        </div>
+    )
 }
 
 ReactDOM.render(

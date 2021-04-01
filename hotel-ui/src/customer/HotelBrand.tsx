@@ -9,7 +9,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBarCustomer} from "../index";
+import {BackButton, TitleBar} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
 
 const useStyles = makeStyles(theme => ({
@@ -104,6 +104,7 @@ export default function HotelBrand() {
                 customerPhone: location.state.customerPhone,
                 response: response,
                 brandName: location.state.response[index].name,
+                brandData: location.state.response
             });
         } catch (error) {
             console.error('Error:', error);
@@ -113,9 +114,17 @@ export default function HotelBrand() {
         }
     }
 
+    const customerState = {
+        customerSIN: location.state.customerSIN,
+        customerAddress: location.state.customerAddress,
+        customerName: location.state.customerName,
+        customerEmail: location.state.customerEmail,
+        customerPhone: location.state.customerPhone
+    };
+
     return (
         <div className={classes.root}>
-            <TitleBarCustomer/>
+            <TitleBar history={history} userType='customer'/>
             <Typography className={classes.centreTitle}>Select a hotel brand to view hotels:</Typography>
             <GridList cols={1} cellHeight={200} className={classes.grid}>
                 {
@@ -152,6 +161,8 @@ export default function HotelBrand() {
                     })
                 }
             </GridList>
+            <div style={{height: '3em', width: '100%'}}/>
+            <BackButton message={'Back'} history={history} url={'/ui/customer/welcome'} state={customerState}/>
         </div>
     )
 }

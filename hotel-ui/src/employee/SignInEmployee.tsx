@@ -1,6 +1,6 @@
 import {Button, makeStyles, TextField, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {GetEmployeeResponse, TitleBarEmployee} from "../index";
+import {GetEmployeeResponse, TitleBar} from "../index";
 import {useHistory} from 'react-router-dom';
 
 
@@ -95,7 +95,7 @@ export default function SignInEmployee() {
 
     return (
         <>
-            <TitleBarEmployee/>
+            <TitleBar history={history} userType='employee'/>
             <Typography className={classes.centreTitle}>Sign In</Typography>
             <div className={classes.sinCentre}>
                 <Typography>Please sign in to access the hotel management system:</Typography>

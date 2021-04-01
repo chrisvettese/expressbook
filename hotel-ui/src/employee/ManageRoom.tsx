@@ -9,8 +9,8 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {HotelAlert, openAlert, Severity, TitleBarCustomer} from "../index";
-import {useLocation} from "react-router-dom";
+import {BackButton, HotelAlert, openAlert, Severity, TitleBar} from "../index";
+import {useHistory, useLocation} from "react-router-dom";
 import {NewRoomDialog, View} from "./employeeDialogs/NewRoomDialog";
 
 const useStyles = makeStyles(theme => ({
@@ -61,7 +61,7 @@ const useStyles = makeStyles(theme => ({
     },
     grid: {
         boxShadow: '0 0 3pt 1pt gray',
-        height: '39em',
+        height: '36em',
         width: '85%',
         marginTop: '10em'
     },
@@ -70,7 +70,6 @@ const useStyles = makeStyles(theme => ({
         alignItems: 'center',
         flexDirection: 'column',
         justifyContent: 'center',
-        marginBottom: '2em',
         width: '100%'
     },
     divider: {
@@ -147,12 +146,15 @@ export interface Room {
 
 export default function ManageRoom() {
     const classes = useStyles();
+    const history = useHistory();
+
     const location = useLocation<{
         address: string;
         response: Room[],
         brandName: string,
         hotelID: number,
         employeeSIN: string,
+        employeeData: any
     }>();
 
     const deleteDisabled: boolean[] = new Array(location.state.response.length)
@@ -230,7 +232,7 @@ export default function ManageRoom() {
 
     return (
         <div className={classes.root}>
-            <TitleBarCustomer/>
+            <TitleBar history={history} userType='employee'/>
             <div className={classes.root}>
                 <Typography className={classes.centreTitle}>{location.state.brandName}</Typography>
                 <Typography className={classes.centreTitleNoSpace}>{location.state.address}</Typography>
@@ -289,6 +291,8 @@ export default function ManageRoom() {
                            hotelID={location.state.hotelID} setAlertOpen={setAlertOpen}/>
             <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
                         alertMessage={alertMessage}/>
+            <div style={{height: '1.5em', width: '100%'}}/>
+            <BackButton message={'Back'} history={history} url={'/ui/employee/welcome'} state={location.state.employeeData}/>
         </div>
     )
 }

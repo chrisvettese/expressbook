@@ -10,8 +10,8 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {HotelAlert, Severity, TitleBarCustomer} from "./index";
-import {useLocation} from "react-router-dom";
+import {BackButton, HotelAlert, Severity, TitleBar} from "./index";
+import {useHistory, useLocation} from "react-router-dom";
 import {
     MuiPickersUtilsProvider,
     KeyboardDatePicker,
@@ -174,6 +174,8 @@ interface AvailableRoom {
 
 export default function Rooms() {
     const classes = useStyles();
+    const history = useHistory();
+
     const location = useLocation<{
         address: string;
         customerSIN: string,
@@ -186,7 +188,10 @@ export default function Rooms() {
         hotelID: number,
         employeeName: string,
         employeeSIN: string,
-        jobTitle: string
+        jobTitle: string,
+        brandData: any,
+        hotelData: any,
+        manageData: any
     }>();
 
     const [checkInDate, setCheckInDate]: [Date, any] = useState(new Date());
@@ -301,9 +306,9 @@ export default function Rooms() {
                     if (roomInfo.type_id === -1) {
                         room.enabled = false;
                         room.tooltip = "Room capacity is too small";
+                        room.rooms_available = room.total_number_rooms;
                         roomNum--;
-                    }
-                    if (room.rooms_available <= 0) {
+                    } else if (room.rooms_available <= 0) {
                         room.enabled = false;
                         room.tooltip = "Room is booked up over these dates"
                         roomNum--;
@@ -394,9 +399,20 @@ export default function Rooms() {
         return numAvailable + '/' + total + ' rooms available';
     }
 
+    const customerState = {
+        customerSIN: location.state.customerSIN,
+        customerName: location.state.customerName,
+        customerAddress: location.state.customerAddress,
+        customerEmail: location.state.customerEmail,
+        customerPhone: location.state.customerPhone,
+        response: location.state.hotelData,
+        brandName: location.state.brandName,
+        brandData: location.state.brandData
+    };
+
     return (
         <div className={classes.root}>
-            <TitleBarCustomer/>
+            <TitleBar history={history} userType={location.state.employeeSIN === undefined ? 'customer' : 'employee'}/>
             <Typography className={classes.centreTitle}>{location.state.brandName}</Typography>
             <Typography className={classes.centreTitleNoSpace}>{location.state.address}</Typography>
             <GridList className={classes.gridParent}>
@@ -516,6 +532,9 @@ export default function Rooms() {
                                 disableBookRoomButton={disableBookRoomButton}/>
             <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
                         alertMessage={alertMessage}/>
+            <BackButton message={'Back'} history={history}
+                        url={location.state.employeeSIN === undefined ? '/ui/customer/hotels' : '/ui/employee/managecustomer'}
+                        state={location.state.employeeSIN === undefined ? customerState : location.state.manageData}/>
         </div>
     )
 }
