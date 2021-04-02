@@ -9,7 +9,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {BackButton, HotelAlert, Severity, TitleBar} from "./index";
+import {BackButton, HotelAlert, REACT_APP_SERVER_URL, Severity, TitleBar} from "./index";
 import {useHistory, useLocation} from "react-router-dom";
 
 const useStyles = makeStyles(theme => ({
@@ -197,7 +197,7 @@ const ReservationEditButton = ({
 async function patchReservation(action: string, setEditButtonToDisable: any, reservations: Reservation[], reservation: Reservation, setAlertMessage: any, setAlertStatus: any, setAlertOpen: any, customerSIN: string, setReservations: any) {
     setEditButtonToDisable(reservation.booking_id);
     try {
-        let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + customerSIN + "/reservations/" + reservation.booking_id, {
+        let response = await fetch(REACT_APP_SERVER_URL + "/customers/" + customerSIN + "/reservations/" + reservation.booking_id, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'

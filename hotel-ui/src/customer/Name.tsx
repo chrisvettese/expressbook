@@ -1,6 +1,6 @@
 import {Button, makeStyles, TextField, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {BackButton, phoneRegex, sinRegex, TitleBar} from "../index";
+import {BackButton, phoneRegex, REACT_APP_SERVER_URL, sinRegex, TitleBar} from "../index";
 import {useHistory, useLocation} from 'react-router-dom';
 
 const useStyles = makeStyles(theme => ({
@@ -78,7 +78,7 @@ export default function Name() {
         } else {
             setDisableUseButton(true);
             try {
-                let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers", {
+                let response = await fetch(REACT_APP_SERVER_URL + "/customers", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

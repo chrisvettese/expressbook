@@ -9,7 +9,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {BackButton, TitleBar} from "../index";
+import {BackButton, REACT_APP_SERVER_URL, TitleBar} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
 
 const useStyles = makeStyles(theme => ({
@@ -88,7 +88,7 @@ export default function HotelBrand() {
         newStates[index] = true;
         setButtonStates(newStates);
         try {
-            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/brands/" + location.state.response[index].brand_id + "/hotels");
+            let response: Response = await fetch(REACT_APP_SERVER_URL + "/brands/" + location.state.response[index].brand_id + "/hotels");
             if (response.status !== 200) {
                 let newStates = [...buttonStates]
                 newStates[index] = false;

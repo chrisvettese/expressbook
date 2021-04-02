@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {Button, Dialog, DialogActions, DialogTitle, TextField, Typography} from "@material-ui/core";
-import {openAlert} from "../../index";
+import {openAlert, REACT_APP_SERVER_URL} from "../../index";
 
 export const EditEmployeeProfileDialog = ({
                                               dialogOpen, setDialogOpen,
@@ -60,7 +60,7 @@ export const EditEmployeeProfileDialog = ({
         }
 
         try {
-            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + hotelID + "/employees/" + employeeSIN, {
+            let response = await fetch(REACT_APP_SERVER_URL + "/hotels/" + hotelID + "/employees/" + employeeSIN, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'

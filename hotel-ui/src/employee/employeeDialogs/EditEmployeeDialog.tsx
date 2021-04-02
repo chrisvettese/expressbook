@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {Button, Dialog, DialogActions, DialogTitle, InputAdornment, TextField, Typography} from "@material-ui/core";
-import {Employee} from "../../index";
+import {Employee, REACT_APP_SERVER_URL} from "../../index";
 
 interface EditEmployee {
     dialogOpen: boolean;
@@ -70,7 +70,7 @@ export const EditEmployeeDialog = ({
         const fixedESalary: string = parseFloat(employeeSalary).toFixed(2)
 
         try {
-            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + hotelID + "/employees/" + employee.employee_sin, {
+            let response = await fetch(REACT_APP_SERVER_URL + "/hotels/" + hotelID + "/employees/" + employee.employee_sin, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'

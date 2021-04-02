@@ -1,6 +1,6 @@
 import {Button, makeStyles, Paper, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {HotelAlert, Severity, TitleBar} from "../index";
+import {HotelAlert, REACT_APP_SERVER_URL, Severity, TitleBar} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
 import {EditCustomerProfileDialog} from "./customerDialogs/EditCustomerProfileDialog";
 
@@ -84,7 +84,7 @@ export default function WelcomeCustomer() {
     async function goToBrandPage() {
         setDisableHotelButton(true);
         try {
-            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/brands");
+            let response: Response = await fetch(REACT_APP_SERVER_URL + "/brands");
             if (response.status !== 200) {
                 setDisableHotelButton(false);
                 return;
@@ -107,7 +107,7 @@ export default function WelcomeCustomer() {
     async function goToReservationsPage() {
         setDisableReservationButton(true);
         try {
-            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + location.state.customerSIN + "/reservations");
+            let response: Response = await fetch(REACT_APP_SERVER_URL + "/customers/" + location.state.customerSIN + "/reservations");
             if (response.status !== 200) {
                 setDisableReservationButton(false);
                 return;

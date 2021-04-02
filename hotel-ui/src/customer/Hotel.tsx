@@ -9,7 +9,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {BackButton, TitleBar} from "../index";
+import {BackButton, REACT_APP_SERVER_URL, TitleBar} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
 import {Rating} from "@material-ui/lab";
 
@@ -105,7 +105,7 @@ export default function Hotel() {
         newStates[index] = true;
         setButtonStates(newStates);
         try {
-            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + location.state.response[index].hotel_id + "/rooms");
+            let response: Response = await fetch(REACT_APP_SERVER_URL + "/hotels/" + location.state.response[index].hotel_id + "/rooms");
             if (response.status !== 200) {
                 let newStates = [...buttonStates]
                 newStates[index] = false;

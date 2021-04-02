@@ -1,6 +1,6 @@
 import {Box, Button, makeStyles, Paper, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {HotelAlert, Severity, TitleBar} from "../index";
+import {HotelAlert, REACT_APP_SERVER_URL, Severity, TitleBar} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
 import {EditEmployeeProfileDialog} from "./employeeDialogs/EditEmployeeProfileDialog";
 
@@ -114,7 +114,7 @@ export default function WelcomeEmployee() {
     async function checkIn() {
         setCheckInDisabled(true);
         try {
-            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/reservations?action=check-in");
+            let response: Response = await fetch(REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/reservations?action=check-in");
             if (response.status !== 200) {
                 setCheckInDisabled(false);
                 return;
@@ -147,7 +147,7 @@ export default function WelcomeEmployee() {
     async function checkOut() {
         setCheckOutDisabled(true);
         try {
-            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/reservations?action=check-out");
+            let response: Response = await fetch(REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/reservations?action=check-out");
             if (response.status !== 200) {
                 setCheckOutDisabled(false);
                 return;
@@ -192,7 +192,7 @@ export default function WelcomeEmployee() {
     async function manageEmployee() {
         setManageEmployeeDisabled(true);
         try {
-            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/employees");
+            let response: Response = await fetch(REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/employees");
             if (response.status !== 200) {
                 setManageEmployeeDisabled(false);
                 return;
@@ -216,7 +216,7 @@ export default function WelcomeEmployee() {
     async function manageRoom() {
         setManageRoomDisabled(true);
         try {
-            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/rooms");
+            let response: Response = await fetch(REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/rooms");
             if (response.status !== 200) {
                 setManageRoomDisabled(false);
                 return;

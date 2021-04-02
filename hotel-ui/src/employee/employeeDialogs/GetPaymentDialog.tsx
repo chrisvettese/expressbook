@@ -10,7 +10,7 @@ import {
     TextField,
     Typography
 } from "@material-ui/core";
-import {openAlert} from "../../index";
+import {openAlert, REACT_APP_SERVER_URL} from "../../index";
 import {provinces} from "../Provinces";
 import {KeyboardDatePicker, MuiPickersUtilsProvider} from "@material-ui/pickers";
 import DateFnsUtils from "@date-io/date-fns";
@@ -113,7 +113,7 @@ export const GetPaymentDialog = ({
 
         const reservation = reservations[index].reservation;
         try {
-            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + reservation.customer_sin + "/reservations/" + reservation.booking_id, {
+            let response = await fetch(REACT_APP_SERVER_URL + "/customers/" + reservation.customer_sin + "/reservations/" + reservation.booking_id, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'

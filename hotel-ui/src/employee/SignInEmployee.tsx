@@ -1,6 +1,6 @@
 import {Button, makeStyles, TextField, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {GetEmployeeResponse, TitleBar} from "../index";
+import {GetEmployeeResponse, REACT_APP_SERVER_URL, TitleBar} from "../index";
 import {useHistory} from 'react-router-dom';
 
 
@@ -58,8 +58,7 @@ export default function SignInEmployee() {
             setDisableSignIn(false);
             return;
         }
-
-        fetch(process.env.REACT_APP_SERVER_URL + "/employees?email=" + email)
+        fetch(REACT_APP_SERVER_URL + "/employees?email=" + email)
             .then(response => {
                 if (response.status === 200) {
                     response.json().then((response: GetEmployeeResponse[]) => {

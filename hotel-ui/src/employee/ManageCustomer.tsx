@@ -8,7 +8,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {BackButton, HotelAlert, Severity, TitleBar} from "../index";
+import {BackButton, HotelAlert, REACT_APP_SERVER_URL, Severity, TitleBar} from "../index";
 import {useHistory, useLocation,} from "react-router-dom";
 import {CreateCustomerDialog} from "./employeeDialogs/CreateCustomerDialog";
 
@@ -193,7 +193,7 @@ export default function ManageCustomer() {
         if (customerData !== null && "customer_name" in customerData) {
             setDisableReservations(true);
             try {
-                let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + customerData.customer_sin + "/reservations");
+                let response: Response = await fetch(REACT_APP_SERVER_URL + "/customers/" + customerData.customer_sin + "/reservations");
                 if (response.status !== 200) {
                     setDisableReservations(false);
                     return;
@@ -216,7 +216,7 @@ export default function ManageCustomer() {
     async function getRooms() {
         setDisableCreate(true);
         try {
-            let response: Response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/rooms");
+            let response: Response = await fetch(REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/rooms");
             if (response.status !== 200 || customerData === null || !("customer_name" in customerData)) {
                 setDisableCreate(false);
                 return;
@@ -246,7 +246,7 @@ export default function ManageCustomer() {
     async function findCustomer() {
         setDisableFindCustomer(true);
         try {
-            const response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers?email=" + customerEmail);
+            const response = await fetch(REACT_APP_SERVER_URL + "/customers?email=" + customerEmail);
             if (response.status === 200) {
                 const jsonResponse: CustomerResponse[] = await response.json();
                 if (jsonResponse.length === 0) {

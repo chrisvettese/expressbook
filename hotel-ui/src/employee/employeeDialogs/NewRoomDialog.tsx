@@ -8,7 +8,7 @@ import {
     Typography
 } from "@material-ui/core";
 import ChipInput from "material-ui-chip-input";
-import {openAlert} from "../../index";
+import {openAlert, REACT_APP_SERVER_URL} from "../../index";
 import {Room} from "../ManageRoom";
 
 export interface View {
@@ -78,7 +78,7 @@ export const NewRoomDialog = (newRoom: NewRoom) => {
         const roomCapacity = parseInt(capacity);
 
         try {
-            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + newRoom.hotelID + "/rooms", {
+            let response = await fetch(REACT_APP_SERVER_URL + "/hotels/" + newRoom.hotelID + "/rooms", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

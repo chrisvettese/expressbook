@@ -294,7 +294,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{server}}/hotels/{{hotel-id}}/rooms/availability?check-in=2021-03-15&check-out=2021-03-21&people=8",
+					"raw": "{{server}}/hotels/{{hotel-id}}/rooms/availability?check-in=2021-03-31&check-out=2021-04-01&people=4",
 					"host": [
 						"{{server}}"
 					],
@@ -307,15 +307,15 @@
 					"query": [
 						{
 							"key": "check-in",
-							"value": "2021-03-15"
+							"value": "2021-03-31"
 						},
 						{
 							"key": "check-out",
-							"value": "2021-03-21"
+							"value": "2021-04-01"
 						},
 						{
 							"key": "people",
-							"value": "8"
+							"value": "4"
 						}
 					]
 				}

@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {Button, Dialog, DialogActions, DialogTitle, TextField, Typography} from "@material-ui/core";
-import {openAlert, phoneRegex, sinRegex} from "../../index";
+import {openAlert, phoneRegex, REACT_APP_SERVER_URL, sinRegex} from "../../index";
 
 export const CreateCustomerDialog = ({
                                          dialogOpen, setDialogOpen,
@@ -62,7 +62,7 @@ export const CreateCustomerDialog = ({
         setDisableCreateCustomer(true);
 
         try {
-            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers", {
+            let response = await fetch(REACT_APP_SERVER_URL + "/customers", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

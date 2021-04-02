@@ -9,7 +9,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {BackButton, HotelAlert, openAlert, Reservation, Severity, TitleBar} from "../index";
+import {BackButton, HotelAlert, openAlert, REACT_APP_SERVER_URL, Reservation, Severity, TitleBar} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
 import {GetPaymentDialog} from "./employeeDialogs/GetPaymentDialog";
 
@@ -153,7 +153,7 @@ export default function CheckCustomer() {
         setDisableButton(index, true);
         const reservation = reservations[index].reservation;
         try {
-            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + reservation.customer_sin + "/reservations/" + reservation.booking_id, {
+            let response = await fetch(REACT_APP_SERVER_URL + "/customers/" + reservation.customer_sin + "/reservations/" + reservation.booking_id, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'

@@ -1,6 +1,6 @@
 import {Button, makeStyles, TextField, Typography} from "@material-ui/core";
 import React, {useState} from "react";
-import {TitleBar} from "../index";
+import {REACT_APP_SERVER_URL, TitleBar} from "../index";
 import {useHistory} from 'react-router-dom';
 
 
@@ -64,7 +64,7 @@ export default function SignInCustomer() {
             setDisableSignIn(false);
             return;
         }
-        fetch(process.env.REACT_APP_SERVER_URL + "/customers?email=" + email)
+        fetch(REACT_APP_SERVER_URL + "/customers?email=" + email)
             .then(response => {
                 if (response.status === 200) {
                     response.json().then((response: CustomerResponse[]) => {

@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {Button, Dialog, DialogActions, DialogTitle, InputAdornment, TextField, Typography} from "@material-ui/core";
-import {GetEmployeeResponse, sinRegex} from "../../index";
+import {GetEmployeeResponse, REACT_APP_SERVER_URL, sinRegex} from "../../index";
 
 interface AMessage {
     isNewEmail: boolean;
@@ -132,7 +132,7 @@ export const CreateEmployeeDialog = ({
         }
 
         try {
-            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/employees?email=" + employeeEmail);
+            let response = await fetch(REACT_APP_SERVER_URL + "/employees?email=" + employeeEmail);
             if (response.status === 200) {
                 const employeeResponse: GetEmployeeResponse[] = await response.json();
                 if (employeeResponse.length === 0) {
@@ -217,7 +217,7 @@ export const CreateEmployeeDialog = ({
         const fixedESalary: string = parseFloat(employeeSalary).toFixed(2)
         if (isNewEmail) {
             try {
-                let response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + hotelID + "/employees", {
+                let response = await fetch(REACT_APP_SERVER_URL + "/hotels/" + hotelID + "/employees", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -256,7 +256,7 @@ export const CreateEmployeeDialog = ({
             }
         } else {
             try {
-                let response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + hotelID + "/employees/" + employeeSIN, {
+                let response = await fetch(REACT_APP_SERVER_URL + "/hotels/" + hotelID + "/employees/" + employeeSIN, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json'

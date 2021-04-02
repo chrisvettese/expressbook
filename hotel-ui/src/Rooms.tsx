@@ -10,7 +10,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {BackButton, HotelAlert, Severity, TitleBar} from "./index";
+import {BackButton, HotelAlert, REACT_APP_SERVER_URL, Severity, TitleBar} from "./index";
 import {useHistory, useLocation} from "react-router-dom";
 import {
     MuiPickersUtilsProvider,
@@ -255,7 +255,7 @@ export default function Rooms() {
         }
 
         try {
-            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + location.state.customerSIN + "/reservations", {
+            let response = await fetch(REACT_APP_SERVER_URL + "/customers/" + location.state.customerSIN + "/reservations", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -287,7 +287,7 @@ export default function Rooms() {
         if (past[0] !== checkInDate || past[1] !== checkOutDate || past[2] !== numPeople) {
             setDisableAvailability(true);
             try {
-                let url: string = process.env.REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/rooms/availability"
+                let url: string = REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/rooms/availability"
                 url += "?check-in=" + dateToString(checkInDate) + "&check-out=" + dateToString(checkOutDate) + "&people=" + numPeople;
 
                 let response: Response = await fetch(url);

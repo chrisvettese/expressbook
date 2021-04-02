@@ -9,7 +9,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {BackButton, Employee, HotelAlert, Severity, TitleBar} from "../index";
+import {BackButton, Employee, HotelAlert, REACT_APP_SERVER_URL, Severity, TitleBar} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
 import {CreateEmployeeDialog} from "./employeeDialogs/CreateEmployeeDialog";
 import {EditEmployeeDialog} from "./employeeDialogs/EditEmployeeDialog";
@@ -143,7 +143,7 @@ export default function ManageEmployee() {
         newStates[index] = true;
         setButtonStates(newStates);
         try {
-            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/employees/" + emp.employee_sin, {
+            let response = await fetch(REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/employees/" + emp.employee_sin, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'

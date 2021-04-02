@@ -21,8 +21,6 @@ import ManageEmployee from "./employee/ManageEmployee";
 import {Alert} from "@material-ui/lab";
 import ManageRoom from "./employee/ManageRoom";
 
-require('dotenv').config()
-
 const useTitleStyles = makeStyles(() => ({
     title: {
         fontSize: "2.5em",
@@ -30,6 +28,8 @@ const useTitleStyles = makeStyles(() => ({
         paddingLeft: "1em"
     }
 }));
+
+export const REACT_APP_SERVER_URL: string = 'http://localhost:1234/service';
 
 export type Severity = "error" | "success" | "info" | "warning" | undefined;
 

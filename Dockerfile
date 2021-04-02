@@ -14,6 +14,7 @@ COPY ./hotel_booking_server ./hotel_booking_server
 COPY ./sql ./sql
 RUN poetry install --no-dev
 COPY config.yml ./
+COPY ./hotel_booking_server/wsgi.py ./
 
 FROM node:14 AS build
 RUN mkdir /react
@@ -26,7 +27,7 @@ RUN npm ci --silent
 COPY ./hotel-ui ./
 RUN npm run build
 
-FROM nginx:alpine AS frontend
+FROM nginx:alpine AS proxy
 COPY --from=build ./react/hotel-ui/build ./usr/share/nginx/html
 COPY ./nginx.conf ./etc/nginx/nginx.conf
 CMD ["nginx", "-g", "daemon off;"]

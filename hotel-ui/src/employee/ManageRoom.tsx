@@ -9,7 +9,7 @@ import {
     Typography
 } from "@material-ui/core";
 import React, {useState} from "react";
-import {BackButton, HotelAlert, openAlert, Severity, TitleBar} from "../index";
+import {BackButton, HotelAlert, openAlert, REACT_APP_SERVER_URL, Severity, TitleBar} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
 import {NewRoomDialog, View} from "./employeeDialogs/NewRoomDialog";
 
@@ -181,7 +181,7 @@ export default function ManageRoom() {
         setDisableDelete(newDisableDelete);
 
         try {
-            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/rooms/" + rooms[index].type_id, {
+            let response = await fetch(REACT_APP_SERVER_URL + "/hotels/" + location.state.hotelID + "/rooms/" + rooms[index].type_id, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
@@ -214,7 +214,7 @@ export default function ManageRoom() {
     async function newRoomDialog() {
         setDisableNewRoom(true);
         try {
-            let response = await fetch(process.env.REACT_APP_SERVER_URL + '/views');
+            let response = await fetch(REACT_APP_SERVER_URL + '/views');
             if (response.status === 200) {
                 const views: View[] = await response.json();
                 views.reverse();

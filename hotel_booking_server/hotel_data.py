@@ -7,14 +7,14 @@ hotel_brands = [['Marriott', '7750 Wisconsin Ave, Bethesda, Maryland, 20814, Uni
 
 hotels = [[['4251 Sheppard Ave, Toronto, Ontario, M1S 1T4, Canada', 200, 3, 'to@marriott.com', '1 (726) 824-2393'],
            ['1122 Port Washington Road, Caroline, Alberta, T0M 0M0, Canada', 150, 4, 'ca@marriott.com', '1 (333) 886-4175'],
-           ['465 René-Lévesque Blvd, Montreal, Quebec, H3B 4W8, Canada', 125, 3, 'mt@marriott.com', '1 (747) 516-9536'],
+           ['465 Rene-Levesque Blvd, Montreal, Quebec, H3B 4W8, Canada', 125, 3, 'mt@marriott.com', '1 (747) 516-9536'],
            ['1622 Sixth Street, New Westminster, British Columbia, V3L 3C1, Canada', 315, 4, 'nw@marriott.com', '1 (540) 601-1386'],
            ['3951 Wyecroft Road, Burlington, Ontario, L7R 3X7, Canada', 280, 2, 'br@marriott.com', '1 (562) 815-2146'],
            ['2429 Albert Street, St Thomas, Ontario, N5R 3R5, Canada', 300, 2, 'st@marriott.com', '1 (987) 713-4888']],
 
           [['4587 Pearl Street, Streetsville, Ontario, L5M 1X2, Canada', 400, 1, 'ps@fairmont.com', '1 (716) 455-3299'],
            ['4483 Jade Street, North Vancouver, British Columbia, V7L 2C1, Canada', 800, 5, 'nv@fairmont.com', '1 (710) 958-3327'],
-           ['759 rue de la Gauchetière, Montreal, Quebec, H3B 2M3, Canada', 750, 3, 'mt@fairmont.com', '1 (236) 567-5601'],
+           ['759 rue de la Gauchetiere, Montreal, Quebec, H3B 2M3, Canada', 750, 3, 'mt@fairmont.com', '1 (236) 567-5601'],
            ['2835 Nelson Street, Nobel, Ontario, P0G 1G0, Canada', 425, 3, 'nb@fairmont.com', '1 (479) 978-1199'],
            ['3559 Pick Street, Cheyenne, Colorado, 82001, United States', 290, 3, 'cy@fairmont.com', '1 (447) 639-7539'],
            ['150 Desert Broom Court, Red Bank, New Jersey, 07701, United States', 550, 4, 'rb@fairmont.com', '1 (427) 436-8020'],
