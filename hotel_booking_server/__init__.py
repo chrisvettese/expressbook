@@ -35,6 +35,13 @@ def main():
 
         print('Connected to db')
 
+        time_zone = config['time-zone']
+        with conn:
+            with conn.cursor() as curs:
+                print('Setting time zone to ' + time_zone)
+                curs.execute('''ALTER DATABASE postgres SET timezone TO '{}\''''.format(time_zone))
+                conn.commit()
+
         data_mode = config['data-mode']
         if config['reset-db']:
             setup_db.setup(conn, data_mode)

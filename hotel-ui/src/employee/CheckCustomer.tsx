@@ -11,7 +11,7 @@ import {
 import React, {useState} from "react";
 import {BackButton, HotelAlert, openAlert, Reservation, Severity, TitleBar} from "../index";
 import {useHistory, useLocation} from "react-router-dom";
-import {CheckInData, GetPaymentDialog} from "./employeeDialogs/GetPaymentDialog";
+import {GetPaymentDialog} from "./employeeDialogs/GetPaymentDialog";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -104,131 +104,11 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const GenerateReservations = ({
-                                  classes,
-                                  reservations,
-                                  editButtonToDisable,
-                                  setEditButtonToDisable,
-                                  setAlertMessage,
-                                  setAlertStatus,
-                                  setAlertOpen,
-                                  setReservations,
-                                  isCheckIn,
-                                  searchSIN,
-                                  employeeSIN,
-                                  setShowGetPayment,
-                                  setCheckInData
-                              }: any) => {
-
-    const filteredReservations = reservations.filter((reservation: Reservation) => reservation.customer_sin.includes(searchSIN));
-    if (filteredReservations.length === 0) {
-        return (
-            <GridList cols={1} cellHeight={220} className={classes.grid}>
-                <GridListTile cols={1}>
-                    <Typography className={classes.centreSubTitle}>No reservations found!</Typography>
-                </GridListTile>
-            </GridList>
-        )
-    }
-
-    return <GridList cols={1} cellHeight={220} className={classes.grid}>
-        {
-            filteredReservations.map((reservation: Reservation, index: number) => {
-                const checkIn: Date = new Date(reservation.check_in_day.replace('-', '/'))
-                const checkOut: Date = new Date(reservation.check_out_day.replace('-', '/'))
-                const days: number = Math.round(Math.abs(+checkIn - +checkOut) / 24 / 60 / 60 / 1000)
-                const totalPrice: string = (days * parseFloat(reservation.price)).toFixed(2)
-
-                if (reservation.amenities.length === 0) {
-                    reservation.amenities.push("None")
-                }
-
-                return (
-                    <GridListTile key={reservation.booking_id} cols={1}>
-                        <Paper elevation={3} key={reservation.booking_id} className={classes.brandPaper}>
-                            <Grid container spacing={2} alignItems="center">
-                                <Grid className={classes.hotelGrid}>
-                                    <Typography
-                                        className={classes.hotelTitle}>Room: {reservation.title} | {reservation.check_in_day} to {reservation.check_out_day}
-                                    </Typography>
-                                    <Typography>Customer name: {reservation.customer_name}</Typography>
-                                    <Typography>Customer SIN: {reservation.customer_sin}</Typography>
-                                    <Typography>Amenities: {reservation.amenities.join(', ')}</Typography>
-                                    <Typography>View: {reservation.view}</Typography>
-                                    <Typography>
-                                        Extendable: {reservation.is_extendable ? "Yes" : "No"}
-                                    </Typography>
-                                </Grid>
-                                <Divider orientation="vertical" flexItem className={classes.divider}/>
-                                <Grid item xs={3}>
-                                    <Grid className={classes.priceDiv}>
-                                        <Typography>Booked on {reservation.date_of_registration}</Typography>
-                                        <Typography className={classes.hotelTitle}>Total price:</Typography>
-                                        <Typography className={classes.hotelTitle}>${totalPrice}</Typography>
-                                        <br/>
-                                        <Button variant='contained'
-                                                onClick={() => patchReservation(isCheckIn ? 'Renting' : 'Archived', setEditButtonToDisable, reservations, reservation, setAlertMessage, setAlertStatus, setAlertOpen, setReservations, index, employeeSIN, isCheckIn, setShowGetPayment, setCheckInData)}
-                                                disabled={editButtonToDisable === reservation.booking_id}>
-                                            {isCheckIn ? "Check In" : "Check Out"}
-                                        </Button>
-                                    </Grid>
-                                </Grid>
-                            </Grid>
-                        </Paper>
-                    </GridListTile>
-                );
-            })
-        }
-    </GridList>
+export interface ReservationAndButton {
+    reservation: Reservation;
+    disabled: boolean;
 }
 
-export async function patchReservation(action: string, setEditButtonToDisable: any, reservations: Reservation[], reservation: Reservation, setAlertMessage: any, setAlertStatus: any, setAlertOpen: any, setReservations: any, index: number, employeeSIN: string, useDialog: boolean, setShowGetPayment: any, setCheckInData: any) {
-    if (useDialog) {
-        setCheckInData({
-            setEditButtonToDisable: setEditButtonToDisable,
-            reservations: reservations,
-            reservation: reservation,
-            setAlertMessage: setAlertMessage,
-            setAlertStatus: setAlertStatus,
-            setAlertOpen: setAlertOpen,
-            setReservations: setReservations,
-            index: index,
-            employeeSIN: employeeSIN
-        })
-        setShowGetPayment(true);
-        return;
-    }
-
-    setEditButtonToDisable(reservation.booking_id);
-    try {
-        let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + reservation.customer_sin + "/reservations/" + reservation.booking_id, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                status: action,
-                employee_sin: employeeSIN
-            })
-        })
-        if (response.status === 204) {
-            if (action === 'Renting') {
-                openAlert('Successfully checked in customer', 'success', setAlertMessage, setAlertStatus, setAlertOpen);
-            } else {
-                openAlert('Successfully checked out customer', 'success', setAlertMessage, setAlertStatus, setAlertOpen);
-            }
-            const newReservations: Reservation[] = [...reservations];
-            newReservations.splice(index, 1);
-            setReservations(newReservations);
-        } else {
-            openAlert('Error: Unable to modify reservation', 'error', setAlertMessage, setAlertStatus, setAlertOpen);
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        openAlert('Error: Unable to modify reservation', 'error', setAlertMessage, setAlertStatus, setAlertOpen)
-    }
-    setEditButtonToDisable(-1);
-}
 
 export default function CheckCustomer() {
     const classes = useStyles();
@@ -241,42 +121,132 @@ export default function CheckCustomer() {
         employeeData: any;
     }>();
 
-    location.state.response.sort((r1: Reservation, r2: Reservation) => (r1.check_in_day > r2.check_in_day) ? 1 : -1);
+    const reservationList = [...location.state.response];
+    reservationList.sort((r1: Reservation, r2: Reservation) => (r1.check_in_day > r2.check_in_day) ? 1 : -1);
+    const reservationButtonList: ReservationAndButton[] = new Array(reservationList.length);
+    for (let i = 0; i < reservationButtonList.length; i++) {
+        reservationButtonList[i] = {
+            reservation: reservationList[i],
+            disabled: false
+        }
+    }
 
     const [alertOpen, setAlertOpen]: [boolean, any] = useState(false);
     const [alertMessage, setAlertMessage]: [string, any] = useState("");
     const [alertStatus, setAlertStatus]: [Severity, any] = useState("success");
-    const [editButtonToDisable, setEditButtonToDisable]: [number, any] = useState(-1);
-    const [reservations, setReservations]: [Reservation[], any] = useState([...location.state.response]);
-    const [searchSIN, setSearchSIN]: [string, any] = useState("");
+    const [reservations, setReservations]: [ReservationAndButton[], any] = useState(reservationButtonList);
+    const [searchName, setSearchName]: [string, any] = useState("");
     const [showGetPayment, setShowGetPayment]: [boolean, any] = useState(false);
 
-    const [checkInData, setCheckInData]: [CheckInData, any] = useState({
-        setEditButtonToDisable: setEditButtonToDisable,
-        reservations: reservations,
-        reservation: {
-            amenities: [],
-            booking_id: 0,
-            check_in_day: '',
-            check_out_day: '',
-            customer_name: '',
-            customer_sin: '',
-            date_of_registration: '',
-            is_extendable: false,
-            price: '',
-            title: '',
-            view: ''
-        },
-        setAlertMessage: setAlertMessage,
-        setAlertStatus: setAlertStatus,
-        setAlertOpen: setAlertOpen,
-        setReservations: setReservations,
-        index: 0,
-        employeeSIN: location.state.employeeSIN
-    });
+    const [index, setIndex]: [number, any] = useState(-1);
 
     const dateWords = new Date().toDateString();
     const subTitle = location.state.checkIn ? 'For ' + dateWords : 'Customers currently renting rooms'
+
+    function setDisableButton(index: number, disabled: boolean) {
+        const newReservations = [...reservations];
+        newReservations[index].disabled = disabled;
+        setReservations(newReservations);
+    }
+
+    async function checkOutReservation(index: number) {
+        setDisableButton(index, true);
+        const reservation = reservations[index].reservation;
+        try {
+            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + reservation.customer_sin + "/reservations/" + reservation.booking_id, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    status: 'Archived',
+                    employee_sin: location.state.employeeSIN
+                })
+            })
+            if (response.status === 204) {
+                openAlert('Successfully checked out customer', 'success', setAlertMessage, setAlertStatus, setAlertOpen);
+                const newReservations: ReservationAndButton[] = [...reservations];
+                newReservations.splice(index, 1);
+                setReservations(newReservations);
+                return;
+            } else {
+                openAlert('Error: Unable to check out customer', 'error', setAlertMessage, setAlertStatus, setAlertOpen);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            openAlert('Error: Unable to check out customer', 'error', setAlertMessage, setAlertStatus, setAlertOpen)
+        }
+        setDisableButton(index, false);
+    }
+
+    function getPayment(index: number) {
+        setIndex(index);
+        setShowGetPayment(true);
+    }
+
+    function GenerateReservations() {
+        const filteredReservations = reservations.filter((r: ReservationAndButton) => r.reservation.customer_name.toLowerCase().includes(searchName));
+        if (filteredReservations.length === 0) {
+            return (
+                <GridList cols={1} cellHeight={220} className={classes.grid}>
+                    <GridListTile cols={1}>
+                        <Typography className={classes.centreSubTitle}>No reservations found!</Typography>
+                    </GridListTile>
+                </GridList>
+            )
+        }
+
+        return <GridList cols={1} cellHeight={220} className={classes.grid}>
+            {
+                filteredReservations.map((r: ReservationAndButton, index: number) => {
+                    const reservation = r.reservation;
+                    const checkIn: Date = new Date(reservation.check_in_day.replace('-', '/'))
+                    const checkOut: Date = new Date(reservation.check_out_day.replace('-', '/'))
+                    const days: number = Math.round(Math.abs(+checkIn - +checkOut) / 24 / 60 / 60 / 1000)
+                    const totalPrice: string = (days * parseFloat(reservation.price)).toFixed(2)
+
+                    if (reservation.amenities.length === 0) {
+                        reservation.amenities.push("None")
+                    }
+
+                    return (
+                        <GridListTile key={reservation.booking_id} cols={1}>
+                            <Paper elevation={3} key={reservation.booking_id} className={classes.brandPaper}>
+                                <Grid container spacing={2} alignItems="center">
+                                    <Grid className={classes.hotelGrid}>
+                                        <Typography
+                                            className={classes.hotelTitle}>Room: {reservation.title} | {reservation.check_in_day} to {reservation.check_out_day}
+                                        </Typography>
+                                        <Typography>Customer name: {reservation.customer_name}</Typography>
+                                        <Typography>Customer SIN: {reservation.customer_sin}</Typography>
+                                        <Typography>Amenities: {reservation.amenities.join(', ')}</Typography>
+                                        <Typography>View: {reservation.view}</Typography>
+                                        <Typography>
+                                            Extendable: {reservation.is_extendable ? "Yes" : "No"}
+                                        </Typography>
+                                    </Grid>
+                                    <Divider orientation="vertical" flexItem className={classes.divider}/>
+                                    <Grid item xs={3}>
+                                        <Grid className={classes.priceDiv}>
+                                            <Typography>Booked on {reservation.date_of_registration}</Typography>
+                                            <Typography className={classes.hotelTitle}>Total price:</Typography>
+                                            <Typography className={classes.hotelTitle}>${totalPrice}</Typography>
+                                            <br/>
+                                            <Button variant='contained'
+                                                    onClick={() => location.state.checkIn ? getPayment(index) : checkOutReservation(index)}
+                                                    disabled={r.disabled}>
+                                                {location.state.checkIn ? "Check In" : "Check Out"}
+                                            </Button>
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                            </Paper>
+                        </GridListTile>
+                    );
+                })
+            }
+        </GridList>
+    }
 
     return (
         <div className={classes.root}>
@@ -285,22 +255,19 @@ export default function CheckCustomer() {
                 className={classes.centreTitle}>Customer {location.state.checkIn ? 'Check In' : 'Check Out'}</Typography>
             <Typography className={classes.centreSubTitle}>{subTitle}</Typography>
             <div className={classes.centreDiv}>
-                <TextField label="Search by SIN" variant="outlined" value={searchSIN}
-                           onChange={event => setSearchSIN(event.currentTarget.value)}/>
+                <TextField label="Search by Customer Name" variant="outlined" value={searchName}
+                           onChange={event => setSearchName(event.currentTarget.value)}/>
             </div>
-            <GenerateReservations classes={classes} reservations={reservations}
-                                  editButtonToDisable={editButtonToDisable} employeeSIN={location.state.employeeSIN}
-                                  setEditButtonToDisable={setEditButtonToDisable} setAlertMessage={setAlertMessage}
-                                  setAlertStatus={setAlertStatus} setAlertOpen={setAlertOpen} searchSIN={searchSIN}
-                                  setReservations={setReservations} isCheckIn={location.state.checkIn}
-                                  setShowGetPayment={setShowGetPayment} setCheckInData={setCheckInData}/>
-            <GetPaymentDialog checkInData={checkInData} classes={classes} dialogOpen={showGetPayment}
-                              setDialogOpen={setShowGetPayment} setAlertMessage={setAlertMessage}
-                              setAlertOpen={setAlertOpen} setAlertStatus={setAlertStatus}/>
+            <GenerateReservations/>
+            <GetPaymentDialog dialogOpen={showGetPayment} setDialogOpen={setShowGetPayment} classes={classes}
+                              setAlertMessage={setAlertMessage} setAlertStatus={setAlertStatus}
+                              setAlertOpen={setAlertOpen} employeeSIN={location.state.employeeSIN} index={index}
+                              reservations={reservations} setReservations={setReservations}/>
             <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
                         alertMessage={alertMessage}/>
             <div style={{height: '1.5em', width: '100%'}}/>
-            <BackButton message={'Back'} history={history} url={'/ui/employee/welcome'} state={location.state.employeeData}/>
+            <BackButton message={'Back'} history={history} url={'/ui/employee/welcome'}
+                        state={location.state.employeeData}/>
         </div>
     )
 }

@@ -5,3 +5,4 @@ user: postgres
 password: postgres
 reset-db: false
 data-mode: example
+time-zone: America/Toronto

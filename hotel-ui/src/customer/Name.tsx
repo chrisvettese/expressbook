@@ -3,7 +3,13 @@ import React, {useState} from "react";
 import {BackButton, phoneRegex, sinRegex, TitleBar} from "../index";
 import {useHistory, useLocation} from 'react-router-dom';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(theme => ({
+    root: {
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'space-around',
+        backgroundColor: theme.palette.background.paper,
+    },
     centre: {
         paddingTop: '5em',
         display: 'flex',
@@ -15,6 +21,7 @@ const useStyles = makeStyles(() => ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        width: '100%'
     },
     buttonCentre: {
         paddingTop: '2em',
@@ -107,7 +114,7 @@ export default function Name() {
     }
 
     return (
-        <>
+        <div className={classes.root}>
             <TitleBar history={history} userType='customer'/>
             <div className={classes.centre}>
                 <Typography>Welcome to ExpressBook. Please provide some information about yourself:</Typography>
@@ -136,7 +143,8 @@ export default function Name() {
             <div className={classes.buttonCentre}>
                 <Button variant="contained" onClick={() => submitInfo()} disabled={disableUseButton}>Sign In</Button>
             </div>
+            <div style={{height: '18em', width: '100%'}}/>
             <BackButton message={'Back'} history={history} url={'/ui/customer'} state={{}}/>
-        </>
+        </div>
     )
 }

@@ -282,12 +282,10 @@ def add_routes(app, conn):
             raise BadRequestError(message='Missing required query param action')
         if action != 'check-in' and action != 'check-out':
             raise BadRequestError(message='Invalid action param, must be check-in or check-out')
-
         try:
             hid = int(hid)
         except ValueError:
             raise BadRequestError(message="Invalid hotel_ID: must be an integer")
-
         execute('SELECT hotel.correct_status_hotel({})'.format(hid), conn)
 
         if action == 'check-in':
@@ -299,19 +297,21 @@ def add_routes(app, conn):
                            JOIN hotel.hotel_room_type t ON t.type_ID = b.type_ID
                            JOIN hotel.view_type v ON v.view_ID = t.view_ID
                            JOIN hotel.customer c ON b.customer_sin = c.customer_sin
-                           JOIN hotel.employee e ON b.employee_sin = e.employee_sin
+                           LEFT JOIN hotel.employee e ON b.employee_sin = e.employee_sin
                            WHERE s.value = 'Booked' AND b.hotel_id = {} AND CURRENT_DATE >= b.check_in_day
                            AND CURRENT_DATE < b.check_out_day
                            '''.format(hid)
 
         else:
             query = '''SELECT b.booking_id, b.date_of_registration, b.check_in_day, b.check_out_day,
-                           t.title, t.is_extendable, t.amenities, v.view, t.price, c.customer_sin, c.customer_name
+                           t.title, t.is_extendable, t.amenities, v.view, t.price, c.customer_sin, c.customer_name,
+                           e.employee_name, e.job_title
                            FROM hotel.room_booking b
                            JOIN hotel.booking_status s ON s.status_ID = b.status_ID
                            JOIN hotel.hotel_room_type t ON t.type_ID = b.type_ID
                            JOIN hotel.view_type v ON v.view_ID = t.view_ID
                            JOIN hotel.customer c ON b.customer_sin = c.customer_sin
+                           LEFT JOIN hotel.employee e ON b.employee_sin = e.employee_sin
                            WHERE b.hotel_id = {} AND s.value = 'Renting\''''.format(hid)
 
         response = get_results(query, conn)

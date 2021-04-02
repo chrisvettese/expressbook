@@ -10,42 +10,33 @@ import {
     TextField,
     Typography
 } from "@material-ui/core";
-import {Reservation} from "../../index";
-import {patchReservation} from "../CheckCustomer";
+import {openAlert} from "../../index";
 import {provinces} from "../Provinces";
 import {KeyboardDatePicker, MuiPickersUtilsProvider} from "@material-ui/pickers";
 import DateFnsUtils from "@date-io/date-fns";
 import {MaterialUiPickersDate} from "@material-ui/pickers/typings/date";
-
-export interface CheckInData {
-    setEditButtonToDisable: any;
-    reservations: Reservation[]
-    reservation: Reservation;
-    setAlertMessage: any;
-    setAlertStatus: any;
-    setAlertOpen: any;
-    setReservations: any;
-    index: number;
-    employeeSIN: string;
-}
+import {ReservationAndButton} from "../CheckCustomer";
 
 interface GetPayment {
     dialogOpen: boolean;
     setDialogOpen: any;
     classes: any;
-    checkInData: CheckInData;
     setAlertMessage: any;
     setAlertStatus: any;
     setAlertOpen: any;
+    reservations: ReservationAndButton[]
+    setReservations: any;
+    index: number;
+    employeeSIN: string;
 }
 
 export const GetPaymentDialog = ({
                                      dialogOpen, setDialogOpen,
                                      classes,
-                                     checkInData,
-                                     setAlertMessage,
-                                     setAlertStatus,
-                                     setAlertOpen
+                                     setAlertMessage, setAlertStatus, setAlertOpen,
+                                     reservations, setReservations,
+                                     index,
+                                     employeeSIN
                                  }: GetPayment) => {
 
     const [creditCard, setCreditCard]: [string, any] = useState('');
@@ -68,6 +59,10 @@ export const GetPaymentDialog = ({
 
     const [triedSubmit, setTriedSubmit]: [boolean, any] = useState(false);
 
+    if (index === -1 || index >= reservations.length) {
+        return <></>
+    }
+
     //Create min date based on current month and year
     let minDate: Date = new Date();
     const minMonth: number = minDate.getMonth();
@@ -76,7 +71,9 @@ export const GetPaymentDialog = ({
 
     const provinceList: string[] = provinces.split('\n');
 
-    function completeCheckIn() {
+    async function completeCheckIn() {
+        setTriedSubmit(true);
+
         const isCreditCardError = !/^(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/
             .test(creditCard.replace('-', '').replace(' ', ''));
         const isCvvError = !/\d{3}/.test(cvv);
@@ -109,15 +106,38 @@ export const GetPaymentDialog = ({
         setPostalCodeError(isPostalCodeError);
         setProvinceError(isProvinceError);
 
-        setTriedSubmit(true);
-
         if (isCreditCardError || isNameError || isAddressError || isCityError || isPostalCodeError || isProvinceError) {
+            setTriedSubmit(false);
             return;
         }
-        closeDialog();
-        patchReservation('Renting', checkInData.setEditButtonToDisable, checkInData.reservations, checkInData.reservation, setAlertMessage, setAlertStatus, setAlertOpen, checkInData.setReservations, checkInData.index, checkInData.employeeSIN, false, null, null)
-            .then(_ => {
+
+        const reservation = reservations[index].reservation;
+        try {
+            let response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers/" + reservation.customer_sin + "/reservations/" + reservation.booking_id, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    status: 'Renting',
+                    employee_sin: employeeSIN
+                })
             })
+            if (response.status === 204) {
+                openAlert('Successfully checked in customer', 'success', setAlertMessage, setAlertStatus, setAlertOpen);
+                const newReservations: ReservationAndButton[] = [...reservations];
+                newReservations.splice(index, 1);
+                setReservations(newReservations);
+                closeDialog();
+                return;
+            } else {
+                openAlert('Error: Unable to check in customer', 'error', setAlertMessage, setAlertStatus, setAlertOpen);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            openAlert('Error: Unable to check in customer', 'error', setAlertMessage, setAlertStatus, setAlertOpen)
+        }
+        setTriedSubmit(false);
     }
 
     function closeDialog() {
@@ -150,7 +170,7 @@ export const GetPaymentDialog = ({
             <Typography style={{
                 fontSize: '1.2em',
                 marginBottom: '1em'
-            }}>For {checkInData.reservation.customer_name}</Typography>
+            }}>For {reservations[index].reservation.customer_name}</Typography>
             <div>
                 <TextField label="Credit Card Number" variant="outlined" value={creditCard} error={creditCardError}
                            helperText={creditCardError ? "Must provide valid credit card number" : ""}
@@ -228,6 +248,7 @@ export const GetPaymentDialog = ({
         <DialogActions>
             <Button
                 onClick={() => completeCheckIn()}
+                disabled={triedSubmit}
                 variant="contained"
                 color="primary">
                 Complete Check In

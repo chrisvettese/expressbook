@@ -18,7 +18,6 @@ const useStyles = makeStyles(theme => ({
         flexWrap: 'wrap',
         justifyContent: 'space-around',
         backgroundColor: theme.palette.background.paper,
-
     },
     centreTitle: {
         paddingTop: '2em',

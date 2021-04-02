@@ -117,16 +117,18 @@ export default function ManageCustomer() {
     const [customerEmail, setCustomerEmail]: [string, any] = useState("");
     const [customerPhone, setCustomerPhone]: [string, any] = useState("");
 
-    function validateEmail(): boolean {
-        const emailError: boolean = isEmailError();
-        return emailError && customerEmail.length !== 0;
+    const [emailError, setEmailError]: [boolean, any] = useState(false);
+
+    function validateEmail(email: string) {
+        const emailError: boolean = isEmailError(email) && email.length !== 0;
+        setEmailError(emailError);
     }
 
-    function isEmailError(): boolean {
-        let emailError: boolean = customerEmail.includes(' ') || customerEmail.indexOf('@') < 1
+    function isEmailError(email: string): boolean {
+        let emailError: boolean = email.includes(' ') || email.indexOf('@') < 1
         if (!emailError) {
-            const index: number = customerEmail.indexOf('.', customerEmail.indexOf('@'))
-            if (index < 3 || index === customerEmail.length - 1) {
+            const index: number = email.indexOf('.', email.indexOf('@'))
+            if (index < 3 || index === email.length - 1) {
                 emailError = true;
             }
         }
@@ -134,8 +136,9 @@ export default function ManageCustomer() {
     }
 
     function keyPressed(e: React.KeyboardEvent<HTMLDivElement>) {
-        if (e.key === 'Enter' && !isEmailError()) {
-            findCustomer();
+        if (e.key === 'Enter' && !emailError) {
+            findCustomer().then(_ => {
+            });
         }
     }
 
@@ -240,25 +243,23 @@ export default function ManageCustomer() {
         setDisableCreate(false);
     }
 
-    function findCustomer() {
+    async function findCustomer() {
         setDisableFindCustomer(true);
-        fetch(process.env.REACT_APP_SERVER_URL + "/customers?email=" + customerEmail)
-            .then(response => {
-                if (response.status === 200) {
-                    response.json().then((response: CustomerResponse[]) => {
-                        if (response.length === 0) {
-                            setCustomerData({error: "Not Found"});
-                        } else {
-                            setCustomerData(response[0]);
-                        }
-                    })
+        try {
+            const response = await fetch(process.env.REACT_APP_SERVER_URL + "/customers?email=" + customerEmail);
+            if (response.status === 200) {
+                const jsonResponse: CustomerResponse[] = await response.json();
+                if (jsonResponse.length === 0) {
+                    setCustomerData({error: "Not Found"});
                 } else {
-                    console.error('Error: unable to get customer info');
+                    setCustomerData(jsonResponse[0]);
                 }
-            }).catch(error => {
-                console.error('Error:', error);
+            } else {
+                console.error('Error: unable to get customer info');
             }
-        );
+        } catch (error) {
+            console.error('Error:', error);
+        }
         setDisableFindCustomer(false);
     }
 
@@ -271,16 +272,19 @@ export default function ManageCustomer() {
                     <Typography>Enter customer email:</Typography>
                 </Grid>
                 <Grid container item alignItems="center" xs={2} className={classes.dateGrid}>
-                    <TextField error={validateEmail()}
-                               helperText={validateEmail() ? "Email must have valid format" : ""}
-                               onChange={event => setCustomerEmail(event.currentTarget.value)}
+                    <TextField error={emailError}
+                               helperText={emailError ? "Email must have valid format" : ""}
+                               onChange={event => {
+                                   validateEmail(event.currentTarget.value);
+                                   setCustomerEmail(event.currentTarget.value);
+                               }}
                                onKeyPress={e => keyPressed(e)}
                                id="outlined-basic" label="Email Address" variant="outlined"
                                value={customerEmail}/>
                 </Grid>
                 <Grid container item alignItems="center" xs={2} className={classes.dateGrid}>
-                    <Button variant="contained" onClick={() => findCustomer()}
-                            disabled={isEmailError() || disableFindCustomer}>
+                    <Button variant="contained" onClick={findCustomer}
+                            disabled={emailError || customerEmail.length === 0 || disableFindCustomer}>
                         Find Customer
                     </Button>
                 </Grid>
@@ -296,7 +300,8 @@ export default function ManageCustomer() {
             <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
                         alertMessage={alertMessage}/>
             <div style={{height: '16em', width: '100%'}}/>
-            <BackButton message={'Back'} history={history} url={'/ui/employee/welcome'} state={location.state.employeeData}/>
+            <BackButton message={'Back'} history={history} url={'/ui/employee/welcome'}
+                        state={location.state.employeeData}/>
         </div>
     )
 }

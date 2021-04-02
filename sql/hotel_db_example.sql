@@ -24,7 +24,6 @@ DROP SCHEMA IF EXISTS hotel CASCADE;
 
 CREATE SCHEMA hotel;
 
-
 ALTER SCHEMA hotel OWNER TO postgres;
 
 --
