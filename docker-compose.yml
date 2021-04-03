@@ -22,7 +22,7 @@ services:
     networks:
       - postgres
       - gunicorn
-    command: poetry run gunicorn --bind 0.0.0.0:5000 wsgi:app
+    command: poetry run gunicorn --timeout 10000 --bind 0.0.0.0:5000 wsgi:app
     depends_on:
       - postgres
 

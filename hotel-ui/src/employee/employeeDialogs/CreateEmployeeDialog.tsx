@@ -46,16 +46,18 @@ function AdditionalInfo(aInfo: AInfo) {
             <>
                 <AdditionalMessage isNewEmail={aInfo.isNewEmail}/>
                 <TextField label="Name" variant="outlined" value={aInfo.employeeName} error={aInfo.nameError}
-                           helperText={aInfo.nameHelper} className={aInfo.classes.dialogGap}
+                           helperText={aInfo.nameError ? aInfo.nameHelper : ""} className={aInfo.classes.dialogGap}
                            onChange={event => aInfo.setEmployeeName(event.currentTarget.value)}/>
                 <TextField label="Employee SIN" variant="outlined" value={aInfo.employeeSIN} error={aInfo.sinError}
-                           helperText={aInfo.sinHelper} className={aInfo.classes.dialogGap}
+                           helperText={aInfo.sinError ? aInfo.sinHelper : ""} className={aInfo.classes.dialogGap}
                            onChange={event => aInfo.setEmployeeSIN(event.currentTarget.value)}/>
                 <TextField label="Address" variant="outlined" value={aInfo.employeeAddress} error={aInfo.addressError}
-                           helperText={aInfo.addressHelper} className={aInfo.classes.dialogGap}
+                           helperText={aInfo.addressError ? aInfo.addressHelper : ""}
+                           className={aInfo.classes.dialogGap}
                            onChange={event => aInfo.setEmployeeAddress(event.currentTarget.value)}/>
                 <TextField label="Salary" variant="outlined" value={aInfo.employeeSalary} error={aInfo.salaryError}
-                           helperText={aInfo.salaryHelper} type="number" className={aInfo.classes.dialogGap}
+                           helperText={aInfo.salaryError ? aInfo.salaryHelper : ""} type="number"
+                           className={aInfo.classes.dialogGap}
                            onChange={event => aInfo.setEmployeeSalary(event.currentTarget.value)}
                            InputProps={{
                                startAdornment: <InputAdornment position="start">$</InputAdornment>,
@@ -187,7 +189,7 @@ export const CreateEmployeeDialog = ({
         const validateSalary = !Number.isNaN(employeeSalary) && parseFloat(employeeSalary) > 0;
         const validateJobTitle = employeeJobTitle.length > 0;
         const validateEmployeeSIN = sinRegex.test(employeeSIN);
-
+        console.log(validateEmployeeSIN);
         setNameError(!validateName);
         setAddressError(!validateAddress);
         setSalaryError(!validateSalary);
@@ -209,7 +211,7 @@ export const CreateEmployeeDialog = ({
         if (!validateJobTitle) {
             setJobHelper('Must enter valid job title for employee')
         }
-        if (!validateName || !validateAddress || !validateSalary || !validateJobTitle) {
+        if (!validateName || !validateAddress || !validateSalary || !validateJobTitle || !validateEmployeeSIN) {
             setDisableCreateEmployee(false);
             return;
         }
@@ -238,6 +240,7 @@ export const CreateEmployeeDialog = ({
                     newEmployees.push({
                         employee_sin: employeeSIN,
                         employee_name: employeeName,
+                        employee_email: employeeEmail,
                         employee_address: employeeAddress,
                         salary: fixedESalary,
                         job_title: employeeJobTitle,
@@ -276,6 +279,7 @@ export const CreateEmployeeDialog = ({
                     newEmployees.push({
                         employee_sin: employeeSIN,
                         employee_name: employeeName,
+                        employee_email: employeeEmail,
                         employee_address: employeeAddress,
                         salary: fixedESalary,
                         job_title: employeeJobTitle,
