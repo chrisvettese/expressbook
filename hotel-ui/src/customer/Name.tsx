@@ -115,6 +115,7 @@ export default function Name() {
                     if (jsonResponse.message === 'Customer already exists') {
                         setSINUsed(true);
                     }
+                    setDisableUseButton(false);
                 }
             } catch (error) {
                 console.error('Error:', error);
