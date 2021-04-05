@@ -72,10 +72,7 @@ def exit_handler():
     conn.close()
 
 
-# atexit.register(exit_handler)
-
-# remove before releasing production build
-# os.environ['FLASK_ENV'] = 'development'
+atexit.register(exit_handler)
 
 
 def main():
