@@ -241,7 +241,8 @@ export default function ManageEmployee() {
             <HotelAlert alertOpen={alertOpen} closeAlert={() => setAlertOpen(false)} alertStatus={alertStatus}
                         alertMessage={alertMessage}/>
             <div style={{height: '1.5em', width: '100%'}}/>
-            <BackButton message={'Back'} history={history} url={'/ui/employee/welcome'} state={location.state.employeeData}/>
+            <BackButton message={'Back'} history={history} url={'/ui/employee/welcome'}
+                        state={location.state.employeeData}/>
         </div>
     )
 }

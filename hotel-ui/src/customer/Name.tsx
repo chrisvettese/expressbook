@@ -44,10 +44,19 @@ export default function Name() {
     const [phoneError, setPhoneError]: [boolean, any] = useState(false);
     const [disableUseButton, setDisableUseButton]: [boolean, any] = useState(false);
 
+    const [sinUsed, setSINUsed]: [boolean, any] = useState(false);
+
     const [trySubmit, setTrySubmit]: [boolean, any] = useState(false);
 
     function validateSIN(): boolean {
         return !sinRegex.test(SIN) && (SIN.length !== 0 || (trySubmit && SIN.length === 0));
+    }
+
+    function getSINMessage() {
+        if (sinUsed) {
+            return "Profile with SIN already exists";
+        }
+        return validateSIN() ? "SIN must have format XXX-XXX-XXX" : "";
     }
 
     async function submitInfo() {
@@ -59,6 +68,8 @@ export default function Name() {
         setNameError(nameError);
         setAddressError(addressError);
         setPhoneError(phoneError);
+
+        setSINUsed(false);
 
         setTrySubmit(true);
 
@@ -99,6 +110,11 @@ export default function Name() {
                         customerEmail: location.state.customerEmail,
                         customerPhone: phoneNumber
                     })
+                } else if (response.status === 409) {
+                    const jsonResponse = await response.json();
+                    if (jsonResponse.message === 'Customer already exists') {
+                        setSINUsed(true);
+                    }
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -109,7 +125,8 @@ export default function Name() {
 
     function keyPressed(e: React.KeyboardEvent<HTMLDivElement>) {
         if (e.key === 'Enter') {
-            submitInfo();
+            submitInfo().then(_ => {
+            });
         }
     }
 
@@ -125,7 +142,7 @@ export default function Name() {
                            onChange={event => setName(event.currentTarget.value)}/>
             </div>
             <div className={classes.textField}>
-                <TextField error={validateSIN()} helperText={validateSIN() ? "SIN must have format XXX-XXX-XXX" : ""}
+                <TextField error={validateSIN() || sinUsed} helperText={getSINMessage()}
                            onChange={event => setSIN(event.currentTarget.value)}
                            id="outlined-basic" label="Social Insurance Number" variant="outlined" value={SIN}/>
             </div>
