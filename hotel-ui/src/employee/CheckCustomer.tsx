@@ -185,7 +185,7 @@ export default function CheckCustomer() {
     }
 
     function GenerateReservations() {
-        const filteredReservations = reservations.filter((r: ReservationAndButton) => r.reservation.customer_name.toLowerCase().includes(searchName));
+        const filteredReservations = reservations.filter((r: ReservationAndButton) => r.reservation.customer_name.toLowerCase().includes(searchName.toLowerCase()));
         if (filteredReservations.length === 0) {
             return (
                 <GridList cols={1} cellHeight={220} className={classes.grid}>
