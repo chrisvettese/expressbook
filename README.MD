@@ -27,3 +27,23 @@ To configure the app, open `config.yml`. The following settings are available:
 `time-zone`: Timezone for the PostgreSQL server to use. The `Dockerfile` sets timezone of the container (including the Flask server).
 
 The existing config can be used for testing purposes without any changes.
+
+### Installation
+
+Run `docker-compose up --build` in the top level directory. This will start PostgreSQL, the Flask server, pgAdmin, and NginX.
+
+If the app is started with the default configuration, the following paths will be exposed:
+
+http://localhost:1234/ui/customer - This is the user interface for the customer
+
+http://localhost:1234/ui/employee - This is the user interface for employees
+  
+http://localhost:1235/ - This is pgAdmin, meant for admin users
+  
+http://localhost:1234/service - This is the path of the Flask server endpoints.
+
+
+The file Hotel Booking App.postman_collection.json contains all the endpoints, which may be imported into Postman for testing:
+![Postman Endpoints.](https://raw.githubusercontent.com/chrisvettese/expressbook/main/images/i3.png)
+
+
