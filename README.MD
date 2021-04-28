@@ -75,4 +75,41 @@ From here, the user can edit their profile, view their reservations, or find a h
 A view of the My Reservations page.
 
 ### For Employees and Managers
+The sign in system is similar to that of customers, except that employees are unable to sign up for new accounts. Their account must be created by the DB admin, or by a hotel manager.
 
+Go to http://localhost:1234/ui/employee.
+
+There are two possibilities at the sign in step:
+* Sign in as a regular employee (try gillian.crosson14@icloud.com)
+* Sign in as a manager (try lindsay.tiedemann0@outlook.com)
+
+Employees and managers always belong to a specific hotel location, so they are unable to view rooms and employees associated with other locations.
+
+Managers will see a page like this:
+![A view of the Manager welcome page.](https://raw.githubusercontent.com/chrisvettese/expressbook/main/images/i6.png)
+
+
+Regular employees will see a similar page, however, the "Manager Actions" section will not be visible.
+
+Employees/managers have the following abilities:
+
+
+* Edit Profile: Allows employees to change their own profile. Job Title and Salary cannot be changed
+* Customer Check In: Shows customers that have booked rooms for today, but have not checked in yet. Prompts the employee to enter the customer’s payment info. Note: this button can be very slow the first time it is pressed, as a clean up script needs to correct problems in the example data
+* Customer Check Out: Similar to customer check in, but allows employees to checkout customers
+* Manage Customer: This allows employees to:
+  * Create new customer profiles
+  * View room bookings for an existing customer
+  * Check a given customer in and out of a room
+  * Cancel a given customer’s room bookings
+  * Make room bookings for a given customer
+
+Managers have the following abilities:
+* Manage Employees: Allows managers to hire new employees, fire existing employees, and edit salaries and job titles of employees
+* Manage Rooms: Allows managers to create new room types, and delete existing types. The hotel’s total number of rooms is automatically updated to account for this
+
+Manage employees page (for managers only):
+![A view of the Manage employees page.](https://raw.githubusercontent.com/chrisvettese/expressbook/main/images/i7.PNG)
+
+Manage rooms page (for managers only):
+![A view of the Manage rooms page.](https://raw.githubusercontent.com/chrisvettese/expressbook/main/images/i8.PNG)
