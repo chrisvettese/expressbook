@@ -9,13 +9,21 @@ All four user types (Customer, Employee, Manager, and Admin) access the various 
 ## Setup
 ### Configuration
 To configure the app, open `config.yml`. The following settings are available:
+
 `host`: PostgreSQL host. By default it will connect to a database in the same docker container, but can be configured to connect to an external server.
+
 `port`: PostgreSQL port
+
 `database`: PostgreSQL database name
+
 `user`: PostgreSQL username
+
 `password`: PostgreSQL password
+
 `reset-db`: If true, the entire database will be reset according to the `data-mode` setting. This should only be set to true for testing purposes.
+
 `data-mode`: example | random | empty: The type of data to be loaded if the db does not exist, or if `reset-db` is true. `example` loads pre-set simulation data for hotel brands, hotel locations, customers, employees, and room bookings. `random` generates new simulated data with a python script. Production servers should use `empty` and populate the db with real data.
+
 `time-zone`: Timezone for the PostgreSQL server to use. The `Dockerfile` sets timezone of the container (including the Flask server).
 
 The existing config can be used for testing purposes without any changes.
