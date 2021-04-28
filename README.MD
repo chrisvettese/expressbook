@@ -2,7 +2,7 @@
 ExpressBook is a full stack hotel booking app. The app allows users to select from a variety of (simulated) hotel brands, and make bookings at various hotel locations. The app allows hotel employees to check in and check out customers, as well as manage customer profiles. Hotel managers can also manage employees, and create and delete room types.
 
 The following is a diagram of the stack:
-[!Diagram of the app.](https://raw.githubusercontent.com/chrisvettese/expressbook/main/images/i2.png)
+![Diagram of the app.](https://raw.githubusercontent.com/chrisvettese/expressbook/main/images/i2.png)
 
 All four user types (Customer, Employee, Manager, and Admin) access the various user interfaces through a reverse proxy. The entire app is dockerized to make it easy to deploy with any web hosting service. With a single command, a PostgreSQL database will be created, pgAdmin will be installed and launched for admins to access the database, a Python Flask server will launch with endpoints that retrieve data, and NginX will serve React apps for customers, employees, and managers (as well as provide access to pgAdmin for administrators).
 
