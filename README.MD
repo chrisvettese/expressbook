@@ -32,7 +32,7 @@ The existing config can be used for testing purposes without any changes.
 
 Run `docker-compose up --build` in the top level directory. This will start PostgreSQL, the Flask server, pgAdmin, and NginX.
 
-If the app is started with the default configuration, the following paths will be exposed:
+If the app is started with the default configuration, the following paths will be exposed (as accessed from the host machine):
 
 http://localhost:1234/ui/customer - This is the user interface for the customer
 
@@ -46,4 +46,33 @@ http://localhost:1234/service - This is the path of the Flask server endpoints.
 The file Hotel Booking App.postman_collection.json contains all the endpoints, which may be imported into Postman for testing:
 ![Postman Endpoints.](https://raw.githubusercontent.com/chrisvettese/expressbook/main/images/i3.png)
 
+## Using the App
+### For Admins
+Go to http://localhost:1235/
+Enter a master password, such as admin
+The database connection will be pre-configured under the "Servers" dropdown. The database password is `postgres` by default.
+
+After following these steps, admins will be able to manipulate any aspect of the database.
+
+### For Customers
+
+Go to http://localhost:1234/ui/customer.
+
+The website uses email-based sign in for customers. Realistically, most websites would require an email and password sign in. However, for this course, it will be possible to sign in with just an email.
+
+There are two possibilities at this step:
+* Sign in as an existing customer (if using simulation data, try an existing email found in `GET /customers`)
+* Sign in as a new customer: Enter an email, and the user will be prompted to enter more information
+
+Once signed in, there will a page that looks like this:
+![Customer welcome page.](https://raw.githubusercontent.com/chrisvettese/expressbook/main/images/i4.PNG)
+
+From here, the user can edit their profile, view their reservations, or find a hotel.
+* My Reservations: Allows users to view all future and past reservations they have made, and allows users to cancel future bookings, and check out of rooms
+* Find A Hotel: The user will be prompted to select a hotel brand, and then a hotel associated with the chosen brand. After that, they will be allowed to book a room.
+
+![A view of the My Reservations page.](https://raw.githubusercontent.com/chrisvettese/expressbook/main/images/i1.PNG)
+A view of the My Reservations page.
+
+### For Employees and Managers
 
